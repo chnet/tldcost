@@ -9,7 +9,7 @@
     "siteRegion": "eu-west-1",
     "domainName": "tldcost.io",
     "alternateDomainNames": [],
-    "githubOidcSubject": "repo:chnet@16511920/tldcost@1442468107:environment:production",
+    "githubOidcSubject": "repo:chnet@16511920/tldcost@1459607746:environment:production",
     "githubJobWorkflowRef": "chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main",
     "@aws-cdk/aws-signer:signingProfileNamePassedToCfn": true,
     "@aws-cdk/core:newStyleStackSynthesis": true,

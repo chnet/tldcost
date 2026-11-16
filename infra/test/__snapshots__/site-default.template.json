@@ -552,7 +552,7 @@
               "Condition": {
                 "StringEquals": {
                   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-                  "token.actions.githubusercontent.com:sub": "repo:chnet@16511920/tldcost@1442468107:environment:production",
+                  "token.actions.githubusercontent.com:sub": "repo:chnet@16511920/tldcost@1459607746:environment:production",
                   "token.actions.githubusercontent.com:job_workflow_ref": "chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main"
                 }
               },
@@ -579,7 +579,7 @@
           ],
           "Version": "2012-10-17"
         },
-        "Description": "tldcost deploy from GitHub Actions (repo:chnet@16511920/tldcost@1442468107:environment:production)",
+        "Description": "tldcost deploy from GitHub Actions (repo:chnet@16511920/tldcost@1459607746:environment:production)",
         "MaxSessionDuration": 3600,
         "PermissionsBoundary": {
           "Fn::Join": [

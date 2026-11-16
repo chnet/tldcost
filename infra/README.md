@@ -40,7 +40,7 @@ Defaults are in `cdk.json` or, for keys missing there, in `lib/config.ts`; overr
 | `certificateArn` | — | ARN of the **ISSUED** certificate from `tldcost-cert`. It is validated: format `arn:aws:acm:us-east-1:<account>:certificate/<uuid>`, and the account must match `account` (if set) |
 | `domainName` | `tldcost.io` | Canonical domain. `www.<domain>` is always added and redirects |
 | `alternateDomainNames` | `[]` | Additional domains (e.g. `tldcost.de` later), redirect to the apex domain. **Empty = inactive.** After a change, both stacks must be redeployed (certificate SAN and aliases) |
-| `githubOidcSubject` | `repo:chnet@16511920/tldcost@1442468107:environment:production` | Exact `sub` claim. Only the immutable form `owner@id/repo@id` with environment is allowed |
+| `githubOidcSubject` | `repo:chnet@16511920/tldcost@1459607746:environment:production` | Exact `sub` claim. Only the immutable form `owner@id/repo@id` with environment is allowed |
 | `githubJobWorkflowRef` | `chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main` | Exact `job_workflow_ref` claim. Only `@refs/heads/main` is allowed |
 | `createGithubOidcProvider` | `false` | `true`: the site stack creates the GitHub OIDC provider itself (`AWS::IAM::OIDCProvider`, without Lambda, `DeletionPolicy: Retain`). Only for an account **without** a provider and without an organization SCP that forbids creating it (move to a different AWS account). `-c …=true\|false` or boolean in `cdk.json` |
 | `workloadBoundaryPolicyName` | `chnet-tldcost-workload-boundary` | Name of an existing customer-managed IAM policy with path `/` in the target account (the ARN is built as `arn:<partition>:iam::<account>:policy/<name>`). The site stack sets it as permissions boundary on **all** of its IAM roles (`tldcost-cert` has none). Empty (`-c workloadBoundaryPolicyName=`) = no boundary, for accounts without that policy. The policy is not created by this app: before the first deploy with a boundary it must exist and allow the deploy role's actions (S3 sync of the site bucket, CloudFront invalidation) |
@@ -107,7 +107,7 @@ npx cdk bootstrap aws://<account>/eu-west-1 --qualifier tldcost --toolkit-stack-
 Trust (all `StringEquals`, no wildcards):
 
 - `token.actions.githubusercontent.com:aud` = `sts.amazonaws.com`
-- `token.actions.githubusercontent.com:sub` = `repo:chnet@16511920/tldcost@1442468107:environment:production`
+- `token.actions.githubusercontent.com:sub` = `repo:chnet@16511920/tldcost@1459607746:environment:production`
 - `token.actions.githubusercontent.com:job_workflow_ref` = `chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main`
 
 **Repository created anew:** a new repository gets a new repository ID, even under the same owner and name. Before the first deploy from it, the operator:

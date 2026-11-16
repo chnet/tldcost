@@ -13,7 +13,7 @@ describe('readConfig', () => {
       domainName: 'tldcost.io',
       alternateDomainNames: [],
       certificateArn: undefined,
-      githubOidcSubject: 'repo:chnet@16511920/tldcost@1442468107:environment:production',
+      githubOidcSubject: 'repo:chnet@16511920/tldcost@1459607746:environment:production',
       githubJobWorkflowRef: 'chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main',
       createGithubOidcProvider: false,
       attachDomainNames: true,
@@ -114,7 +114,7 @@ describe('readConfig', () => {
   describe('githubOidcSubject (immutable, environment-bound)', () => {
     it('accepts the immutable owner@id/repo@id form', () => {
       expect(read().githubOidcSubject).toBe(
-        'repo:chnet@16511920/tldcost@1442468107:environment:production',
+        'repo:chnet@16511920/tldcost@1459607746:environment:production',
       );
     });
 
@@ -126,11 +126,11 @@ describe('readConfig', () => {
 
     it('rejects branch-bound and wildcard subjects', () => {
       for (const sub of [
-        'repo:chnet@16511920/tldcost@1442468107:ref:refs/heads/main',
-        'repo:chnet@16511920/tldcost@1442468107:*',
-        'repo:chnet@16511920/tldcost@1442468107:environment:*',
-        'repo:chnet@16511920/tldcost@1442468107:environment:prod:extra',
-        'repo:chnet@abc/tldcost@1442468107:environment:production',
+        'repo:chnet@16511920/tldcost@1459607746:ref:refs/heads/main',
+        'repo:chnet@16511920/tldcost@1459607746:*',
+        'repo:chnet@16511920/tldcost@1459607746:environment:*',
+        'repo:chnet@16511920/tldcost@1459607746:environment:prod:extra',
+        'repo:chnet@abc/tldcost@1459607746:environment:production',
         'repo:chnet@16511920/tldcost:environment:production',
       ]) {
         expect(() => read({ githubOidcSubject: sub }), sub).toThrow(/githubOidcSubject/);

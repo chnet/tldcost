@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../lib/app.js';
 import { CDK_JSON_CONTEXT, TEST_CERT_ARN, firstResource, synthSite } from './helpers.js';
 
-const SUBJECT = 'repo:chnet@16511920/tldcost@1442468107:environment:production';
+const SUBJECT = 'repo:chnet@16511920/tldcost@1459607746:environment:production';
 const JOB_WORKFLOW_REF = 'chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main';
 
 describe('stack tldcost (site, defaults from cdk.json + certificateArn)', () => {

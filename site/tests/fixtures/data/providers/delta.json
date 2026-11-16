@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "delta",
+  "name": "Delta Hosting",
+  "website": "https://delta.example",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://delta.example/agb",
+    "section": "§ 2 (keine Mindestlaufzeit)",
+    "min_term_months": 0
+  }
+}

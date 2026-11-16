@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "dynadot",
+  "name": "Dynadot",
+  "website": "https://www.dynadot.com/",
+  "country": "US",
+  "vat_rate": null,
+  "operator": false,
+  "terms": {
+    "url": "https://www.dynadot.com/terms-of-use",
+    "section": "ToU § 6.3 (Auto-Renew nur per Opt-in); keine Kündigungsfrist geregelt; Laufzeit lt. TLD-Seite 1-2 Jahre",
+    "min_term_months": 12,
+    "notice_period_days": null,
+    "billing_cycle": "yearly",
+    "auto_renew_default": false
+  },
+  "reviewed_at": "2026-11-12"
+}

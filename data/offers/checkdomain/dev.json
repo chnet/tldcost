@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "provider": "checkdomain",
+  "tld": "dev",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 349,
+    "year1_regular": 349,
+    "renewal": 349
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": true,
+    "whois_privacy": null,
+    "api": null,
+    "two_factor": null,
+    "payment_methods": ["sepa", "card", "paypal"]
+  },
+  "evidence": {
+    "source_url": "https://www.checkdomain.de/dev-domain/",
+    "source_endpoint": "https://www.checkdomain.de/domains/",
+    "fetched_at": "2026-11-15T05:37:21Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:fe34ea1f092670de1b394af02eecc66f201b06b01377846bdd2aa9e82c49e5e8",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

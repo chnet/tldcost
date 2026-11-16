@@ -1,0 +1,78 @@
+# Generic workspace CI: commit identities (PRs), lint, format, typecheck, data/schema validation and
+# all tests (vitest per workspace + node:test for scripts/). Runs on every PR, so changes under
+# data/** are always schema-checked (evidence.source_url is mandatory). Site-specific checks
+# (Playwright, Lighthouse) live in their own workflow.
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  # never cancel a main run: each push's identity check must complete
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read # check-main-identity: is a GitHub-committed commit the merge of a merged PR?
+    env:
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      # PRs from branches of this repo: every commit has a CHnet author AND committer. Fork PRs
+      # (public contributions) skip it; schema and tests still run. Their merge is checked below.
+      # Only exception (owner decision 2026-11-15): Dependabot's own GitHub-signed commits on
+      # dependabot/** that only touch manifests or action pins; checked via the API (read-only token,
+      # never printed). See scripts/lib/dependabot-exemption.mjs.
+      - name: Commit identity (PR from this repo)
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          EVENT_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ github.token }}
+        # the exception needs PR author AND the actor of this event (who pushed) to be the same bot
+        run: |
+          actor=""
+          if [ "$PR_AUTHOR" = "$EVENT_ACTOR" ]; then actor="$PR_AUTHOR"; fi
+          node scripts/check-commit-identity.mjs --range "$BASE_SHA..$HEAD_SHA" --branch "$HEAD_REF" --actor "$actor"
+
+      # Every push to main, unconditionally. CHnet authors pass (own squash merges need no secret);
+      # merged fork PRs (committer GitHub, confirmed via API) meet the secret author-domain denylist
+      # (never logged) and fail closed while AUTHOR_DOMAIN_DENYLIST is unset.
+      - name: Commit identity (push to main)
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+          AUTHOR_DOMAIN_DENYLIST: ${{ secrets.AUTHOR_DOMAIN_DENYLIST }}
+        run: node scripts/check-main-identity.mjs
+
+      - run: npm run validate
+
+      - run: npm test

@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "provider": "host-europe",
+  "tld": "de",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 8,
+    "year1_regular": 99,
+    "renewal": 99,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": {
+    "conditions": ".de & .com nur für Neukunden, Neuregistrierungen und eine pro Kunde.",
+    "valid_until": null,
+    "max_per_customer": 1,
+    "max_per_customer_source": {
+      "url": "https://www.hosteurope.de/Domain-Namen/Preis/",
+      "quote": ".de & .com nur für Neukunden, Neuregistrierungen und eine pro Kunde."
+    },
+    "limit_scope": "per_customer"
+  },
+  "features": {
+    "whois_privacy": "n/a"
+  },
+  "evidence": {
+    "source_url": "https://www.hosteurope.de/Domain-Namen/Preis/",
+    "fetched_at": "2026-11-15T09:06:21Z",
+    "method": "manual",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

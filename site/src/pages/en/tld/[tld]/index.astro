@@ -1,0 +1,12 @@
+---
+// /en/tld/<tld>/: the English TLD page (Archiv-Issue 33, src/components/TldPage.astro).
+import TldPage from '../../../../components/TldPage.astro';
+import { apiTlds } from '../../../../lib/api';
+import { siteData } from '../../../../lib/site-data';
+
+export function getStaticPaths() {
+  return apiTlds(siteData()).map((tld) => ({ params: { tld } }));
+}
+---
+
+<TldPage lang="en" tld={String(Astro.params.tld)} />

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "chnet-domains",
+  "name": "chnet.domains",
+  "website": "https://chnet.domains/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": true,
+  "terms": {
+    "url": "https://app.chnet.domains/agb.html",
+    "section": "AGB § 5 Abs. 1-2 (12 Mon., .gr/.nu/.tk 24; Verlängerung), Anlage A (7 Tage für .de/.com/.eu, je TLD abweichend), § 6 Abs. 1",
+    "min_term_months": 12,
+    "notice_period_days": 7,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

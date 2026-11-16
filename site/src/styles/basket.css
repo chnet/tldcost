@@ -1,0 +1,93 @@
+/* Portfolio calculator (components/BasketCalculator): the basket editor and the mix row. Everything
+   else reuses the table components (table.css). Every value comes from tokens.css. */
+.tc-intro {
+  max-width: 44rem;
+  margin: 0 0 var(--space-4);
+  color: var(--ink-muted);
+}
+.tc-basket {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3) var(--space-6);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.tc-basket > legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink-muted);
+}
+.tc-basket-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tc-basket-rows li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.tc-basket-rows label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.tc-basket-tld {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.tc-count {
+  min-width: 0;
+  width: 6rem;
+  font-family: var(--font-mono);
+}
+.tc-count[aria-invalid='true'] {
+  border-color: var(--danger, var(--accent));
+  outline: 1px solid var(--danger, var(--accent));
+}
+.tc-basket-remove {
+  font: inherit;
+  min-width: 32px;
+  min-height: 32px;
+  color: var(--ink-muted);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.tc-basket-remove:hover {
+  color: var(--ink);
+}
+.tc-basket-remove:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-basket-empty {
+  margin: var(--space-4) 0;
+}
+.tc-table tfoot .tc-mix th,
+.tc-table tfoot .tc-mix td {
+  border-top: 2px solid var(--line-strong);
+  font-weight: 600;
+}
+.tc-table tfoot .tc-mix .tc-avg {
+  font-weight: 400;
+}
+
+/* Phones: the Land column gives way to the total, as in the price table (its mobile default);
+   the flag stays in the provider cell and the Land filter in the filter panel (Archiv-Issue 123). */
+@media (max-width: 639.98px) {
+  .tc-basket-table [data-col='country'] {
+    display: none;
+  }
+}

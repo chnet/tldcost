@@ -1,0 +1,34 @@
+---
+// /en/<slug>/: the English translations from docs/pages/en/*.md (Archiv-Issue 33). The German page always
+// exists (same slug). Drift check: the sha256 of the German file must equal the translation's
+// source_sha256; otherwise the page shows the drift note (report only, the build does not fail).
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { getCollection } from 'astro:content';
+import TextPage from '../../components/TextPage.astro';
+import { translationDrift } from '../../lib/translation';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages
+    .filter((p) => p.data.lang === 'en')
+    .map((entry) => {
+      const german = readFileSync(resolve(process.cwd(), '../docs/pages', `${entry.data.slug}.md`));
+      const drift = translationDrift(german, entry.data.source_sha256);
+      if (drift) {
+        console.warn(
+          `[i18n] docs/pages/en/${entry.data.slug}.md: the German file has changed since the ` +
+            'translation (source_sha256); the page shows the drift note',
+        );
+      }
+      return {
+        params: { slug: entry.data.slug },
+        props: { entry, other: `/${entry.data.slug}/`, drift },
+      };
+    });
+}
+
+const { entry, other, drift } = Astro.props;
+---
+
+<TextPage entry={entry} other={other} drift={drift} />

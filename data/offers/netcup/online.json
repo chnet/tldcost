@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "online",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 345,
+    "renewal": 345,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null,
+    "year1_regular": 345
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-online",
+    "fetched_at": "2026-11-13T06:23:22Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:53c40a0bfad00221bf3638c3196f9f3a528072d41d43c1b0c9bde939563e737f",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

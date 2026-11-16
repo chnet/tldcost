@@ -1,0 +1,72 @@
+# Code scanning (CodeQL) for JavaScript/TypeScript: on every PR, on pushes to main and weekly.
+#
+# - The repo is private until the public switch, and code scanning needs a public repo (or GitHub
+#   Advanced Security). The `visibility` job asks the API and the analysis runs only for a public
+#   repo, so this workflow is green while private and starts scanning by itself after the switch.
+#   (`github.event.repository` is missing on schedule events, so the API is the only reliable
+#   source.)
+# - Least privilege: no permissions at the top; `visibility` gets contents: read, `analyze` gets
+#   contents: read and security-events: write (upload of the SARIF results).
+# - Only GitHub's own actions, pinned by commit SHA (org Actions allowlist). No build is needed for
+#   JS/TS (build-mode none); data/ and build output are not scanned.
+name: CodeQL
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * 1' # Monday 04:17 UTC
+
+permissions: {}
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  visibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      public: ${{ steps.repo.outputs.public }}
+    steps:
+      - id: repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          private=$(gh api "repos/$REPO" --jq .private)
+          echo "private: $private"
+          if [ "$private" = "false" ]; then echo "public=true" >> "$GITHUB_OUTPUT"; else echo "public=false" >> "$GITHUB_OUTPUT"; fi
+
+  analyze:
+    needs: visibility
+    if: ${{ needs.visibility.outputs.public == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+          config: |
+            paths-ignore:
+              - data
+              - '**/dist'
+              - site/dist-e2e
+              - '**/node_modules'
+
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:javascript-typescript

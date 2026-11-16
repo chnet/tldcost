@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "all-inkl",
+  "name": "ALL-INKL.COM",
+  "website": "https://all-inkl.com/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://all-inkl.com/agb",
+    "section": "AGB 14.1 (keine Mindestlaufzeit), 14.5.8 (7 Kalendertage), 14.4 (Verlängerung); Vorauszahlung 1/3/6/12 Mon. wählbar (8.2.1), daher billing_cycle null",
+    "min_term_months": 0,
+    "notice_period_days": 7,
+    "billing_cycle": null,
+    "auto_renew_default": true
+  },
+  "collection": {
+    "reason": "nur die TLDs des Domain-Tarifs; weitere TLDs gibt es nur als Zusatzdomain zu einem Hosting- oder Server-Tarif, nicht aufgenommen"
+  },
+  "reviewed_at": "2026-11-12"
+}

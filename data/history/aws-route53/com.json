@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "aws-route53",
+  "tld": "com",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "USD",
+      "vat_included": false,
+      "unit": "year",
+      "setup": 0,
+      "year1": 1600,
+      "renewal": 1600,
+      "transfer_in": 1600,
+      "source": {
+        "url": "https://d32ze2gidvkk54.cloudfront.net/Amazon_Route_53_Domain_Registration_Pricing_20140731.pdf",
+        "fetched_at": "2026-11-15T09:06:21Z"
+      }
+    }
+  ]
+}

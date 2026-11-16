@@ -1,0 +1,35 @@
+{
+  "schema_version": 2,
+  "provider": "delta",
+  "tld": "de",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": null,
+    "year1": 450,
+    "renewal": null,
+    "transfer_in": null,
+    "transfer_out": 0
+  },
+  "features": {
+    "ssl_free": null,
+    "forward_301": true,
+    "forward_302": true,
+    "dns_editor": false,
+    "custom_ns": true,
+    "dnssec": true,
+    "email_forwarding": false,
+    "whois_privacy": "n/a",
+    "api": false,
+    "two_factor": null,
+    "payment_methods": []
+  },
+  "evidence": {
+    "source_url": "https://delta.example/preise",
+    "fetched_at": "2026-11-12T08:00:00Z",
+    "method": "manual",
+    "confidence": "low"
+  },
+  "provider_verified": false
+}

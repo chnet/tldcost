@@ -1,0 +1,50 @@
+{
+  "name": "tldcost",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Transparent, verifiable price comparison for domain registrations (open data)",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chnet/tldcost.git"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "packages/*",
+    "site",
+    "scraper",
+    "infra"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -b",
+    "validate:data": "node scripts/validate-data.mjs",
+    "history:sync": "npm run build -w @tldcost/scraper && node scraper/dist/history-cli.js",
+    "validate": "npm run lint && npm run format:check && npm run typecheck && npm run validate:data",
+    "test": "npm run test --workspaces --if-present && npm run test:scripts",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\"",
+    "check:data-protection": "node scripts/check-data-protection.mjs",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1167.0",
+    "@aws-sdk/client-sts": "^3.1167.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.0"
+  }
+}

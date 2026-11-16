@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "provider": "host-europe",
+  "tld": "org",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 199,
+    "year1_regular": 199,
+    "renewal": 199,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "evidence": {
+    "source_url": "https://www.hosteurope.de/Domain-Namen/Preis/",
+    "fetched_at": "2026-11-15T09:06:21Z",
+    "method": "manual",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

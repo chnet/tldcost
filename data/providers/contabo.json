@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "contabo",
+  "name": "Contabo",
+  "website": "https://contabo.com/de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://contabo.com/de/legal/terms-and-conditions/",
+    "section": "Teil 2 Domainbedingungen § 8 (1) Laufzeit 12/24 Mon. je TLD, § 8 (2) drei Monate, Verlängerung; geht Teil 1 § 5 (4 Wochen) vor",
+    "min_term_months": 12,
+    "notice_period_days": 90,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "collection": {
+    "status": "excluded",
+    "reason": "Domains nur für Bestandskunden mit einem weiteren aktiven Vertrag; die Preisliste nennt weder Währung noch Umsatzsteuer"
+  },
+  "reviewed_at": "2026-11-12"
+}

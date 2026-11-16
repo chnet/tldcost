@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "example-registrar",
+  "name": "Example Registrar",
+  "website": "https://registrar.example",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://registrar.example/terms",
+    "section": "§ 4 Laufzeit und Kündigung",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-01"
+}

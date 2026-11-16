@@ -1,0 +1,50 @@
+{
+  "schema_version": 2,
+  "provider": "example-registrar",
+  "tld": "de",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 99,
+    "year1_regular": 504,
+    "renewal": 504,
+    "year2": null,
+    "year3": null,
+    "transfer_in": 504,
+    "transfer_out": 0,
+    "icann_fee_included": null
+  },
+  "promo": {
+    "conditions": "nur Neukunden",
+    "valid_until": "2026-12-31"
+  },
+  "contract": {
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true,
+    "price_change_notice": true
+  },
+  "features": {
+    "ssl_free": true,
+    "forward_301": true,
+    "forward_302": true,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": true,
+    "email_forwarding": false,
+    "whois_privacy": "n/a",
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "paypal", "card"]
+  },
+  "evidence": {
+    "fetched_at": "2026-11-01T10:00:00Z",
+    "method": "manual",
+    "evidence_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "confidence": "low"
+  },
+  "provider_verified": false
+}

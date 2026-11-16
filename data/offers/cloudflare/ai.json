@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "provider": "cloudflare",
+  "tld": "ai",
+  "currency": "USD",
+  "vat_included": null,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 16000,
+    "year1_regular": 16000,
+    "renewal": 8000,
+    "term_years": 2,
+    "renewal_term_years": 1,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "evidence": {
+    "source_url": "https://www.cloudflare.com/domains/search?q=tldcostcheck77",
+    "fetched_at": "2026-11-15T09:06:21Z",
+    "method": "manual",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "porkbun",
+  "name": "Porkbun",
+  "website": "https://porkbun.com/",
+  "country": "US",
+  "vat_rate": null,
+  "operator": false,
+  "terms": {
+    "url": "https://porkbun.com/legal/agreement/domain_name_registration_agreement",
+    "section": "TERM OF SERVICE (1 Jahr, Auto-Renew), TERMINATION OR SUSPENSION OF SERVICES (30 Tage schriftlich; Auto-Renew im Konto abschaltbar)",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

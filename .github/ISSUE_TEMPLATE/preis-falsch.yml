@@ -1,0 +1,128 @@
+# Issue form "Price or detail wrong" (correction workflow).
+#
+# The "Fehler melden" (report an error) link in each table row (site/, row detail) pre-fills the
+# fields via query parameters. Parameter name = `id` of the field below:
+#
+#   https://github.com/chnet/tldcost/issues/new
+#     ?template=preis-falsch.yml
+#     &title=[Korrektur] netcup .de: price.renewal
+#     &anbieter=netcup
+#     &tld=de
+#     &feld=price.renewal
+#     &wert_tabelle=5.04 EUR brutto
+#
+# Conventions:
+#   feld:         raw values as a JSON path (`price.renewal`),
+#                 computed columns as the column id (`sum_3y`).
+#   wert_tabelle: always with the mode "brutto" (gross) or "netto" (net), as shown on the site.
+#
+# URL-encode the values. Do not rename the file, the ids or the title prefix without changing the
+# link in site/ (the site is German, so the ids and the "[Korrektur]" prefix stay German).
+
+name: Price or detail wrong
+description: A value in the table is wrong. Corrections are accepted only with a public source. (Deutsch ist auch willkommen.)
+title: '[Korrektur] '
+labels: ['data']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Every number in tldcost must be backed by a **public source**:
+        a page of the provider that can be opened without logging in. Without a source we cannot change the value.
+
+        Deutsch ist auch willkommen.
+
+  - type: input
+    id: anbieter
+    attributes:
+      label: Provider
+      description: Provider id as in the table or in `data/providers/`.
+      placeholder: netcup
+    validations:
+      required: true
+
+  - type: input
+    id: tld
+    attributes:
+      label: TLD
+      description: Without the dot.
+      placeholder: de
+    validations:
+      required: true
+
+  - type: input
+    id: feld
+    attributes:
+      label: Affected column
+      description: Column name from the table, or JSON path in `data/offers/<provider>/<tld>.json` or `data/providers/<provider>.json`.
+      placeholder: price.renewal
+    validations:
+      required: true
+
+  - type: input
+    id: wert_tabelle
+    attributes:
+      label: Value in the table
+      placeholder: 5.04 EUR gross
+    validations:
+      required: false
+
+  - type: input
+    id: wert_richtig
+    attributes:
+      label: Correct value
+      description: With currency and whether it is gross or net. For promotional prices, state the conditions.
+      placeholder: 5.95 EUR gross
+    validations:
+      required: true
+
+  - type: input
+    id: quelle
+    attributes:
+      label: Public source (URL)
+      description: The provider's page that shows the correct value. Must open without logging in.
+      placeholder: https://
+    validations:
+      required: true
+
+  - type: input
+    id: geprueft_am
+    attributes:
+      label: Source checked on
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+
+  - type: input
+    id: beleg
+    attributes:
+      label: Additional evidence (optional)
+      description: Archive link (e.g. web.archive.org) or a link to a screenshot.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: verbindung
+    attributes:
+      label: Connection to the provider
+      description: Reports from providers are welcome and are checked under the same rules.
+      options:
+        - None
+        - I work for the provider or act on its behalf
+    validations:
+      required: true
+
+  - type: textarea
+    id: anmerkung
+    attributes:
+      label: Notes
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: bestaetigung
+    attributes:
+      label: Confirmation
+      options:
+        - label: The source is public and can be opened without logging in.
+          required: true

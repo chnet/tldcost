@@ -1,0 +1,42 @@
+{
+  "schema_version": 2,
+  "provider": "ionos",
+  "tld": "net",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 70,
+    "year1_regular": null,
+    "renewal": 200,
+    "transfer_in": null,
+    "transfer_out": 0,
+    "icann_fee_included": true
+  },
+  "promo": {
+    "conditions": "Willkommensangebot laut Preistabelle, gilt im ersten Jahr (12 Monate), im Voraus zahlbar. Fußzeile der Preistabelle: „Preise inkl. MwSt., Angebote sind nur für begrenzte Zeit gültig und sind teils abhängig von Mindestvertragslaufzeiten.“",
+    "valid_until": null
+  },
+  "features": {
+    "ssl_free": true,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": "none",
+    "api": null,
+    "two_factor": null,
+    "payment_methods": ["card", "paypal", "sepa"]
+  },
+  "evidence": {
+    "source_url": "https://www.ionos.de/domains/domain-preistabelle",
+    "fetched_at": "2026-11-15T04:25:12Z",
+    "method": "manual",
+    "evidence_hash": "sha256:99108886a7140f772f556b5f76a7c9ca4076c4580e104f3b3a43a8fc7c915543",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

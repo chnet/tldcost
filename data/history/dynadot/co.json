@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "dynadot",
+  "tld": "co",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "USD",
+      "vat_included": null,
+      "unit": "year",
+      "setup": 0,
+      "year1": 1550,
+      "renewal": 3120,
+      "transfer_in": 3120,
+      "source": {
+        "url": "https://www.dynadot.com/domain/prices",
+        "fetched_at": "2026-11-15T09:06:21Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "domainfactory",
+  "name": "DomainFactory",
+  "website": "https://www.df.eu/de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.df.eu/de/agb/",
+    "section": "AGB § 17 (4) c (4 Wochen, Domain-Sonderregel; § 5 (2) und Preisliste nennen 1 Monat), § 5 (2) Verlängerung; Preisliste: Abrechnung 12 Mon.",
+    "min_term_months": 12,
+    "notice_period_days": 28,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

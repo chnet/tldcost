@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "provider": "chnet-domains",
+  "tld": "org",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 1557,
+    "renewal": 1557,
+    "transfer_in": null,
+    "transfer_out": 0,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": "paid",
+    "custom_ns": "paid",
+    "dnssec": null,
+    "email_forwarding": true,
+    "whois_privacy": null,
+    "api": null,
+    "two_factor": true,
+    "payment_methods": ["paypal", "sepa", "card"]
+  },
+  "feature_costs": {
+    "custom_ns": {
+      "source": {
+        "url": "https://app.chnet.domains/agb.html",
+        "quote": "Jede Zusatzleistung kostet 1,90 € je Domain und Jahr (Endpreis inkl. USt.)."
+      },
+      "price_cents": 190,
+      "unit": "year",
+      "note": "Alternativ „Domain Admin Plan“ 24,90 € je Jahr für alle Domains des Kundenkontos (AGB § 8b)"
+    },
+    "dns_editor": {
+      "source": {
+        "url": "https://app.chnet.domains/agb.html",
+        "quote": "Jede Zusatzleistung kostet 1,90 € je Domain und Jahr (Endpreis inkl. USt.)."
+      },
+      "price_cents": 190,
+      "unit": "year",
+      "note": "Alternativ „Domain Admin Plan“ 24,90 € je Jahr für alle Domains des Kundenkontos (AGB § 8b)"
+    }
+  },
+  "evidence": {
+    "source_url": "https://chnet.domains/preise/",
+    "fetched_at": "2026-11-13T05:04:21Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:54dc31b18c94e11dc25d5a24382350548e41ee723ae2ca6b6f986b1f91f92a4c",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

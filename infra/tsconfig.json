@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "types": ["node"],
+    // aws-cdk-lib's own declarations are not written for exactOptionalPropertyTypes (e.g. Bucket is not
+    // assignable to IBucket under it), so infra opts out; every other base check stays on.
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["bin/**/*.ts", "config/**/*.ts", "lib/**/*.ts", "test/**/*.ts"]
+}

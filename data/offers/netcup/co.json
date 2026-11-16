@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "co",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 470,
+    "year1_regular": 470,
+    "renewal": 470,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-co",
+    "fetched_at": "2026-11-13T06:23:20Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:02e85148e75ebbd9ea5b59a3fd222ff4623ddc5f5eb146679923ff757cf7e9ae",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

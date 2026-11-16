@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "source": "ECB",
+  "date": "2026-11-11",
+  "base": "EUR",
+  "rates": {
+    "USD": 1.0834,
+    "GBP": 0.8412
+  },
+  "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+  "fetched_at": "2026-11-11T16:05:00Z"
+}

@@ -1,0 +1,29 @@
+---
+// /404.html: CloudFront serves it for every missing path (403/404 from S3, see infra), also under
+// /api/v1/ (documented in the OpenAPI) and /en/. One file for all paths, so it is bilingual (Archiv-Issue 33):
+// German first, then English (lang="en"). Not indexed.
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Seite nicht gefunden · Page not found | tldcost"
+  description="Diese Seite gibt es nicht. This page does not exist."
+  noindex
+>
+  <div class="tc-prose">
+    <h1>Seite nicht gefunden</h1>
+    <p>Unter dieser Adresse gibt es keine Seite.</p>
+    <ul>
+      <li><a href="/">Zum Preisvergleich</a></li>
+      <li><a href="/api/">Zur API-Dokumentation</a></li>
+    </ul>
+    <div lang="en">
+      <h2>Page not found</h2>
+      <p>There is no page at this address.</p>
+      <ul>
+        <li><a href="/en/">To the price comparison</a></li>
+        <li><a href="/api/">To the API documentation</a></li>
+      </ul>
+    </div>
+  </div>
+</Layout>

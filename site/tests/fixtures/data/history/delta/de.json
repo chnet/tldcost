@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "provider": "delta",
+  "tld": "de",
+  "entries": [
+    {
+      "date": "2026-11-12",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": null,
+      "year1": 450,
+      "renewal": null,
+      "transfer_in": null,
+      "source": { "url": "https://delta.example/preise", "fetched_at": "2026-11-12T08:00:00Z" }
+    }
+  ]
+}

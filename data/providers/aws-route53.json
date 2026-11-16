@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "aws-route53",
+  "name": "Amazon Route 53",
+  "website": "https://aws.amazon.com/route53/",
+  "country": "US",
+  "country_note": "Rechnung über AWS EMEA SARL (LU) mit USt.",
+  "vat_rate": null,
+  "operator": false,
+  "terms": {
+    "url": "https://aws.amazon.com/route53/domain-registration-agreement/",
+    "section": "Domain Name Registration Agreement § 7.2 (Automatic Renewal, Standard an, ca. 35 Tage vor Ablauf, 1 Jahr), § 9.1 (Gebühren nicht erstattbar)",
+    "min_term_months": 12,
+    "notice_period_days": 35,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true,
+    "notes": {
+      "notice_period_days": "Keine Kündigungsfrist im engeren Sinn: Auto-Renew lässt sich jederzeit abschalten (§ 7.2.4), verlängert wird aber „typically … thirty-five (35) days before the expiration date“, bei manchen ccTLDs näher am Ablauf (§ 7.2.6)."
+    }
+  },
+  "reviewed_at": "2026-11-15"
+}

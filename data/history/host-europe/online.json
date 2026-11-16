@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "host-europe",
+  "tld": "online",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 9,
+      "renewal": 449,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.hosteurope.de/Domain-Namen/Preis/",
+        "fetched_at": "2026-11-15T09:06:21Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+---
+// Page shell (design system SiteHeader, footer, ThemeSwitch, Footnotes). No external fonts,
+// scripts or trackers (datenschutz): fonts are self-hosted (styles/fonts.css), styles inlined at
+// build time, the two scripts are files from this origin (public/theme-init.js, footnote-tips.js).
+// Theme: ?theme=light|dark only, set before first paint by theme-init.js, which is external and
+// blocking in <head> on purpose; internal links carry the parameter along (see that file). No
+// cookie, no storage. footnote-tips.js only on pages with footnote markers (`footnotes`).
+//
+// Language (Archiv-Issue 33): German at the root, English under /en/ (src/i18n). The page language follows
+// from the path. `other` is the same page in the other language when it exists: then the page
+// gets hreflang de/en/x-default (x-default = German) and the language switch leads there; without
+// it the switch leads to the other language's home page. The canonical link always points to the
+// page itself. No Accept-Language redirect, no cookie, no storage.
+import { getCollection } from 'astro:content';
+import { PAGE_SLUGS } from '../content.config';
+import { LOCALES, langOf, pathIn } from '../i18n';
+import { repoLink } from '../lib/report.mjs';
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import '../styles/global.css';
+import '../styles/foundation.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path of this page in the other language, when that version exists (hreflang, switch). */
+  other?: string | null;
+  /** Pages that must not be indexed (404, the /api/v1/ index): `noindex`, no canonical link. */
+  noindex?: boolean;
+  /** Pages with footnote markers (the price table): footnote tooltips (public/footnote-tips.js). */
+  footnotes?: boolean;
+}
+const { title, description, other = null, noindex = false, footnotes = false } = Astro.props;
+const path = Astro.url.pathname;
+const lang = langOf(path);
+const t = LOCALES[lang].s.layout;
+const canonical = new URL(path, Astro.site);
+const abs = (p: string) => new URL(p, Astro.site).href;
+// Open Graph: one static image per language (public/og/, rendered by scripts/og-images.mjs). The
+// tags only name the image for link previews; the page itself loads nothing from them.
+const ogImage = abs(`/og/${lang}.png`);
+const alternates = other
+  ? [
+      { hreflang: 'de', href: abs(lang === 'de' ? path : other) },
+      { hreflang: 'en', href: abs(lang === 'en' ? path : other) },
+      { hreflang: 'x-default', href: abs(lang === 'de' ? path : other) },
+    ]
+  : [];
+// LanguageSwitch (design system): real links DE / EN, the current language with aria-current;
+// the plain href has no query, theme-init.js carries the query along on use (enhancement only)
+const otherLang = lang === 'de' ? 'en' : 'de';
+const otherHref = other ?? pathIn(otherLang, '/');
+const langLinks = [
+  // the 404 page (noindex) is served for every missing path: its own language links home
+  { lang: 'de', label: 'DE', name: 'Deutsch', href: lang === 'de' ? (noindex ? '/' : path) : otherHref },
+  { lang: 'en', label: 'EN', name: 'English', href: lang === 'en' ? (noindex ? '/en/' : path) : otherHref },
+];
+// repo link only while github.com/chnet/tldcost is public (REPO_PUBLIC, src/lib/report.mjs)
+const repoHref = repoLink();
+// text pages from docs/pages/ (German) and docs/pages/en/ (English translations)
+const pages = (await getCollection('pages')).map((p) => p.data);
+const english = new Map(pages.filter((p) => p.lang === 'en').map((p) => [p.slug, p]));
+/** A German route in the page language: English pages link the English version where it exists. */
+const local = (dePath: string, exists: boolean) => (lang === 'en' && exists ? `/en${dePath}` : dePath);
+// footer: the text pages in PAGE_SLUGS order; Methodik is in the header navigation instead. On
+// English pages a page without translation links the German one, marked "(German)".
+const textPages = pages
+  .filter((p) => p.lang === 'de' && p.slug !== 'methodik')
+  .sort((a, b) => PAGE_SLUGS.indexOf(a.slug) - PAGE_SLUGS.indexOf(b.slug))
+  .map((p) => {
+    const en = lang === 'en' ? english.get(p.slug) : undefined;
+    if (lang === 'de' || en) return { href: local(`/${p.slug}/`, !!en), title: (en ?? p).title };
+    return { href: `/${p.slug}/`, title: p.title, german: true };
+  });
+const home = local('/', true);
+const nav = [
+  {
+    href: home,
+    label: t.nav.compare,
+    current: path === home || path.startsWith(local('/tld/', true)),
+  },
+  { href: local('/portfolio/', true), label: t.nav.portfolio, short: t.nav.portfolioShort },
+  { href: local('/methodik/', english.has('methodik')), label: t.nav.methodik },
+  { href: local('/api/', true), label: t.nav.api },
+].map((n) => ({
+  short: undefined as string | undefined,
+  ...n,
+  current: n.current ?? path === n.href,
+}));
+const licenseHref = local('/lizenz/', english.has('lizenz'));
+const themes = [
+  { choice: 'system', label: t.themes.system, href: path },
+  { choice: 'light', label: t.themes.light, href: `${path}?theme=light` },
+  { choice: 'dark', label: t.themes.dark, href: `${path}?theme=dark` },
+];
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    {
+      !noindex && (
+        <Fragment>
+          <meta property="og:type" content="website" />
+          <meta property="og:site_name" content="tldcost.io" />
+          <meta property="og:locale" content={lang === 'de' ? 'de_DE' : 'en_US'} />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="og:url" content={canonical.href} />
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:type" content="image/png" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content={t.ogImageAlt} />
+          <meta name="twitter:card" content="summary_large_image" />
+        </Fragment>
+      )
+    }
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23245'/%3E%3C/svg%3E"
+    />
+    <title>{title}</title>
+    {
+      /* latin files of both fonts early, so the swap happens before the table is laid out */
+      ['instrument-sans-latin', 'spline-sans-mono-latin'].map((f) => (
+        <link rel="preload" href={`/fonts/${f}.woff2`} as="font" type="font/woff2" crossorigin />
+      ))
+    }
+    <script is:inline src="/theme-init.js"></script>
+  </head>
+  <body class="tc-root">
+    <a class="tc-skip" href="#main">{t.skip}</a>
+    <header class="tc-header">
+      <p class="tc-brand">
+        <a class="tc-wordmark" href={home}>tldcost<span class="tc-dot">.</span>io</a>
+        <span class="tc-tagline">{t.tagline}</span>
+      </p>
+      <div class="tc-switches">
+        <nav class="tc-nav" aria-label={t.navLabel}>
+          {
+            nav.map((n) => (
+              <a
+                href={n.href}
+                aria-current={n.current ? 'page' : undefined}
+              >
+                {
+                  /* below 640 px the short label, so the header fits (Archiv-Issue 123) */
+                  n.short ? (
+                    <>
+                      <span class="tc-nav-long">{n.label}</span>
+                      <span class="tc-nav-short">{n.short}</span>
+                    </>
+                  ) : (
+                    n.label
+                  )
+                }
+              </a>
+            ))
+          }
+        </nav>
+        <nav class="tc-switch" aria-label={t.themeLabel}>
+          {
+            themes.map((th) => (
+              <a
+                href={th.href}
+                data-theme-choice={th.choice}
+                aria-current={th.choice === 'system' ? 'true' : undefined}
+              >
+                {th.label}
+              </a>
+            ))
+          }
+        </nav>
+        <nav class="tc-switch" aria-label={t.switchLabel} data-lang-switch>
+          {
+            langLinks.map((l) => (
+              <a
+                href={l.href}
+                hreflang={l.lang}
+                lang={l.lang}
+                title={l.name}
+                aria-current={l.lang === lang ? 'true' : undefined}
+              >
+                {l.label}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="tc-footer">
+      <nav aria-label={t.footerLabel}>
+        <ul>
+          {
+            textPages.map((p) => (
+              <li>
+                {p.german ? (
+                  <a href={p.href} hreflang="de">
+                    <span lang="de">{p.title}</span>
+                    {t.germanOnly}
+                  </a>
+                ) : (
+                  <a href={p.href}>{p.title}</a>
+                )}
+              </li>
+            ))
+          }
+          {
+            repoHref && (
+              <li>
+                <a href={repoHref}>GitHub</a>
+              </li>
+            )
+          }
+        </ul>
+      </nav>
+      <p>
+        {t.project} · {t.data} <a href={licenseHref}>CC BY 4.0</a> · {t.noTracking}{
+          repoHref ? '' : ` · ${t.repoPending}`
+        }
+      </p>
+    </footer>
+    {
+      footnotes && (
+        <>
+          <div class="tc-tip" id="tc-tip" role="tooltip" popover="manual" aria-hidden="true" />
+          <script is:inline src="/footnote-tips.js" defer />
+        </>
+      )
+    }
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "strato",
+  "tld": "org",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 70,
+      "renewal": 150,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.strato.de/domains/org-domain/",
+        "fetched_at": "2026-11-15T05:38:22Z"
+      }
+    }
+  ]
+}

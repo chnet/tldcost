@@ -1,0 +1,9 @@
+# Commit identity rule: pushes to coins4me/* or chnet/* (and any push under a project e-mail) must
+# carry the project's author AND committer e-mails
+# (config/chnet-commit-emails.txt); refs arrive on stdin. Outside contributors pushing to their own
+# fork are skipped (scripts/pre-push-scope.mjs, exit 10); a crash of the scope check counts as
+# "enforce". Validate re-checks PRs from this repo in CI.
+node scripts/pre-push-scope.mjs "$2"
+if [ $? -ne 10 ]; then
+  node scripts/check-commit-identity.mjs --pre-push "$1" "$2" || exit 1
+fi

@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "provider": "strato",
+  "tld": "xyz",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 250,
+    "year1": 70,
+    "year1_regular": null,
+    "renewal": 140,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": {
+    "conditions": "Aktionspreis „für 12 Monate“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
+    "valid_until": null
+  },
+  "contract": {
+    "min_term_months": 12,
+    "billing_cycle": "yearly"
+  },
+  "features": {
+    "ssl_free": true,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": null,
+    "dnssec": "paid",
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": null,
+    "two_factor": true,
+    "payment_methods": ["card", "paypal", "sepa"]
+  },
+  "feature_costs": {
+    "dnssec": {
+      "source": {
+        "url": "https://www.strato.de/domains/domainguard/",
+        "quote": "Sie erhalten den Domain Guard für 1,25 €/Monat bei einer Vertragslaufzeit von 12 Monaten."
+      },
+      "price_cents": 125,
+      "unit": "month",
+      "note": "Paket Domain Guard, Vertragslaufzeit 12 Monate"
+    }
+  },
+  "evidence": {
+    "source_url": "https://www.strato.de/domains/xyz-domain/",
+    "fetched_at": "2026-11-15T05:38:35Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:a01f6840b11726fddd709f284cd9d0d1d36cfeeb56925e00e4bc44453d22740b",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

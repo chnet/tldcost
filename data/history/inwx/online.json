@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "inwx",
+  "tld": "online",
+  "entries": [
+    {
+      "date": "2026-11-13",
+      "currency": "EUR",
+      "vat_included": false,
+      "unit": "year",
+      "setup": 0,
+      "year1": 250,
+      "renewal": 4150,
+      "transfer_in": 4150,
+      "source": {
+        "url": "https://www.inwx.de/de/domain/pricelist",
+        "fetched_at": "2026-11-13T06:23:05Z"
+      }
+    }
+  ]
+}

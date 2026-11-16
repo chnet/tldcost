@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "echo",
+  "name": "Echo Names",
+  "website": "https://echo.example",
+  "country": "US",
+  "country_note": "Rechnung über Echo Names Europe (IE) mit USt.",
+  "vat_rate": 0,
+  "operator": false
+}

@@ -1,0 +1,203 @@
+# Scheduled data update (decision 2026-11-13): scrape -> validate -> gate in one job. With changes
+# and a passing gate it pushes branch data/update-<date> (GITHUB_TOKEN, contents: write; main stays
+# protected) and creates/updates the issue "Datenupdate <date>: …" with the report and a compare link. A
+# person opens the PR from that link, so CI runs normally. A failing gate pushes nothing; the issue
+# carries the reasons. Logic and tests: scripts/update-data-report.mjs. No secrets, no AWS.
+name: Update data
+
+on:
+  schedule:
+    # Monday 06:30 UTC = 07:30 CET / 08:30 CEST, a time slot approved by the operator (also with
+    # GitHub's usual schedule delay).
+    - cron: '30 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run: scrape with --dry-run, no push, no issue (report in the run summary)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # push data/update-<date> (main is protected by the org ruleset)
+      issues: write # tracking issue "Datenupdate <date>: …"
+    env:
+      HUSKY: '0'
+      DRY_RUN: ${{ inputs.dry_run == true }}
+    steps:
+      - name: Main only (except dry runs)
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ] && [ "$DRY_RUN" != "true" ]; then
+            echo "::error::Data updates run from refs/heads/main only (got $GITHUB_REF). Use dry_run on other refs."
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Date and branch
+        id: meta
+        run: |
+          date=$(TZ=Europe/Berlin date +%F)
+          {
+            echo "date=$date"
+            echo "branch=data/update-$date"
+          } >> "$GITHUB_OUTPUT"
+
+      # Exit 0 = ok, 1 = violations/failures (report written) or crash (no report), 2 = usage (no report).
+      # The report path must be absolute: npm -w runs the script with cwd scraper/.
+      - name: Scrape
+        id: scrape
+        run: |
+          args=(--report "$RUNNER_TEMP/scrape-report.json")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          set +e
+          npm run --silent scrape --workspace scraper -- "${args[@]}" \
+            > "$RUNNER_TEMP/scrape-summary.txt" 2> "$RUNNER_TEMP/scrape-log.txt"
+          code=$?
+          set -e
+          echo "::group::Scraper log"; cat "$RUNNER_TEMP/scrape-log.txt"; echo "::endgroup::"
+          cat "$RUNNER_TEMP/scrape-summary.txt"
+          echo "Scraper exit $code"
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Validate
+        id: validate
+        run: |
+          set +e
+          npm run validate
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Assess (gate and freshness)
+        id: assess
+        env:
+          SCRAPE_EXIT: ${{ steps.scrape.outputs.exit }}
+          VALIDATE_EXIT: ${{ steps.validate.outputs.exit }}
+        run: |
+          # NUL-separated, unquoted paths: tracked changes incl. deletions (no rename pairing) + untracked
+          {
+            git diff --name-only --no-renames -z HEAD
+            git ls-files --others --exclude-standard -z
+          } > "$RUNNER_TEMP/changed-files.txt"
+          node scripts/update-data-report.mjs assess \
+            --report "$RUNNER_TEMP/scrape-report.json" \
+            --scrape-exit "${SCRAPE_EXIT:-1}" --validate-exit "${VALIDATE_EXIT:-1}" \
+            --changed-files "$RUNNER_TEMP/changed-files.txt" \
+            --out "$RUNNER_TEMP/assessment.json"
+          {
+            echo "gate_failed=$(jq -r .gateFailed "$RUNNER_TEMP/assessment.json")"
+            echo "has_changes=$(jq -r .hasChanges "$RUNNER_TEMP/assessment.json")"
+            echo "alerts=$(jq -r '(.alerts + .failures) | length' "$RUNNER_TEMP/assessment.json")"
+            echo "plausibility=$(jq -r '.plausibility | length' "$RUNNER_TEMP/assessment.json")"
+            echo "stale_manual=$(jq -r '.staleManual // 0' "$RUNNER_TEMP/assessment.json")"
+          } >> "$GITHUB_OUTPUT"
+
+      # Only data/ is committed (the gate already failed on anything else). The token is passed as an
+      # HTTP header through GIT_CONFIG_* for this one command; checkout did not persist credentials.
+      - name: Commit and push data branch
+        id: push
+        if: >-
+          steps.assess.outputs.gate_failed == 'false' &&
+          steps.assess.outputs.has_changes == 'true' &&
+          env.DRY_RUN != 'true'
+        env:
+          BRANCH: ${{ steps.meta.outputs.branch }}
+          DATE: ${{ steps.meta.outputs.date }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PUSH_TOKEN: ${{ github.token }}
+        run: |
+          git switch -c "$BRANCH"
+          git add -- data
+          git -c user.name=tldcost-bot \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "data: update $DATE" -m "Automatic data update, workflow run $RUN_URL"
+          # same identity check as Validate runs on the PR later
+          node scripts/check-commit-identity.mjs --range HEAD~1..HEAD
+          auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 -w0)
+          echo "::add-mask::$auth"
+          # a re-run on the same day replaces the day's branch
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+            git push --force origin "HEAD:refs/heads/$BRANCH"
+
+      - name: Issue body
+        id: body
+        if: always() && steps.assess.outcome == 'success'
+        env:
+          BRANCH: ${{ steps.meta.outputs.branch }}
+          DATE: ${{ steps.meta.outputs.date }}
+          PUSHED: ${{ steps.push.outcome == 'success' }}
+          COMPARE_URL: ${{ github.server_url }}/${{ github.repository }}/compare/main...${{ steps.meta.outputs.branch }}?expand=1
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          node scripts/update-data-report.mjs render \
+            --assessment "$RUNNER_TEMP/assessment.json" \
+            --summary "$RUNNER_TEMP/scrape-summary.txt" --log "$RUNNER_TEMP/scrape-log.txt" \
+            --date "$DATE" --branch "$BRANCH" --pushed "$PUSHED" \
+            --compare-url "$COMPARE_URL" --run-url "$RUN_URL" \
+            --out "$RUNNER_TEMP/issue-body.md" --title-out "$RUNNER_TEMP/issue-title.txt"
+          { echo "# $(cat "$RUNNER_TEMP/issue-title.txt")"; echo; cat "$RUNNER_TEMP/issue-body.md"; } \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      # No issue when the gate passed, nothing changed, nothing is alarming, the plausibility check found
+      # nothing and no manual offer is stale (the run ends green). Plausibility hits and stale manual
+      # offers (warnings) alone open the issue but keep the run green.
+      - name: Create or update issue
+        if: >-
+          always() && steps.body.outcome == 'success' && env.DRY_RUN != 'true' &&
+          (steps.assess.outputs.gate_failed == 'true' || steps.push.outcome == 'success' ||
+           steps.assess.outputs.alerts != '0' || steps.assess.outputs.plausibility != '0' ||
+           steps.assess.outputs.stale_manual != '0')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREFIX: Datenupdate ${{ steps.meta.outputs.date }}
+        run: |
+          title=$(cat "$RUNNER_TEMP/issue-title.txt")
+          # the day's issue, whatever verdict its title carried on an earlier run of the same day
+          # shellcheck disable=SC2016 # $ENV.PREFIX is jq (gojq), not shell
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label data --limit 100 \
+            --json number,title \
+            --jq 'map(select(.title == $ENV.PREFIX or (.title | startswith($ENV.PREFIX + ":")))) | .[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --title "$title" \
+              --body-file "$RUNNER_TEMP/issue-body.md"
+            echo "Updated issue #$number"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --label data \
+              --body-file "$RUNNER_TEMP/issue-body.md"
+          fi
+
+      # Gate failure, parts not updated and freshness alerts end the run red, besides the issue.
+      - name: Result
+        if: always() && steps.assess.outcome == 'success'
+        env:
+          GATE_FAILED: ${{ steps.assess.outputs.gate_failed }}
+          ALERTS: ${{ steps.assess.outputs.alerts }}
+        run: |
+          if [ "$GATE_FAILED" = "true" ]; then
+            echo "::error::Gate failed, nothing pushed. See the issue / run summary."
+            exit 1
+          fi
+          if [ "$ALERTS" != "0" ]; then
+            echo "::error::$ALERTS part(s) not updated or freshness alert(s). See the issue / run summary."
+            exit 1
+          fi

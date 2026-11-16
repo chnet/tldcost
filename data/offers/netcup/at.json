@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "at",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 105,
+    "year1_regular": 105,
+    "renewal": 105,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-at",
+    "fetched_at": "2026-11-13T06:23:18Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:326663d53737650c98a2191122484ac05a8a2f2a3655106d5a0a1f2bab6e0b07",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

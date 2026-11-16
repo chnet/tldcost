@@ -1,0 +1,21 @@
+---
+// /impressum/, /datenschutz/, /methodik/, /changelog/, /lizenz/: the German text pages from
+// docs/pages/*.md (rendering: src/components/TextPage.astro).
+import { getCollection } from 'astro:content';
+import TextPage from '../components/TextPage.astro';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  const english = new Set(pages.filter((p) => p.data.lang === 'en').map((p) => p.data.slug));
+  return pages
+    .filter((p) => p.data.lang === 'de')
+    .map((entry) => ({
+      params: { slug: entry.data.slug },
+      props: { entry, other: english.has(entry.data.slug) ? `/en/${entry.data.slug}/` : null },
+    }));
+}
+
+const { entry, other } = Astro.props;
+---
+
+<TextPage entry={entry} other={other} />

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "host-europe",
+  "name": "Host Europe",
+  "website": "https://www.hosteurope.de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.hosteurope.de/download/2026-05-07_Host%20Europe%20GmbH_Allgemeine%20Gesch%C3%A4ftsbedingungen.pdf",
+    "section": "AGB § 13 (10): 6 Wochen für .de/.at/.com/.net/.org/.biz/.info/.eu, sonst 3 Monate; § 4 (2) Verlängerung; Laufzeit 1 oder 12 Mon. wählbar",
+    "min_term_months": null,
+    "notice_period_days": 42,
+    "billing_cycle": null,
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

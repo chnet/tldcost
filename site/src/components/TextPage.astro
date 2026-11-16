@@ -1,0 +1,32 @@
+---
+// One text page from docs/pages/ (German) or docs/pages/en/ (English): /<slug>/ and /en/<slug>/.
+// The title comes from the frontmatter; the text brings its own h1. HTML comments (editorial notes)
+// are dropped by the Sätteri plugin in src/lib/strip-html-comments.mjs; tables become focusable
+// scroll regions (src/lib/table-regions.mjs). Static HTML only, no client script. English pages
+// start with the translation note (Methodik: the German version is authoritative; Impressum and
+// Datenschutz: binding) and, when the German file has changed since the translation, a drift note.
+import { render, type CollectionEntry } from 'astro:content';
+import { LOCALES } from '../i18n';
+import Layout from '../layouts/Layout.astro';
+
+interface Props {
+  entry: CollectionEntry<'pages'>;
+  /** Path of the page in the other language, when it exists. */
+  other: string | null;
+  /** English only: the German file differs from the one translated (source_sha256). */
+  drift?: boolean;
+}
+const { entry, other, drift = false } = Astro.props;
+const { Content } = await render(entry);
+const t = LOCALES[entry.data.lang].s.layout.translationNote;
+const legal = entry.data.slug === 'impressum' || entry.data.slug === 'datenschutz';
+const note = entry.data.lang === 'en' ? (legal ? t.legal : t.methodik) : '';
+---
+
+<Layout title={`${entry.data.title} · tldcost`} description={`tldcost: ${entry.data.title}`} other={other}>
+  <article class="tc-prose">
+    {note && <p class="tc-translation">{note}</p>}
+    {drift && <p class="tc-translation tc-drift" role="note">{t.drift}</p>}
+    <Content />
+  </article>
+</Layout>

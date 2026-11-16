@@ -1,0 +1,25 @@
+{
+  "name": "@tldcost/core",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "tldcost data types, price normalisation and TCO calculation (integer cents)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./load": {
+      "types": "./dist/load.d.ts",
+      "default": "./dist/load.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --coverage"
+  }
+}

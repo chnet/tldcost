@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "checkdomain",
+  "tld": "co",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 449,
+      "renewal": 449,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.checkdomain.de/co-domain/",
+        "fetched_at": "2026-11-15T05:37:21Z"
+      }
+    }
+  ]
+}

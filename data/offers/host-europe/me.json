@@ -1,0 +1,34 @@
+{
+  "schema_version": 2,
+  "provider": "host-europe",
+  "tld": "me",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 129,
+    "year1_regular": 299,
+    "renewal": 299,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": {
+    "conditions": "Alle anderen TLDs unbegrenzt, jedoch nur für Neuregistrierungen.",
+    "valid_until": null,
+    "max_per_customer": null,
+    "max_per_customer_source": {
+      "url": "https://www.hosteurope.de/Domain-Namen/Preis/",
+      "quote": "Alle anderen TLDs unbegrenzt, jedoch nur für Neuregistrierungen."
+    },
+    "limit_scope": "unlimited"
+  },
+  "evidence": {
+    "source_url": "https://www.hosteurope.de/Domain-Namen/Preis/",
+    "fetched_at": "2026-11-15T09:06:21Z",
+    "method": "manual",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`netcup toOffer > snapshot 1`] = `
+[
+  {
+    "currency": "EUR",
+    "evidence": {
+      "confidence": "high",
+      "evidence_hash": "sha256:3b73114d6429a2d286436d3c902d62855f1fe9342249296a81097ccec54c3047",
+      "fetched_at": "2026-11-13T06:00:00Z",
+      "method": "scrape",
+      "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-de",
+    },
+    "price": {
+      "renewal": 42,
+      "renewal_term_years": 1,
+      "setup": 0,
+      "term_years": 1,
+      "transfer_in": null,
+      "unit": "month",
+      "year1": 42,
+      "year1_regular": 42,
+    },
+    "promo": null,
+    "tld": "de",
+    "vat_included": true,
+  },
+  {
+    "currency": "EUR",
+    "evidence": {
+      "confidence": "high",
+      "evidence_hash": "sha256:b8257cff69b27352ac72ef9b3714f3d7c7981f047a636157a025f0613541ae05",
+      "fetched_at": "2026-11-13T06:00:00Z",
+      "method": "scrape",
+      "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-dev",
+    },
+    "price": {
+      "renewal": 179,
+      "renewal_term_years": 1,
+      "setup": 0,
+      "term_years": 1,
+      "transfer_in": null,
+      "unit": "month",
+      "year1": 179,
+      "year1_regular": 179,
+    },
+    "promo": null,
+    "tld": "dev",
+    "vat_included": true,
+  },
+]
+`;

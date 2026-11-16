@@ -1,0 +1,15 @@
+# Allowed author/committer e-mails for commits in CHnet repos (allowlist only, project
+# rule). Read by the commit identity checks in scripts/: check-commit-identity.mjs (pre-push hook +
+# Validate on PRs) and chnet-context-check.sh --email. `*` matches a run of characters without `@`
+# or whitespace; every other character is literal (also `[`, `]`, `.`); `#` starts a comment.
+# The owner's private address is left out until the owner approves publishing it; commit with the
+# noreply address.
+coins4me@users.noreply.github.com
+*+coins4me@users.noreply.github.com
+noreply@anthropic.com
+# GitHub itself: web/squash merges (committer)
+noreply@github.com
+# Bots we actually use (no wildcard). github-actions[bot]: commits of the scheduled data
+# update (.github/workflows/update-data.yml). dependabot[bot] is deliberately NOT listed: its commits
+# pass only through the narrow exception in scripts/lib/dependabot-exemption.mjs.
+41898282+github-actions[bot]@users.noreply.github.com

@@ -1,0 +1,168 @@
+# Deploy the static site to S3 + CloudFront. Infrastructure: infra/ (stack `tldcost`).
+#
+# Manual trigger only (workflow_dispatch) until the first deploy has worked; a push trigger comes later.
+# The deploy role trusts exactly this file on main (sub: environment production, job_workflow_ref:
+# .github/workflows/deploy.yml@refs/heads/main). Both jobs must therefore stay directly in this file:
+# moving them into a reusable workflow changes job_workflow_ref and the role refuses the token.
+#
+# Two jobs, so the OIDC token never exists while third-party code runs:
+#   build   contents: read, no environment, no id-token. npm ci + site build (dependency install and
+#           build scripts run here), uploads site/dist as an artifact of this run (1 day).
+#   deploy  environment production, id-token: write and nothing else. No checkout, no npm: it
+#           downloads the artifact (digest-checked) and runs only `aws s3 sync` and the invalidation.
+#
+# Values of the GitHub environment `production` (from the stack outputs; only the deploy job has the
+# environment, so only it can read them):
+#   DEPLOY_ROLE_ARN  secret    GithubDeployRoleArn (contains the account ID)
+#   SITE_BUCKET      secret    SiteBucketName
+#   DISTRIBUTION_ID  secret    DistributionId
+#   AWS_REGION       variable  region of the stack `tldcost` (siteRegion, e.g. eu-west-1)
+# Actions prints every step's env, inputs and script in the log, and never masks variables, so the
+# three identifiers must be secrets (masked everywhere). Transition: `secrets.X || vars.X` keeps the
+# existing variables working until the secrets are set; a value from a variable is masked only from
+# the first step on (::add-mask::), so it still shows in that step's env. Each value is passed only
+# to the steps that need it.
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  # never cancel a running deploy halfway through the sync
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      HUSKY: '0'
+    steps:
+      # The role only trusts main: do not build at all on another ref.
+      - name: Check ref
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Deploy runs only from refs/heads/main (got $GITHUB_REF); the deploy role trusts main only."
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Build site
+        run: |
+          npm run build --workspace site
+          if [ ! -f site/dist/index.html ]; then
+            echo "::error::site/dist/index.html missing after the build; nothing to deploy."
+            exit 1
+          fi
+
+      # include-hidden-files: a dot path in the build (e.g. .well-known/) must reach the bucket;
+      # skipping it would make `sync --delete` remove it there.
+      - name: Upload build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: site/dist/
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      id-token: write # GitHub OIDC token for sts:AssumeRoleWithWebIdentity; nothing else
+    steps:
+      # Fail before any AWS call if the run cannot work: wrong ref (the role only trusts main) or a
+      # missing/malformed environment value. Values are read from env, never interpolated.
+      - name: Check ref and environment values
+        env:
+          DEPLOY_ROLE_ARN: ${{ secrets.DEPLOY_ROLE_ARN || vars.DEPLOY_ROLE_ARN }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          SITE_BUCKET: ${{ secrets.SITE_BUCKET || vars.SITE_BUCKET }}
+          DISTRIBUTION_ID: ${{ secrets.DISTRIBUTION_ID || vars.DISTRIBUTION_ID }}
+        run: |
+          # extra guard for values that still come from variables (secrets are masked anyway)
+          for v in "$DEPLOY_ROLE_ARN" "$SITE_BUCKET" "$DISTRIBUTION_ID"; do
+            if [ -n "$v" ]; then echo "::add-mask::$v"; fi
+          done
+          fail=0
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Deploy runs only from refs/heads/main (got $GITHUB_REF); the deploy role trusts main only."
+            fail=1
+          fi
+          check() {
+            name="$1" pattern="$2" value="${!1}"
+            if [ -z "$value" ]; then
+              echo "::error::$name is not set in the GitHub environment 'production'."
+              fail=1
+            elif ! [[ "$value" =~ $pattern ]]; then
+              echo "::error::$name has an unexpected format."
+              fail=1
+            fi
+          }
+          check DEPLOY_ROLE_ARN '^arn:aws:iam::[0-9]{12}:role/[A-Za-z0-9+=,.@_/-]+$'
+          check AWS_REGION '^[a-z]{2}(-[a-z]+)+-[0-9]+$'
+          check SITE_BUCKET '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
+          check DISTRIBUTION_ID '^[A-Z0-9]{10,20}$'
+          exit "$fail"
+
+      # The artifact of this run only (no cross-run download, so no token needed); v8 fails on a
+      # digest mismatch by default.
+      - name: Download build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: site-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: site/dist
+
+      # `sync --delete` mirrors this directory: never run it on an empty or partial download.
+      - name: Check download
+        run: |
+          if [ ! -f site/dist/index.html ]; then
+            echo "::error::site/dist/index.html missing after the download; nothing to deploy."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ secrets.DEPLOY_ROLE_ARN || vars.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: tldcost-deploy-${{ github.run_id }}
+          role-duration-seconds: 1800
+          mask-aws-account-id: true
+
+      # The role allows exactly s3:ListBucket on the bucket and s3:PutObject/s3:DeleteObject on its objects.
+      # --only-show-errors: the per-file lines would print the bucket name into the public log; errors
+      # still show.
+      - name: Sync site/dist to S3
+        env:
+          SITE_BUCKET: ${{ secrets.SITE_BUCKET || vars.SITE_BUCKET }}
+        run: aws s3 sync site/dist "s3://$SITE_BUCKET" --delete --only-show-errors
+
+      # The role allows cloudfront:CreateInvalidation only (no GetInvalidation), so the job does not wait.
+      - name: Invalidate CloudFront cache
+        env:
+          DISTRIBUTION_ID: ${{ secrets.DISTRIBUTION_ID || vars.DISTRIBUTION_ID }}
+        run: |
+          id=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' \
+            --query 'Invalidation.Id' --output text)
+          # no environment value in the log or the run summary (public repo)
+          echo "CloudFront invalidation $id created." | tee -a "$GITHUB_STEP_SUMMARY"

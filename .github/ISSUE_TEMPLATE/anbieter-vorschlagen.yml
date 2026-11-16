@@ -1,0 +1,73 @@
+# Issue-Formular „Anbieter vorschlagen“. Die Website verlinkt es, sobald REPORT_VIA in
+# site/src/lib/report.mjs auf 'github' steht (bis dahin E-Mail mit denselben Feldern).
+# Die IDs nicht umbenennen, ohne suggestProviderUrl() in site/ anzupassen.
+
+name: Anbieter vorschlagen
+description: Ein Domain-Anbieter fehlt in tldcost. English is welcome too.
+title: '[Anbieter] '
+labels: ['neuer-anbieter']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für den Vorschlag. Aufgenommen werden Anbieter, die Domains an Endkunden in Deutschland verkaufen
+        oder als internationale Preisreferenz dienen, ihre Preise öffentlich und ohne Login nennen und bei denen Domains
+        ohne weiteren Vertrag (z. B. Hosting) bestellbar sind
+        (siehe [Methodik](https://tldcost.io/methodik/#anbieterauswahl)). Die Aufnahme ist nicht käuflich.
+
+        _English is welcome too._
+
+  - type: input
+    id: name
+    attributes:
+      label: Name des Anbieters
+      placeholder: Beispiel Registrar GmbH
+    validations:
+      required: true
+
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: https://registrar.example/
+    validations:
+      required: true
+
+  - type: input
+    id: land
+    attributes:
+      label: Land des Vertragspartners
+      description: Sitz des Unternehmens, mit dem der Vertrag geschlossen wird (z. B. DE, AT, US).
+      placeholder: DE
+    validations:
+      required: true
+
+  - type: input
+    id: tlds
+    attributes:
+      label: TLDs
+      description: Welche TLDs sollen verglichen werden? Ohne Punkt, durch Komma getrennt.
+      placeholder: de, com, eu
+    validations:
+      required: true
+
+  - type: input
+    id: preisliste
+    attributes:
+      label: Link zur Preisliste
+      description: Öffentliche Seite mit den Preisen, ohne Login abrufbar.
+      placeholder: https://registrar.example/domains/preise
+    validations:
+      required: true
+
+  - type: input
+    id: agb
+    attributes:
+      label: Link zu den AGB (optional)
+      placeholder: https://registrar.example/agb
+
+  - type: textarea
+    id: anmerkung
+    attributes:
+      label: Anmerkung
+      description: Alles, was bei der Aufnahme hilft, z. B. Aktionen, Vertragsbedingungen, eine Verbindung zum Anbieter.

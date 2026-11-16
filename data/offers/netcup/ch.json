@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "ch",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 230,
+    "year1_regular": 230,
+    "renewal": 230,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-ch",
+    "fetched_at": "2026-11-13T06:23:19Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:2f272d4a4690f9a72330579d61b1c24e2191fb17cdfe6626fb123a8c93d9790a",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

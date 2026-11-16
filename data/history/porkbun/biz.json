@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "porkbun",
+  "tld": "biz",
+  "entries": [
+    {
+      "date": "2026-11-13",
+      "currency": "USD",
+      "vat_included": null,
+      "unit": "year",
+      "setup": 0,
+      "year1": 669,
+      "renewal": 1905,
+      "transfer_in": 1905,
+      "source": {
+        "url": "https://porkbun.com/products/domains",
+        "fetched_at": "2026-11-13T06:23:38Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@tldcost/infra",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "CDK infrastructure for tldcost (S3 + CloudFront + ACM + GitHub OIDC deploy role)",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "synth": "cdk synth --quiet",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1146.1",
+    "tsx": "4.23.15"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.275.0",
+    "constructs": "10.8.1"
+  }
+}

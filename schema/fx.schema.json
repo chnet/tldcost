@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/chnet/tldcost/main/schema/fx.schema.json",
+  "title": "FxRates",
+  "description": "ECB euro reference rates of one ECB reference day (data/fx/<YYYY-MM-DD>.json): file name and date are the ECB date (Cube time), not the fetch date, so weekends and holidays add no files. Rates are units of each currency per 1 EUR, ECB precision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "date", "base", "rates", "source_url", "fetched_at"],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "source": {
+      "const": "ECB"
+    },
+    "date": {
+      "description": "ECB reference date (Cube time) of the rates.",
+      "type": "string",
+      "format": "date"
+    },
+    "base": {
+      "const": "EUR"
+    },
+    "rates": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Z]{3}$",
+        "not": {
+          "const": "EUR"
+        }
+      },
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "fetched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_hash": {
+      "description": "sha256 of the fetched feed body.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/chnet/tldcost/main/schema/offer.schema.json",
+  "title": "Offer",
+  "description": "One provider x TLD price record (data/offers/<provider>/<tld>.json). All amounts are integer minor units (cents) of `currency`. See docs/concepts/tldcost.md section 3.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provider",
+    "tld",
+    "currency",
+    "vat_included",
+    "price",
+    "evidence",
+    "provider_verified"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "2 since Archiv-Issue 124: the yes/no feature fields may also be \"paid\", and feature_costs is new. provider and fx records stay at 1.",
+      "const": 2
+    },
+    "provider": {
+      "$ref": "#/$defs/providerId"
+    },
+    "tld": {
+      "description": "TLD without leading dot, lower case (punycode for IDN TLDs).",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 63
+    },
+    "currency": {
+      "description": "ISO 4217 code of all amounts in `price`.",
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "vat_included": {
+      "description": "true: amounts are gross. false: amounts are net, gross is computed with `vat_rate` (offer) or the provider's `vat_rate`. null: the provider (outside the EU only, checked by validate-data) makes no VAT statement; the price is used as stated in gross and net mode and flagged with a footnote.",
+      "type": ["boolean", "null"]
+    },
+    "vat_rate": {
+      "description": "VAT rate in basis points (1900 = 19 %). Overrides the provider's rate for this offer.",
+      "$ref": "#/$defs/basisPoints"
+    },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "setup", "year1", "renewal"],
+      "properties": {
+        "unit": {
+          "description": "Billing unit of the recurring amounts (year1, year1_regular, renewal, year2, year3). `month` amounts are multiplied by 12 and require 1-year terms. setup and transfer amounts are always one-off.",
+          "enum": ["year", "month"]
+        },
+        "setup": {
+          "$ref": "#/$defs/amount"
+        },
+        "year1": {
+          "description": "Payment for the first term: actual price incl. a public promo (with stated period or conditions), never a coupon code.",
+          "$ref": "#/$defs/amount"
+        },
+        "year1_regular": {
+          "description": "List price of year 1 without promo.",
+          "$ref": "#/$defs/amount"
+        },
+        "renewal": {
+          "description": "Payment for every renewal term, unless year2/year3 differ.",
+          "$ref": "#/$defs/amount"
+        },
+        "term_years": {
+          "description": "Years covered by the year1 payment (TLDs only registrable for several years). Default 1. Every payment due within N years counts in full, no pro-rating.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 1
+        },
+        "renewal_term_years": {
+          "description": "Years covered by each renewal payment. Default 1.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 1
+        },
+        "year2": {
+          "$ref": "#/$defs/amount"
+        },
+        "year3": {
+          "$ref": "#/$defs/amount"
+        },
+        "transfer_in": {
+          "description": "One-off payment to move an existing domain in.",
+          "$ref": "#/$defs/amount"
+        },
+        "transfer_includes_term": {
+          "description": "true only if the provider states that the transfer includes a term (one renewal term, e.g. one year); the statement goes in transfer_includes_term_source. false, null or missing: the transfer includes no term, the renewal price is due from year 1 as well (methodik). Used by the transfer mode of the portfolio calculator only.",
+          "type": ["boolean", "null"]
+        },
+        "transfer_includes_term_source": {
+          "description": "Where the provider states that the transfer includes a term: the page URL and/or the verbatim quote. Required when transfer_includes_term is true (validate-data).",
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 500
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "minProperties": 1
+        },
+        "transfer_out": {
+          "$ref": "#/$defs/amount"
+        },
+        "icann_fee_included": {
+          "description": "gTLD only; null = unknown or not applicable.",
+          "type": ["boolean", "null"]
+        }
+      },
+      "if": {
+        "properties": {
+          "unit": {
+            "const": "month"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "term_years": {
+            "const": 1
+          },
+          "renewal_term_years": {
+            "const": 1
+          }
+        }
+      }
+    },
+    "promo": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "conditions": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        },
+        "valid_until": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "max_per_customer": {
+          "description": "Most domains per customer at the promo price, as stated by the provider (source in max_per_customer_source); limit_scope says whether per TLD or across all TLDs of the provider. null or missing (or limit_scope not stated): the portfolio calculator counts ONE promo domain per provider in total.",
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "max_per_customer_source": {
+          "description": "Where the provider states the limit: the page URL and/or the verbatim quote. Required when max_per_customer is a number (validate-data).",
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 500
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "minProperties": 1
+        },
+        "limit_scope": {
+          "description": "Where max_per_customer applies: per_tld (per TLD) or per_customer (across all TLDs of the provider). unlimited: the provider states no limit per customer for this TLD; needs the verbatim quote in max_per_customer_source and max_per_customer null (validate-data); the portfolio calculator then gives every domain of the TLD the promo, outside the per-customer pool. null or missing: not stated; the calculator counts ONE promo domain per provider in total.",
+          "enum": ["per_tld", "per_customer", "unlimited", null]
+        }
+      },
+      "description": "Public promo already applied to year1. Only promos active at evidence.fetched_at are recorded; coupon codes never."
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min_term_months": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "notice_period_days": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "billing_cycle": {
+          "enum": ["monthly", "yearly", "multi-year", null]
+        },
+        "auto_renew_default": {
+          "type": ["boolean", "null"]
+        },
+        "price_change_notice": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ssl_free": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "forward_301": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "forward_302": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "dns_editor": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "custom_ns": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "dnssec": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "email_forwarding": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "whois_privacy": {
+          "description": "free/paid: offered at no charge or for a fee (for paid: source and price in feature_costs.whois_privacy); none: the provider does not offer it; n/a: not possible for this TLD (e.g. .de); null: unknown.",
+          "enum": ["free", "paid", "none", "n/a", null]
+        },
+        "api": {
+          "$ref": "#/$defs/featureValue"
+        },
+        "two_factor": {
+          "type": ["boolean", "null"]
+        },
+        "payment_methods": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "feature_costs": {
+      "description": "Since schema_version 2. Per feature whose value is \"paid\": where the provider states it (URL and verbatim quote, required) and, only where the source names them, the price, its unit and a short note. An entry only for a field whose value is \"paid\" (validate-data).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ssl_free": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "forward_301": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "forward_302": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "dns_editor": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "custom_ns": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "dnssec": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "email_forwarding": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "whois_privacy": {
+          "$ref": "#/$defs/featureCost"
+        },
+        "api": {
+          "$ref": "#/$defs/featureCost"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_url", "fetched_at", "method", "confidence"],
+      "properties": {
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "description": "Public, human-readable provider page with the price (required, linked in the table)."
+        },
+        "source_endpoint": {
+          "description": "The URL actually fetched when it differs from source_url (method api, JSON). evidence_hash is over its response body.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "method": {
+          "enum": ["api", "scrape", "manual"]
+        },
+        "evidence_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "sha256 of the fetched response body (source_endpoint if set, else source_url)."
+        },
+        "screenshot_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "confidence": {
+          "enum": ["high", "medium", "low"]
+        }
+      }
+    },
+    "provider_verified": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "providerId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "amount": {
+      "description": "Integer minor units (cents) of `currency`; null = unknown.",
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "featureValue": {
+      "description": "true: included. \"paid\" (since schema_version 2): offered only for a fee; source in feature_costs. false: not offered. null: unknown.",
+      "enum": [true, false, "paid", null]
+    },
+    "featureCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": {
+        "source": {
+          "description": "Where the provider states the fee: page URL, the verbatim quote and its language (lang, default de).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "quote"],
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://",
+              "maxLength": 500
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "lang": {
+              "description": "Language of the quote; missing = de. The site marks a quote in another language than the page with lang.",
+              "enum": ["de", "en"]
+            }
+          }
+        },
+        "price_cents": {
+          "description": "Price as the source names it: integer minor units of the offer's `currency`, in the offer's VAT mode (vat_included). Only with unit.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "unit": {
+          "description": "Billing unit of price_cents: per year, per month or once.",
+          "enum": ["year", "month", "once"]
+        },
+        "note": {
+          "description": "Short German note, e.g. bundle, first-year price, \"je Hosted Zone\".",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "dependentRequired": {
+        "price_cents": ["unit"],
+        "unit": ["price_cents"]
+      }
+    },
+    "basisPoints": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  }
+}

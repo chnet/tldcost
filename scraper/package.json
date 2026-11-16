@@ -1,0 +1,17 @@
+{
+  "name": "@tldcost/scraper",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "tldcost price scrapers: one adapter per provider plus the ECB FX fetch; writes data/",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "scrape": "tsc -b && node dist/cli.js",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@tldcost/core": "*",
+    "prettier": "^3.10.1"
+  }
+}

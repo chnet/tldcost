@@ -1,0 +1,529 @@
+{
+ "tlds": [
+  {
+   "tld": "ai",
+   "currency": "EUR",
+   "createPrice": 100,
+   "transferPrice": 100,
+   "renewalPrice": 100,
+   "updatePrice": 0,
+   "restorePrice": 180,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 2,
+   "transferPeriod": 2,
+   "renewalPeriod": 2,
+   "restorePeriod": 2,
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "app",
+   "currency": "EUR",
+   "createPrice": 20.1,
+   "transferPrice": 20.1,
+   "renewalPrice": 20.1,
+   "updatePrice": 0,
+   "restorePrice": 110,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-10-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1790812800
+    },
+    "endTime": {
+     "scalar": "2026-12-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1798761599
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 9.5
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "at",
+   "currency": "EUR",
+   "createPrice": 13,
+   "transferPrice": 0,
+   "renewalPrice": 13,
+   "updatePrice": 0,
+   "restorePrice": 33,
+   "createPeriod": 1,
+   "transferPeriod": 0,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "berlin",
+   "currency": "EUR",
+   "createPrice": 54,
+   "transferPrice": 54,
+   "renewalPrice": 54,
+   "updatePrice": 0,
+   "restorePrice": 172,
+   "trusteePrice": 0,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "biz",
+   "currency": "EUR",
+   "createPrice": 24.5,
+   "transferPrice": 24.5,
+   "renewalPrice": 24.5,
+   "updatePrice": 0,
+   "restorePrice": 98.5,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-11-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1793491200
+    },
+    "endTime": {
+     "scalar": "2026-11-14T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1794700799
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 2.1
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "ch",
+   "currency": "EUR",
+   "createPrice": 13.5,
+   "transferPrice": 0,
+   "renewalPrice": 13.5,
+   "updatePrice": 0,
+   "restorePrice": 33.5,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 0,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "cloud",
+   "currency": "EUR",
+   "createPrice": 25,
+   "transferPrice": 25,
+   "renewalPrice": 25,
+   "updatePrice": 0,
+   "restorePrice": 79.5,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-01-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1767225600
+    },
+    "endTime": {
+     "scalar": "2026-12-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1798761599
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 2.5
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "co",
+   "currency": "EUR",
+   "createPrice": 24,
+   "transferPrice": 48,
+   "renewalPrice": 48,
+   "updatePrice": 0,
+   "restorePrice": 90,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "com",
+   "currency": "EUR",
+   "createPrice": 15.5,
+   "transferPrice": 15.5,
+   "renewalPrice": 15.5,
+   "updatePrice": 0,
+   "restorePrice": 104.5,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 0,
+   "voucherTargets": [
+    "REG"
+   ]
+  },
+  {
+   "tld": "de",
+   "currency": "EUR",
+   "createPrice": 5.02,
+   "monthlyCreatePrice": 1.6,
+   "transferPrice": 3.91,
+   "renewalPrice": 3.91,
+   "monthlyRenewalPrice": 0.49,
+   "updatePrice": 0,
+   "restorePrice": 23.91,
+   "trusteePrice": 2.5,
+   "monthlyTrusteePrice": 0.2083,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "dev",
+   "currency": "EUR",
+   "createPrice": 16.6,
+   "transferPrice": 16.6,
+   "renewalPrice": 16.6,
+   "updatePrice": 0,
+   "restorePrice": 136.5,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-10-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1790812800
+    },
+    "endTime": {
+     "scalar": "2026-12-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1798761599
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 9.5
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "eu",
+   "currency": "EUR",
+   "createPrice": 10,
+   "transferPrice": 10,
+   "renewalPrice": 10,
+   "updatePrice": 0,
+   "restorePrice": 30,
+   "trusteePrice": 2.5,
+   "monthlyTrusteePrice": 0.2083,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "info",
+   "currency": "EUR",
+   "createPrice": 30,
+   "transferPrice": 30,
+   "renewalPrice": 30,
+   "updatePrice": 0,
+   "restorePrice": 90,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-07-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1782864000
+    },
+    "endTime": {
+     "scalar": "2026-12-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1798761599
+    },
+    "firstpage": "0",
+    "period": "1Y",
+    "createPrice": 3.3613
+   },
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "io",
+   "currency": "EUR",
+   "createPrice": 69.5,
+   "transferPrice": 69.5,
+   "renewalPrice": 69.5,
+   "updatePrice": 0,
+   "restorePrice": 125,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-07-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1782864000
+    },
+    "endTime": {
+     "scalar": "2026-12-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1798761599
+    },
+    "firstpage": "0",
+    "period": "1Y",
+    "createPrice": 26.8908
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "me",
+   "currency": "EUR",
+   "createPrice": 23,
+   "transferPrice": 23,
+   "renewalPrice": 23,
+   "updatePrice": 0,
+   "restorePrice": 73,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-09-07T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1788739200
+    },
+    "endTime": {
+     "scalar": "2026-11-26T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1795737599
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 8
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "net",
+   "currency": "EUR",
+   "createPrice": 15.6,
+   "transferPrice": 15.6,
+   "renewalPrice": 15.6,
+   "updatePrice": 0,
+   "restorePrice": 104,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "online",
+   "currency": "EUR",
+   "createPrice": 41.5,
+   "transferPrice": 41.5,
+   "renewalPrice": 41.5,
+   "updatePrice": 0,
+   "restorePrice": 125,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-04-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1775001600
+    },
+    "endTime": {
+     "scalar": "2027-03-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1806537599
+    },
+    "firstpage": "0",
+    "period": "1Y",
+    "createPrice": 2.5
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "org",
+   "currency": "EUR",
+   "createPrice": 15,
+   "transferPrice": 15,
+   "renewalPrice": 15,
+   "updatePrice": 0,
+   "restorePrice": 101.908,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-10-08T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1791417600
+    },
+    "endTime": {
+     "scalar": "2027-03-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1806537599
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 9.5
+   },
+   "vat": 0,
+   "hasPremiumPrices": 0
+  },
+  {
+   "tld": "shop",
+   "currency": "EUR",
+   "createPrice": 40,
+   "transferPrice": 40,
+   "renewalPrice": 40,
+   "updatePrice": 0,
+   "restorePrice": 190,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "promo": {
+    "currency": "EUR",
+    "limitedNumber": 0,
+    "limitedRemaining": 0,
+    "startTime": {
+     "scalar": "2026-01-01T00:00:00+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1767225600
+    },
+    "endTime": {
+     "scalar": "2026-12-31T23:59:59+00:00",
+     "xmlrpc_type": "datetime",
+     "timestamp": 1798761599
+    },
+    "firstpage": "1",
+    "period": "1Y",
+    "createPrice": 1.5
+   },
+   "vat": 0,
+   "hasPremiumPrices": 1
+  },
+  {
+   "tld": "xyz",
+   "currency": "EUR",
+   "createPrice": 25.5,
+   "transferPrice": 25.5,
+   "renewalPrice": 25.5,
+   "updatePrice": 0,
+   "tradePrice": 0,
+   "restorePrice": 105.5,
+   "whoisProtectionPrice": 4.1933,
+   "monthlyWhoisProtectionPrice": 0.3494,
+   "createPeriod": 1,
+   "transferPeriod": 1,
+   "renewalPeriod": 1,
+   "restorePeriod": 1,
+   "vat": 0,
+   "hasPremiumPrices": 1
+  }
+ ]
+}

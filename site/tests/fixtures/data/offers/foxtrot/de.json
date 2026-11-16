@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "provider": "foxtrot",
+  "tld": "de",
+  "currency": "EUR",
+  "vat_included": false,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 35,
+    "renewal": 35,
+    "transfer_in": 420,
+    "transfer_out": 0
+  },
+  "contract": {},
+  "features": {
+    "ssl_free": true,
+    "forward_301": true,
+    "forward_302": false,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": true,
+    "email_forwarding": false,
+    "whois_privacy": "n/a",
+    "api": false,
+    "two_factor": true,
+    "payment_methods": ["paypal"]
+  },
+  "evidence": {
+    "source_url": "https://foxtrot.example/preise",
+    "fetched_at": "2026-11-12T08:00:00Z",
+    "method": "manual",
+    "confidence": "low"
+  },
+  "provider_verified": false
+}

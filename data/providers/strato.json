@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "strato",
+  "name": "STRATO",
+  "website": "https://www.strato.de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.strato.de/agb/",
+    "section": "AGB 9.1 (1 Monat zum Laufzeitende), Domainbedingungen 7.1 (Verlängerung um 1 Jahr); Laufzeit und Abrechnung 1 oder 12 Mon. wählbar",
+    "min_term_months": null,
+    "notice_period_days": 30,
+    "billing_cycle": null,
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

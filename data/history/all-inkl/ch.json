@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "all-inkl",
+  "tld": "ch",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 2990,
+      "renewal": 2990,
+      "transfer_in": null,
+      "source": {
+        "url": "https://all-inkl.com/domains/preise",
+        "fetched_at": "2026-11-15T05:26:13Z"
+      }
+    }
+  ]
+}

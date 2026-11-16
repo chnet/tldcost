@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "netcup",
+  "name": "netcup",
+  "website": "https://www.netcup.com/de",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.netcup.com/de/agb",
+    "section": "AGB Ziff. 6 Abs. 1 (1 Monat zum Monatsende, unbestimmte Zeit; Helpcenter: 31 Tage), Ziff. 4 Abs. 1; Produktseite: 12 Mon., Abrechnung 12 Mon.",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true,
+    "notes": {
+      "notice_period_days": "AGB Ziff. 6 Abs. 1: Kündigung mit einer Frist von einem Monat zum Monatsende. Je nach Ablaufdatum muss die Kündigung früher eingehen; 30 Tage sind die Untergrenze. Das Helpcenter nennt mindestens 31 Tage."
+    }
+  },
+  "reviewed_at": "2026-11-12"
+}

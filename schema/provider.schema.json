@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/chnet/tldcost/main/schema/provider.schema.json",
+  "title": "Provider",
+  "description": "One registrar/hoster (data/providers/<id>.json). The file name must equal `id`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "name", "website", "country", "vat_rate"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "website": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "country": {
+      "description": "ISO 3166-1 alpha-2 country of the contracting entity.",
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "vat_rate": {
+      "description": "VAT rate in basis points applied to this provider's net prices (1900 = 19 %). null: the provider makes no VAT statement (outside the EU only, checked by validate-data); net offers of such a provider need their own `vat_rate`.",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "country_note": {
+      "description": "Short German note on the contracting party or invoicing, e.g. when another entity of the provider invoices EU customers. Shown as a footnote on the \"Land\" cell and next to the country in the row detail.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "operator": {
+      "description": "true only for the portal operator's own offer (badge 'Angebot des Portalbetreibers'). Never affects sorting.",
+      "type": "boolean",
+      "default": false
+    },
+    "terms": {
+      "description": "Contract terms (AGB) as found, manual collection (stage C).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "section": {
+          "description": "Where in the terms the cited rules are.",
+          "type": "string",
+          "maxLength": 200
+        },
+        "min_term_months": { "type": ["integer", "null"], "minimum": 0 },
+        "notice_period_days": { "type": ["integer", "null"], "minimum": 0 },
+        "billing_cycle": { "enum": ["monthly", "yearly", "multi-year", null] },
+        "auto_renew_default": { "type": ["boolean", "null"] },
+        "notes": {
+          "description": "Editorial notes per contract field, shown as a footnote on that table cell (e.g. conflicting clauses, a value that is only a lower bound). Keys are the contract field names above; every note must be quotable from the cited terms. A note applies only where the provider value is used, not where offer.contract overrides the field.",
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "min_term_months": { "type": "string", "minLength": 1, "maxLength": 300 },
+            "notice_period_days": { "type": "string", "minLength": 1, "maxLength": 300 },
+            "billing_cycle": { "type": "string", "minLength": 1, "maxLength": 300 },
+            "auto_renew_default": { "type": "string", "minLength": 1, "maxLength": 300 }
+          }
+        }
+      }
+    },
+    "collection": {
+      "description": "How tldcost collects this provider, for the list on the Methodik page (/methodik/#erhebung-je-anbieter). The method itself (api, scrape, manual) comes from evidence.method of the offers. status: excluded = no offers because the provider does not meet the selection criteria (Methodik, Anbieterauswahl); pending = no offers yet, manual entry outstanding. Without status, reason is a note on gaps (e.g. TLDs left out). validate-data: a provider without offers needs a status, a provider with a status has no offers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason"],
+      "properties": {
+        "status": { "enum": ["excluded", "pending"] },
+        "reason": {
+          "description": "Short German reason, shown on the Methodik page.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "issue": {
+          "description": "GitHub issue that tracks it; linked on the page only while the repository is public.",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "reviewed_at": {
+      "description": "Last manual review of terms and features (90-day cycle).",
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

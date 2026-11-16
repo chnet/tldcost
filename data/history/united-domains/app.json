@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "united-domains",
+  "tld": "app",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 2900,
+      "renewal": 2900,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.united-domains.de/domain-registrieren/preisliste/",
+        "fetched_at": "2026-11-15T05:38:20Z"
+      }
+    }
+  ]
+}

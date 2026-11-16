@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "strato",
+  "tld": "xyz",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 250,
+      "year1": 70,
+      "renewal": 140,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.strato.de/domains/xyz-domain/",
+        "fetched_at": "2026-11-15T05:38:35Z"
+      }
+    }
+  ]
+}

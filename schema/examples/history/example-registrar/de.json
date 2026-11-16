@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "provider": "example-registrar",
+  "tld": "de",
+  "entries": [
+    {
+      "date": "2026-11-01",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 99,
+      "renewal": 504,
+      "transfer_in": 504,
+      "source": { "url": "https://registrar.example/domains", "fetched_at": "2026-11-01T10:00:00Z" }
+    }
+  ]
+}

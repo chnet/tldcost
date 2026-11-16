@@ -1,0 +1,30 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./dist-e2e/a",
+      "numberOfRuns": 5,
+      "settings": { "chromeFlags": "--headless=new --no-sandbox" }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": [
+          "error",
+          { "minScore": 0.95, "aggregationMethod": "median-run" }
+        ],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:best-practices": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["warn", { "minScore": 0.9 }],
+        "resource-summary:script:size": [
+          "error",
+          { "maxNumericValue": 42000, "aggregationMethod": "median" }
+        ],
+        "total-blocking-time": ["error", { "maxNumericValue": 300, "aggregationMethod": "median" }],
+        "largest-contentful-paint": [
+          "error",
+          { "maxNumericValue": 2500, "aggregationMethod": "median" }
+        ]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": "./.lighthouseci/reports" }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "cloud",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 336,
+    "renewal": 336,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null,
+    "year1_regular": 336
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-cloud",
+    "fetched_at": "2026-11-13T06:23:27Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:3e99261d472292df01ba0312e29c2e9e574ab6d5cfca5ddeedc7176e0f59be9e",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

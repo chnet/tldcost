@@ -1,0 +1,50 @@
+{
+  "schema_version": 2,
+  "provider": "charlie",
+  "tld": "de",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 500,
+    "renewal": 500,
+    "transfer_in": 500,
+    "transfer_out": 0
+  },
+  "contract": {
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "features": {
+    "ssl_free": true,
+    "forward_301": true,
+    "forward_302": true,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": true,
+    "email_forwarding": false,
+    "whois_privacy": "n/a",
+    "api": "paid",
+    "two_factor": true,
+    "payment_methods": ["sepa", "card"]
+  },
+  "feature_costs": {
+    "api": {
+      "source": {
+        "url": "https://charlie.example/api",
+        "quote": "API access is only available in the Pro plan.",
+        "lang": "en"
+      }
+    }
+  },
+  "evidence": {
+    "source_url": "https://charlie.example/preise",
+    "fetched_at": "2026-11-12T08:00:00Z",
+    "method": "manual",
+    "confidence": "low"
+  },
+  "provider_verified": false
+}

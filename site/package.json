@@ -1,0 +1,31 @@
+{
+  "name": "@tldcost/site",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "tldcost static site (Astro + one Preact island)",
+  "type": "module",
+  "scripts": {
+    "build:core": "tsc -b ../packages/core",
+    "dev": "npm run build:core && astro dev",
+    "build": "npm run build:core && astro build",
+    "preview": "astro preview",
+    "check": "npm run build:core && astro check",
+    "test": "npm run build:core && vitest run",
+    "test:e2e": "node tests/e2e/build-fixtures.mjs && playwright test",
+    "lhci": "npm ci --prefix ../tools/lhci --ignore-scripts --no-audit --no-fund && node ../tools/lhci/node_modules/@lhci/cli/src/cli.js autorun"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.0"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.9",
+    "@astrojs/preact": "6.1.5",
+    "@tanstack/preact-table": "9.3.1",
+    "@tldcost/core": "0.1.0",
+    "astro": "7.4.11",
+    "preact": "11.2.0"
+  }
+}

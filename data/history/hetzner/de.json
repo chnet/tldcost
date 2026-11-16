@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "hetzner",
+  "tld": "de",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 200,
+      "year1": 390,
+      "renewal": 390,
+      "transfer_in": 390,
+      "source": {
+        "url": "https://www.hetzner.com/de/registrationrobot/",
+        "fetched_at": "2026-11-15T04:32:29Z"
+      }
+    }
+  ]
+}

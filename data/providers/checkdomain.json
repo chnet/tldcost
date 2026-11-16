@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "checkdomain",
+  "name": "checkdomain",
+  "website": "https://www.checkdomain.de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.checkdomain.de/agb/",
+    "section": "AGB B I 3.3 (4 Wochen, Domain-Sonderregel; Preisliste nennt 14 Tage), A 10.2 (Verlängerung); Laufzeit lt. .de-Seite",
+    "min_term_months": 12,
+    "notice_period_days": 28,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

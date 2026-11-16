@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "one-com",
+  "tld": "me",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 1667,
+      "renewal": 2868,
+      "transfer_in": 1667,
+      "source": {
+        "url": "https://www.one.com/de/domains/preise",
+        "fetched_at": "2026-11-15T04:28:49Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "provider": "hetzner",
+  "tld": "de",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 200,
+    "year1": 390,
+    "year1_regular": 390,
+    "renewal": 390,
+    "transfer_in": 390
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": "n/a",
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["card", "sepa", "invoice", "paypal"]
+  },
+  "evidence": {
+    "source_url": "https://www.hetzner.com/de/registrationrobot/",
+    "fetched_at": "2026-11-15T04:32:29Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:36830fdcb2de21ed2bc08e3f1f990dcc35a18ed7858283293b1baf2350b89729",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

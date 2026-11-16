@@ -1,0 +1,73 @@
+# Site checks: build with the real data/, astro check, foreign-asset check, Playwright e2e
+# against two fixture builds (operator flag on/off) and Lighthouse (mobile) on the fixture build.
+# Lint, format and the site unit tests run in validate.yml (npm test covers all workspaces).
+# Runs on every PR (no path filter), so it can become a required check without blocking PRs.
+name: Site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Build (real data/)
+        run: npm run build -w @tldcost/site
+
+      - name: Type check (astro check)
+        run: npm run check -w @tldcost/site
+
+      - name: Install Chromium for Playwright
+        working-directory: site
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E (Playwright, fixture builds A/B)
+        run: npm run test:e2e -w @tldcost/site
+
+      - name: No foreign-origin assets (real build and fixture build)
+        working-directory: site
+        run: node tests/check-no-foreign-assets.mjs dist dist-e2e/a
+
+      - name: API files, TLD pages and sitemap (real build and fixture build)
+        working-directory: site
+        run: node tests/check-build.mjs dist ../data dist-e2e/a tests/fixtures/data
+
+      - name: Lighthouse (mobile, fixture build A)
+        run: npm run lhci -w @tldcost/site
+
+      - name: Upload reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site-reports
+          path: |
+            site/playwright-report/
+            site/test-results/
+            site/.lighthouseci/
+          retention-days: 7
+          if-no-files-found: ignore
+          # .lighthouseci is a dot directory; upload-artifact skips those unless asked
+          include-hidden-files: true

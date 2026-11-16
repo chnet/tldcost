@@ -1,0 +1,65 @@
+# Commit identity on every branch push other than main and on every tag push (part of the identity
+# guard shared with other CHnet repositories). Commit identity rule: a foreign
+# author/committer e-mail on ANY branch of a CHnet remote is already a leak, PR or not. Validate
+# covers PRs and pushes to main; this file covers every other branch push, e.g. from a worktree
+# where the local pre-push hook is missing (installed with HUSKY=0) or skipped (--no-verify).
+#
+# - Range merge-base(origin/main, pushed tip)..tip: a rebase/force push is checked in full; the old
+#   tip is never needed (it may be unreachable after a force push).
+# - Tag pushes too: the tagged commits that are not on main, and the tagger of an annotated tag.
+# - No concurrency group: every push gets its own run. With cancel-in-progress, a quick force push
+#   that removes a bad commit cancelled the run that would have flagged it, while the commit stayed
+#   fetchable by SHA. A pushed commit that is already gone from the checkout fails the run.
+# - A separate workflow with its own job name on purpose: a skipped required check counts as
+#   success, so this job must never share a name with the PR check `validate`. It is not required.
+# - Branches pushed with GITHUB_TOKEN (data/update-*, update-data.yml) trigger no workflows; their
+#   PR runs Validate. Fork pushes run in the fork, not here.
+# - contents: read only, no secrets, node builtins only; GitHub-owned actions pinned by SHA.
+name: Identity (branch push)
+
+on:
+  push:
+    branches: ['**', '!main']
+    tags: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  branch-push:
+    name: CHnet commit identity (branch push)
+    if: ${{ !github.event.deleted }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Only exception (owner decision 2026-11-15): Dependabot's own GitHub-signed commits on
+      # dependabot/** pushed by Dependabot, manifests or action pins only; checked via the API
+      # (read-only token, never printed). See scripts/lib/dependabot-exemption.mjs.
+      - name: Pushed commits (merge-base with main..pushed tip)
+        env:
+          AFTER_SHA: ${{ github.event.after }}
+          REF_TYPE: ${{ github.ref_type }}
+          BRANCH: ${{ github.ref_name }}
+          PUSHER: ${{ github.event.sender.login }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # an annotated tag points at a tag object: the range starts at its commit
+          if ! tip=$(git rev-parse --verify --quiet "$AFTER_SHA^{commit}"); then
+            echo "::error::pushed object $AFTER_SHA is not a commit in the checkout (pushed away again, or a tag on a tree or blob); check it by hand"
+            exit 1
+          fi
+          base=$(git merge-base origin/main "$tip")
+          if [ "$REF_TYPE" = tag ]; then
+            node scripts/check-commit-identity.mjs --range "$base..$tip" --tag "$AFTER_SHA"
+          else
+            node scripts/check-commit-identity.mjs --range "$base..$tip" --branch "$BRANCH" --actor "$PUSHER"
+          fi

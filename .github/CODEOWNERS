@@ -1,0 +1,13 @@
+# Code owners. The last matching entry wins.
+#
+# The organisation ruleset `main-protection` currently does not require a code-owner review.
+# These entries request the review but do not enforce it.
+
+*            @coins4me
+
+# Data and scraper: source of truth and data collection
+/data/       @coins4me
+/scraper/    @coins4me
+
+# Workflows, templates, this file
+/.github/    @coins4me

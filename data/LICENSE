@@ -1,0 +1,24 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright 2026 CHnet Solutions Plus UG (haftungsbeschränkt)
+
+The data in this directory (data/), and the same data as published through the API under
+https://tldcost.io/api/v1/, are licensed under the Creative Commons Attribution 4.0 International
+License (CC BY 4.0). You may share and adapt the data for any purpose, including commercially, as
+long as you give appropriate credit, provide a link to the license, and indicate if changes were
+made.
+
+Suggested attribution:
+
+    Quelle: tldcost.io (CHnet Solutions Plus UG), CC BY 4.0
+    https://tldcost.io/ – https://creativecommons.org/licenses/by/4.0/
+
+Summary: https://creativecommons.org/licenses/by/4.0/
+Legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+
+The prices and contract terms are facts collected from the providers' public websites; each record
+names its source (evidence.source_url) and the time it was fetched (evidence.fetched_at). The
+license covers the collection, selection and structure of this data set. Provider names and
+trademarks belong to their owners.
+
+The code of this repository is licensed separately under the Apache License 2.0, see ../LICENSE.

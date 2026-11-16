@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/chnet/tldcost/main/schema/history.schema.json",
+  "title": "PriceHistory",
+  "description": "Price history of one offer (data/history/<provider>/<tld>.json). Append-only: a new entry only when the price state (currency, VAT mode, unit and the stated amounts) changes, dated with the day the new state was first seen (evidence.fetched_at). The last entry always equals the offer's current state (validate-data). A change of currency, price unit or VAT mode is not continued automatically: the scraper skips the offer and history:sync stops with an error, so a person decides. The history starts with the state at its first entry; there is no older data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provider", "tld", "entries"],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "provider": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "tld": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 63
+    },
+    "entries": {
+      "description": "Oldest first; dates strictly ascending (validate-data).",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "amount": {
+      "description": "Integer minor units (cents) of `currency`, as stated by the provider (offer price); null = unknown.",
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "currency",
+        "vat_included",
+        "unit",
+        "setup",
+        "year1",
+        "renewal",
+        "transfer_in",
+        "source"
+      ],
+      "properties": {
+        "date": {
+          "description": "Day the state was first seen (YYYY-MM-DD, the date of evidence.fetched_at).",
+          "type": "string",
+          "format": "date"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "vat_included": {
+          "description": "As in the offer: true gross, false net, null no VAT statement.",
+          "type": ["boolean", "null"]
+        },
+        "unit": {
+          "enum": ["year", "month"]
+        },
+        "setup": {
+          "$ref": "#/$defs/amount"
+        },
+        "year1": {
+          "$ref": "#/$defs/amount"
+        },
+        "renewal": {
+          "$ref": "#/$defs/amount"
+        },
+        "transfer_in": {
+          "$ref": "#/$defs/amount"
+        },
+        "source": {
+          "description": "The offer's evidence when the entry was written (nothing fetched for the history).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "fetched_at"],
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            "fetched_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    }
+  }
+}

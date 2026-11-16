@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "provider": "domainfactory",
+  "tld": "at",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 199,
+    "year1_regular": 199,
+    "renewal": 199,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "evidence": {
+    "source_url": "https://www.df.eu/de/domains/",
+    "fetched_at": "2026-11-15T04:28:56Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:80515f35c7ec451e33d2fb8a3d073a106efdfc1de5e908e9625d593d5176efe8",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

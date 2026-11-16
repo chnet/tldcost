@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "united-domains",
+  "name": "united-domains",
+  "website": "https://www.united-domains.de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.united-domains.de/agb/",
+    "section": "AGB Ziff. 14.1 (1 Jahr), 14.2 (1 Monat; FAQ teils 14 Tage/2 Monate), 11.6 (12 Mon. im Voraus), 11.7 (Verlängerung)",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

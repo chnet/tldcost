@@ -1,0 +1,6 @@
+# Auswahl beim Anlegen eines Issues. Ohne GitHub-Konto geht jede Meldung auch per E-Mail.
+blank_issues_enabled: true
+contact_links:
+  - name: E-Mail an tldcost (ohne GitHub-Konto)
+    url: mailto:hello@chnet.solutions
+    about: Fehler melden oder Anbieter vorschlagen per E-Mail. English is welcome too.

@@ -1,0 +1,49 @@
+/* tldcost: base styles. Colours and fonts come from tokens.css (design system); the old variable
+   names below are aliases. Page chrome is in foundation.css, the price table in table.css. */
+:root {
+  --bg: var(--surface-raised);
+  --fg: var(--ink);
+  --muted: var(--ink-muted);
+  --head: var(--surface-sunken);
+  --badge-bg: var(--surface-sunken);
+  --badge-fg: var(--ink);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 15px/1.45 var(--font-sans);
+}
+a {
+  color: var(--accent);
+}
+h1 {
+  font-size: 1.15rem;
+  margin: 1.25rem 0 0.75rem;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* "Anbieter fehlt? Vorschlagen" under the price table (SuggestProvider.astro). */
+.suggest-provider {
+  margin: 0.75rem 0 0;
+}
+.suggest-provider .muted {
+  color: var(--muted);
+  margin-left: 0.5rem;
+}

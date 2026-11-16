@@ -1,0 +1,54 @@
+{
+  "schema_version": 2,
+  "provider": "inwx",
+  "tld": "info",
+  "currency": "EUR",
+  "vat_included": false,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 336,
+    "year1_regular": 3000,
+    "renewal": 3000,
+    "transfer_in": 3000,
+    "transfer_out": 0,
+    "icann_fee_included": null
+  },
+  "promo": {
+    "conditions": "Aktionspreis nur gültig im ersten Jahr bei Zahlungseingang bis 01.01.2027 00:59 (Europe/Berlin)",
+    "valid_until": "2026-12-31"
+  },
+  "features": {
+    "ssl_free": null,
+    "forward_301": true,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": true,
+    "email_forwarding": false,
+    "whois_privacy": "paid",
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["prepaid", "invoice", "paypal", "sepa"]
+  },
+  "feature_costs": {
+    "whois_privacy": {
+      "source": {
+        "url": "https://www.inwx.de/de/domain/pricelist/vat/1/file/csv",
+        "quote": "Whois Privacy: 4.19"
+      },
+      "price_cents": 419,
+      "unit": "year",
+      "note": "Spalte „Whois Privacy“ der CSV-Preisliste (netto, wie die INWX-Preise)"
+    }
+  },
+  "evidence": {
+    "source_url": "https://www.inwx.de/de/domain/pricelist",
+    "source_endpoint": "https://www.inwx.de/api/v1/domain/all-prices",
+    "fetched_at": "2026-11-13T06:23:05Z",
+    "method": "api",
+    "evidence_hash": "sha256:2eb2689cadfdac5015c85dcdebf50328ea888a1792b2c056066a27a6cc2f4303",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

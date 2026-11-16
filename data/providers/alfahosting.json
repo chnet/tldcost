@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "alfahosting",
+  "name": "Alfahosting",
+  "website": "https://alfahosting.de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://alfahosting.de/webhosting-upgrades-domainpreise/",
+    "section": "Preisliste: Mindestvertragslaufzeit Zusatzdomains 12 Monate; AGB per robots.txt gesperrt, nicht gelesen, übrige Felder unbekannt",
+    "min_term_months": 12,
+    "notice_period_days": null,
+    "billing_cycle": null,
+    "auto_renew_default": null
+  },
+  "collection": {
+    "status": "excluded",
+    "reason": "nur als Zusatzdomain zu einem Hosting-Tarif buchbar"
+  },
+  "reviewed_at": "2026-11-12"
+}

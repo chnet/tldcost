@@ -1,0 +1,13 @@
+{
+  "name": "@tldcost/lhci",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Lighthouse CI for the site, locked outside the npm workspaces (its express pulls in cookie@0.7, Astro's prerender needs cookie@2)",
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@lhci/cli": "0.16.1"
+  }
+}

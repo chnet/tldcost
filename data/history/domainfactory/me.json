@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "provider": "domainfactory",
+  "tld": "me",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 129,
+      "renewal": 349,
+      "transfer_in": null,
+      "source": { "url": "https://www.df.eu/de/domains/", "fetched_at": "2026-11-15T04:28:56Z" }
+    }
+  ]
+}

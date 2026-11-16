@@ -1,0 +1,615 @@
+/* Table components of the design system (components/{Controls,PriceTable,Badge,Legend,RowDetail,
+   CountryFlag}), prefix tc-. Every value comes from tokens.css. Footnote markers, the note list and
+   the tooltip are styled in foundation.css. */
+
+/* ---------- Controls ---------- */
+.tc-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4) var(--space-6);
+  margin: 0 0 var(--space-3);
+}
+.tc-field {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.tc-field > span,
+.tc-field legend {
+  padding: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink-muted);
+}
+.tc-select,
+.tc-search {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  min-height: 32px;
+  box-sizing: border-box;
+}
+.tc-search {
+  min-width: 14rem;
+  max-width: 100%;
+}
+.tc-static {
+  min-height: 32px;
+  line-height: 32px;
+  font-family: var(--font-mono);
+}
+.tc-segment {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.tc-segment label {
+  position: relative;
+}
+.tc-segment input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.tc-segment span {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  min-height: 32px;
+  box-sizing: border-box;
+  line-height: 22px;
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+.tc-segment label + label span {
+  border-left: 1px solid var(--line-strong);
+}
+.tc-segment input:checked + span {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.tc-segment input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+.tc-colpicker summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  min-height: 32px;
+  box-sizing: border-box;
+  line-height: 22px;
+  background: var(--surface-raised);
+}
+.tc-colpicker summary::-webkit-details-marker {
+  display: none;
+}
+.tc-colpicker summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-colpicker ul {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-4);
+  list-style: none;
+  columns: 2 10rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.tc-colpicker li {
+  padding: var(--space-1) 0;
+}
+.tc-status {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* ---------- Price table ---------- */
+.tc-table-frame {
+  /* containing block for absolutely positioned descendants (.sr-only in cells): without it they
+     escape the overflow clipping and widen the page */
+  position: relative;
+  overflow-x: auto;
+  max-width: 100%;
+  /* the row detail sizes itself to the frame's inner width (cqi), not to the viewport */
+  container-type: inline-size;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+.tc-table-frame:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 13px;
+  line-height: 18px;
+}
+.tc-table th,
+.tc-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  text-align: left;
+  vertical-align: top;
+  background: var(--surface-raised);
+}
+.tc-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.tc-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-sunken);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0;
+}
+.tc-table thead th button {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  width: 100%;
+  padding: var(--space-3);
+  cursor: pointer;
+}
+.tc-table thead th button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tc-sort {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+.tc-table thead th[aria-sort] .tc-sort {
+  color: var(--accent);
+}
+.tc-unit {
+  display: block;
+  color: var(--ink-muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+.tc-table .tc-provider {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  border-right: 1px solid var(--line);
+}
+.tc-table thead .tc-provider {
+  z-index: 3;
+}
+.tc-table tbody tr:hover > * {
+  background: var(--surface-sunken);
+}
+.tc-num {
+  font-family: var(--font-mono);
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+.tc-table thead .tc-num button {
+  justify-content: flex-end;
+}
+.tc-num .tc-avg {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 11px;
+}
+.tc-table .tc-best {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.tc-bool {
+  text-align: center;
+}
+.tc-table thead .tc-bool button {
+  justify-content: center;
+}
+.tc-yes,
+.tc-paid {
+  color: var(--ink);
+}
+.tc-no,
+.tc-missing {
+  color: var(--ink-muted);
+}
+.tc-stale {
+  display: block;
+  color: var(--stale-ink);
+  font-family: var(--font-sans);
+  font-size: 11px;
+}
+.tc-provider a {
+  color: var(--ink);
+}
+.tc-detail-toggle {
+  display: block;
+  margin-top: var(--space-1);
+  font: inherit;
+  font-size: 11px;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-2);
+  min-height: 24px;
+  cursor: pointer;
+}
+.tc-detail-toggle.tc-placeholder {
+  /* server render: reserves the button's box until hydration (no layout shift) */
+  visibility: hidden;
+  width: max-content;
+}
+.tc-detail-toggle[aria-expanded='true'] {
+  background: var(--surface-sunken);
+}
+.tc-detail-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-empty {
+  color: var(--ink-muted);
+}
+
+/* ---------- Country flag ---------- */
+.tc-country {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: var(--space-2);
+  vertical-align: -1px;
+}
+.tc-flag {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+  flex: none;
+  border-radius: var(--radius-xs);
+  outline: 1px solid var(--line);
+  outline-offset: -1px;
+  object-fit: cover;
+}
+.tc-cc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+
+/* ---------- Badges ---------- */
+.tc-badge {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.tc-badge--promo {
+  background: var(--promo-bg);
+  color: var(--promo-ink);
+}
+.tc-badge--operator {
+  background: var(--operator-bg);
+  color: var(--operator-ink);
+}
+.tc-badge--verified {
+  background: var(--verified-bg);
+  color: var(--verified-ink);
+}
+
+/* ---------- Row detail ---------- */
+.tc-table tr.tc-detail-row > td {
+  padding: 0;
+  white-space: normal;
+  background: var(--surface-sunken);
+}
+.tc-detail {
+  display: grid;
+  gap: var(--space-4) var(--space-6);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  padding: var(--space-4) var(--space-3);
+  white-space: normal;
+  /* never wider than the visible frame: the detail cell spans the whole (scrolling) table; 100cqi
+     is the frame's inner width (100vw - 2rem ignored the frame's borders and was 2px too wide) */
+  max-width: min(60rem, calc(100vw - 2rem)); /* fallback without container query units */
+  max-width: min(60rem, 100cqi);
+  position: sticky;
+  left: 0;
+}
+/* h2, not the spec's h4: the table pages have only an h1 above the table, so h3/h4 would skip a
+   level (axe heading-order); the look stays the spec's small heading */
+.tc-detail h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.tc-detail dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+.tc-detail dt {
+  color: var(--ink-muted);
+}
+.tc-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.tc-detail .tc-source {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.tc-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Legend ---------- */
+.tc-legend {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-4);
+  font-size: 12px;
+  line-height: 16px;
+  margin: var(--space-4) 0;
+}
+.tc-legend dt .tc-badge {
+  margin-left: 0;
+}
+.tc-legend dd {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+/* small screens without explicit `cols`: only the mobile default columns */
+@media (max-width: 639.98px) {
+  .tc-table.cols-default [data-mobile='0'] {
+    display: none;
+  }
+  .tc-badge {
+    display: block;
+    margin: var(--space-1) 0 0;
+    width: max-content;
+  }
+  .tc-legend,
+  .tc-detail dl {
+    grid-template-columns: 1fr;
+  }
+  .tc-search {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* ---------- Filter row (Archiv-Issue 76, design system FilterRow): one filter per column in the sticky
+   header cell; chips and reset above the table; a disclosure panel on phones ---------- */
+.tc-table thead th .tc-filter {
+  padding: 0 var(--space-3) var(--space-3);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.tc-nosort {
+  display: block;
+  padding: var(--space-3);
+}
+.tc-fin {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  min-height: 26px;
+}
+.tc-fin::placeholder {
+  color: var(--ink-muted);
+}
+.tc-fin:focus-visible,
+.tc-fpick > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-fin[aria-invalid='true'] {
+  border-color: var(--stale-ink);
+}
+.tc-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  min-width: 7.5rem;
+}
+.tc-range .tc-fin {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+.tc-fna {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 11px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.tc-fpick {
+  position: relative;
+}
+.tc-fpick > summary {
+  list-style: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  min-height: 26px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
+}
+.tc-fpick > summary::-webkit-details-marker {
+  display: none;
+}
+.tc-fpick > summary::after {
+  content: ' ▾';
+  color: var(--ink-muted);
+}
+/* in the flow, not absolute: the table frame scrolls horizontally (overflow-x: auto makes
+   overflow-y auto too), so an absolute list would be clipped or scroll inside the frame when the
+   table has few rows. The header row grows while a picker is open. */
+.tc-fpick ul {
+  min-width: 100%;
+  box-sizing: border-box;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-3);
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+.tc-fpick label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+/* active filter: accent border + accent-soft fill, plus the value in the summary text (never colour alone) */
+.tc-fin.is-active,
+.tc-fpick.is-active > summary {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.tc-fstatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-3);
+}
+.tc-fchip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0 0 0 var(--space-2);
+}
+.tc-fchip button {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  min-width: 24px;
+  min-height: 24px;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 600;
+}
+.tc-fchip button:focus-visible,
+.tc-freset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-freset {
+  all: unset;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: underline;
+  min-height: 24px;
+}
+/* the phone panel only exists below 640px; on wider screens the header carries the filters */
+.tc-fpanel {
+  display: none;
+  margin: 0 0 var(--space-3);
+}
+.tc-fpanel > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 30px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  width: max-content;
+}
+.tc-fpanel-form {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+.tc-best-sample {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  background: var(--accent-soft);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+/* without JavaScript the filters cannot work: hide them (theme-init.js sets .tc-js before paint) */
+:root:not(.tc-js) .tc-filter,
+:root:not(.tc-js) .tc-fpanel,
+:root:not(.tc-js) .tc-fstatus {
+  display: none !important;
+}
+@media (max-width: 639.98px) {
+  .tc-table thead th .tc-filter {
+    display: none;
+  }
+  .tc-fpanel {
+    display: block;
+  }
+}

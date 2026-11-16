@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "provider": "one-com",
+  "tld": "berlin",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 4784,
+    "year1_regular": 7789,
+    "renewal": 7789,
+    "transfer_in": 4784
+  },
+  "promo": {
+    "conditions": "Sonderangebote gelten nur für den ersten Vertragszeitraum.",
+    "valid_until": null
+  },
+  "evidence": {
+    "source_url": "https://www.one.com/de/domains/preise",
+    "fetched_at": "2026-11-15T04:28:49Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:6817c19f72cf5b24299a818fc041431ada0937a694c7863bf373ad2467cf3c94",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

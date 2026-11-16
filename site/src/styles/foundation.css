@@ -1,0 +1,359 @@
+/* Design system foundation (version 1794669540-3f7b): page frame, site header with navigation and
+   theme switch, text pages, footer and footnote tooltips. Values only from tokens.css. The table
+   components (controls, table, badges, legend, row detail) have their own stylesheet. */
+
+/* ---------- Page ---------- */
+.tc-root {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--surface);
+}
+.tc-root a {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+.tc-root :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tc-root main {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-7);
+}
+.tc-root h1 {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-5);
+  text-wrap: balance;
+}
+.tc-skip {
+  position: absolute;
+  left: var(--space-5);
+  top: -10rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  z-index: 10;
+}
+.tc-skip:focus {
+  top: var(--space-3);
+}
+
+/* ---------- Site header (not sticky: the table header is the only sticky band) ---------- */
+.tc-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-7);
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+.tc-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.tc-root a.tc-wordmark {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.tc-wordmark .tc-dot {
+  color: var(--accent);
+}
+.tc-tagline {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+.tc-switches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+}
+.tc-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  font-size: 13px;
+  line-height: 18px;
+}
+.tc-switches > .tc-nav {
+  padding-right: var(--space-6);
+  border-right: 1px solid var(--line);
+}
+.tc-root .tc-nav a {
+  display: inline-block;
+  padding: var(--space-1) 0;
+  min-height: 24px;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+.tc-root .tc-nav a:hover,
+.tc-root .tc-nav a[aria-current='page'] {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* ThemeSwitch: hidden without JavaScript (theme-init.js adds .tc-js), because only that script
+   applies ?theme=; the page then follows the system setting. The LanguageSwitch is plain links
+   and stays visible. */
+:root:not(.tc-js) .tc-switch:not([data-lang-switch]) {
+  display: none;
+}
+/* ThemeSwitch: three links (state in the URL). The filled segment follows data-theme on <html>,
+   which theme-init.js sets before first paint; aria-current is set by the same script. */
+.tc-switch {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.tc-root .tc-switch a {
+  box-sizing: border-box;
+  min-height: 32px;
+  min-width: 32px;
+  padding: var(--space-1) var(--space-4);
+  font-size: 12px;
+  line-height: 26px;
+  text-align: center;
+  text-decoration: none;
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+.tc-switch > * + * {
+  border-left: 1px solid var(--line-strong);
+}
+.tc-root .tc-switch a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+/* LanguageSwitch (Archiv-Issue 33): same segments; the current language carries aria-current="true". */
+.tc-switch[data-lang-switch] [aria-current='true'],
+:root:not([data-theme]) .tc-switch [data-theme-choice='system'],
+:root[data-theme='light'] .tc-switch [data-theme-choice='light'],
+:root[data-theme='dark'] .tc-switch [data-theme-choice='dark'] {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* ---------- Text pages (Methodik, Impressum, Datenschutz, Changelog, Lizenz, API) ---------- */
+/* English translations (Archiv-Issue 33): note on top (the German version is authoritative or binding; drift). */
+.tc-prose .tc-translation {
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--line-strong);
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.tc-prose {
+  max-width: 42rem;
+  font-size: 15px;
+  line-height: 23px;
+}
+.tc-prose h2 {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  margin: var(--space-7) 0 var(--space-3);
+  text-wrap: balance;
+}
+.tc-prose h3 {
+  font-size: 15px;
+  line-height: 23px;
+  font-weight: 600;
+  margin: var(--space-6) 0 var(--space-2);
+}
+.tc-prose p,
+.tc-prose ul,
+.tc-prose ol,
+.tc-prose dl,
+.tc-prose blockquote,
+.tc-prose pre {
+  margin: 0 0 var(--space-4);
+}
+.tc-prose code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface-sunken);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-xs);
+  overflow-wrap: anywhere;
+}
+/* Code blocks wrap instead of scrolling sideways: a scroll region would need a tabindex to be
+   reachable by keyboard (axe scrollable-region-focusable), and the blocks are short formulas. */
+.tc-prose pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: var(--space-4);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+}
+.tc-prose pre code {
+  padding: 0;
+  background: none;
+}
+.tc-prose a {
+  overflow-wrap: anywhere;
+}
+/* Wide tables scroll inside their own frame, never the page (table-regions.mjs wraps them). */
+.tc-prose .table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  margin: 0 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.tc-prose table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  line-height: 18px;
+}
+.tc-prose th,
+.tc-prose td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  white-space: normal;
+  min-width: 8rem;
+}
+.tc-prose thead th {
+  position: static;
+  background: var(--surface-sunken);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* ---------- Footer ---------- */
+.tc-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-6);
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: var(--space-5);
+  border-top: 1px solid var(--line);
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+.tc-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tc-footer p {
+  margin: 0;
+}
+.tc-root .tc-footer a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
+  color: var(--ink-muted);
+}
+
+/* ---------- Footnotes: marker, list, hover/focus tooltip (footnote-tips.js) ---------- */
+.tc-root a.tc-fn {
+  display: inline-block;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 var(--space-1);
+  margin-left: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 24px;
+  font-weight: 400;
+  color: var(--accent);
+  text-decoration: none;
+  text-align: center;
+  vertical-align: top;
+  border-radius: var(--radius-xs);
+  cursor: help;
+}
+.tc-root a.tc-fn:hover,
+.tc-root a.tc-fn[data-open] {
+  background: var(--accent-soft);
+  text-decoration: underline;
+}
+.tc-notes {
+  margin: 0;
+  padding-left: var(--space-6);
+  display: grid;
+  gap: var(--space-1);
+  font-size: 12px;
+  line-height: 16px;
+}
+.tc-notes li {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+}
+.tc-notes li:target {
+  background: var(--accent-soft);
+}
+.tc-tip {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  max-width: min(24rem, calc(100vw - 2 * var(--space-5)));
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--surface);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  white-space: normal;
+  text-align: left;
+  overflow: visible;
+}
+.tc-tip b {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  margin-right: var(--space-2);
+}
+
+/* A nav label with a short form (Portfolio-Rechner -> Portfolio) uses it on phones (Archiv-Issue 123). */
+.tc-nav-short {
+  display: none;
+}
+@media (max-width: 639.98px) {
+  .tc-switches > .tc-nav {
+    padding-right: 0;
+    border-right: 0;
+  }
+  .tc-nav-long {
+    display: none;
+  }
+  .tc-nav-short {
+    display: inline;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tc-root * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

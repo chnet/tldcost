@@ -1,0 +1,88 @@
+---
+// /tld/<tld>/ and /en/tld/<tld>/: one static page per TLD with offers (SEO, concept section 3.6).
+// The table is the same island as on the home page, server-rendered with only this TLD's rows, so
+// it is complete without JavaScript. Both languages exist for every TLD (Archiv-Issue 33).
+import { LOCALES, pathIn, type Lang } from '../i18n';
+import { apiTlds, offersPath, tldPagePath } from '../lib/api';
+import { buildPayload } from '../lib/rows';
+import { siteData } from '../lib/site-data';
+import { payloadForTld } from '../lib/tld-payload';
+import Layout from '../layouts/Layout.astro';
+import PriceTableDe from './PriceTableDe';
+import PriceTableEn from './PriceTableEn';
+import SuggestProvider from './SuggestProvider.astro';
+
+interface Props {
+  lang: Lang;
+  tld: string;
+}
+const { lang, tld } = Astro.props;
+const L = LOCALES[lang];
+const t = L.s.pages.tld;
+const data = siteData();
+const payload = payloadForTld(buildPayload(data, { locale: L }), tld);
+const offers = data.offers.filter((o) => o.tld === tld);
+const providerCount = new Set(offers.map((o) => o.provider)).size;
+const fetched = offers.map((o) => o.evidence.fetched_at).sort();
+const oldest = L.f.date(fetched[0] ?? '');
+const newest = L.f.date(fetched[fetched.length - 1] ?? '');
+const others = apiTlds(data).filter((x) => x !== tld);
+const page = (x: string) => pathIn(lang, tldPagePath(x));
+const json = JSON.stringify(payload);
+---
+
+<Layout
+  footnotes
+  title={t.title(tld)}
+  description={t.description(tld, providerCount)}
+  other={pathIn(lang === 'de' ? 'en' : 'de', tldPagePath(tld))}
+>
+  <h1>{t.h1(tld)}</h1>
+  <p class="lead">{t.lead(tld, providerCount, oldest, newest)}</p>
+  {lang === 'de' ? <PriceTableDe client:load data={json} /> : <PriceTableEn client:load data={json} />}
+  <SuggestProvider lang={lang} />
+  <p class="api-hint">
+    {t.machineReadable} <a href={offersPath(tld)}>{offersPath(tld)}</a> (<a href="/api/">API</a>).
+  </p>
+  {
+    others.length > 0 && (
+      <nav class="tld-nav" aria-labelledby="other-tlds">
+        <h2 id="other-tlds">{t.otherTlds}</h2>
+        <ul>
+          {others.map((x) => (
+            <li>
+              <a href={page(x)}>.{x}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+</Layout>
+
+<style>
+  .lead {
+    max-width: 48rem;
+  }
+  .api-hint {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .tld-nav h2 {
+    font-size: 1rem;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .tld-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tld-nav a {
+    display: inline-block;
+    min-width: 24px;
+    padding: 0.2rem 0.35rem;
+  }
+</style>

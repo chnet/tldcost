@@ -1,0 +1,356 @@
+{
+ "status": "SUCCESS",
+ "pricing": {
+  "1": {
+   "registration": "1.34",
+   "renewal": "16.79",
+   "transfer": "16.79",
+   "coupons": {
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   },
+   "specialType": "handshake"
+  },
+  "de": {
+   "registration": "2.90",
+   "renewal": "4.07",
+   "transfer": "5.10",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "com": {
+   "registration": "11.81",
+   "renewal": "11.81",
+   "transfer": "11.81",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "net": {
+   "registration": "12.52",
+   "renewal": "12.52",
+   "transfer": "12.52",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "org": {
+   "registration": "7.98",
+   "renewal": "11.84",
+   "transfer": "11.84",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "eu": {
+   "registration": "5.88",
+   "renewal": "5.88",
+   "transfer": "5.88",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "io": {
+   "registration": "28.12",
+   "renewal": "51.80",
+   "transfer": "51.80",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "dev": {
+   "registration": "8.75",
+   "renewal": "12.87",
+   "transfer": "12.87",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "app": {
+   "registration": "8.75",
+   "renewal": "14.93",
+   "transfer": "14.93",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "shop": {
+   "registration": "2.06",
+   "renewal": "31.41",
+   "transfer": "31.41",
+   "coupons": {
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "info": {
+   "registration": "3.60",
+   "renewal": "22.14",
+   "transfer": "22.14",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "me": {
+   "registration": "17.27",
+   "renewal": "17.27",
+   "transfer": "17.27",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "co": {
+   "registration": "15.76",
+   "renewal": "31.20",
+   "transfer": "31.20",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "online": {
+   "registration": "1.96",
+   "renewal": "28.84",
+   "transfer": "28.84",
+   "coupons": {
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "xyz": {
+   "registration": "1.29",
+   "renewal": "14.21",
+   "transfer": "14.21",
+   "coupons": {
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "ai": {
+   "registration": "82.70",
+   "renewal": "82.70",
+   "transfer": "165.09",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "biz": {
+   "registration": "6.69",
+   "renewal": "19.05",
+   "transfer": "19.05",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  },
+  "cloud": {
+   "registration": "3.88",
+   "renewal": "21.11",
+   "transfer": "21.11",
+   "coupons": {
+    "registration": {
+     "code": "AWESOMENESS",
+     "max_per_user": 1,
+     "first_year_only": "yes",
+     "type": "amount",
+     "amount": 1
+    },
+    "transfer": {
+     "code": "EXODUS",
+     "max_per_user": 100,
+     "first_year_only": "no",
+     "type": "amount",
+     "amount": 1
+    }
+   }
+  }
+ }
+}

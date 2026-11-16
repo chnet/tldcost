@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "cloudflare",
+  "name": "Cloudflare Registrar",
+  "website": "https://www.cloudflare.com/products/registrar/",
+  "country": "US",
+  "vat_rate": null,
+  "operator": false,
+  "terms": {
+    "url": "https://www.cloudflare.com/domain-registration-agreement/",
+    "section": "DRA § 3.4 (Auto-Renew Standard, Abbuchung ca. 30 Tage vor Ablauf; keine Kündigungsfrist, Auto-Renew 30 Tage vorher abschalten)",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

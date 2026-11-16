@@ -1,0 +1,17 @@
+---
+// "Anbieter fehlt? Vorschlagen" under the price table (/ and /tld/<tld>/, also in English). Static,
+// no script; the target (e-mail or GitHub issue form) follows REPORT_VIA in src/lib/report.mjs. The
+// form and the e-mail template stay German: reports are handled in German.
+import { LOCALES, type Lang } from '../i18n';
+import { REPORT_EMAIL, REPORT_VIA, suggestProviderUrl } from '../lib/report.mjs';
+
+interface Props {
+  lang: Lang;
+}
+const L = LOCALES[Astro.props.lang];
+---
+
+<p class="suggest-provider">
+  {L.s.pages.suggest.question} <a href={suggestProviderUrl()} rel="noopener noreferrer">{L.s.pages.suggest.link}</a>
+  {REPORT_VIA === 'github' && <span class="muted">{L.m.detail.noGithubHint(REPORT_EMAIL)}</span>}
+</p>

@@ -1,0 +1,82 @@
+/* Design tokens of tldcost (src/styles/design/tokens.json, design system version 1794669540-3f7b).
+   One deviation: --font-sans/--font-mono name the metric-adjusted fallbacks from fonts.css right
+   after the web font (CLS during the font swap).
+   Light by default; dark follows the system unless ?theme=light, or is forced by ?theme=dark
+   (public/theme-init.js sets data-theme on <html> before first paint). Test: tests/unit/tokens.test.ts. */
+:root {
+  --font-sans:
+    'Instrument Sans', 'Instrument Sans Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:
+    'Spline Sans Mono', 'Spline Sans Mono Fallback', 'Spline Sans Mono Fallback Consolas',
+    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 24px;
+  --space-7: 40px;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --surface: #f6f8f8;
+  --surface-raised: #ffffff;
+  --surface-sunken: #ecf1f1;
+  --line: #d3dcdc;
+  --line-strong: #7f9193;
+  --ink: #132022;
+  --ink-muted: #4e6062;
+  --accent: #0a6560;
+  --accent-soft: #dcefed;
+  --on-accent: #ffffff;
+  --promo-bg: #fbeed6;
+  --promo-ink: #7f4500;
+  --operator-bg: #e9e6f3;
+  --operator-ink: #463b80;
+  --verified-bg: #e0ecf8;
+  --verified-ink: #1c4a7e;
+  --stale-ink: #9a3412;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface: #0d1213;
+    --surface-raised: #131a1b;
+    --surface-sunken: #1a2324;
+    --line: #283334;
+    --line-strong: #5d7072;
+    --ink: #e2ebeb;
+    --ink-muted: #9cafb0;
+    --accent: #5cc8bf;
+    --accent-soft: #123230;
+    --on-accent: #06201e;
+    --promo-bg: #3a2a0f;
+    --promo-ink: #f2c478;
+    --operator-bg: #28243a;
+    --operator-ink: #cbc2f2;
+    --verified-bg: #14273a;
+    --verified-ink: #a2c7f0;
+    --stale-ink: #fbb07a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --surface: #0d1213;
+  --surface-raised: #131a1b;
+  --surface-sunken: #1a2324;
+  --line: #283334;
+  --line-strong: #5d7072;
+  --ink: #e2ebeb;
+  --ink-muted: #9cafb0;
+  --accent: #5cc8bf;
+  --accent-soft: #123230;
+  --on-accent: #06201e;
+  --promo-bg: #3a2a0f;
+  --promo-ink: #f2c478;
+  --operator-bg: #28243a;
+  --operator-ink: #cbc2f2;
+  --verified-bg: #14273a;
+  --verified-ink: #a2c7f0;
+  --stale-ink: #fbb07a;
+  color-scheme: dark;
+}

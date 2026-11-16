@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "bravo",
+  "name": "Bravo Registry",
+  "website": "https://bravo.example",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://bravo.example/agb",
+    "section": "Domain-AGB Nr. 4 und 5"
+  }
+}

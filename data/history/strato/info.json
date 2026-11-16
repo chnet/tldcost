@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "strato",
+  "tld": "info",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 25,
+      "renewal": 275,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.strato.de/domains/info-domain/",
+        "fetched_at": "2026-11-15T05:38:28Z"
+      }
+    }
+  ]
+}

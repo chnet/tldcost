@@ -1,0 +1,154 @@
+---
+// `/api/` and `/en/api/`: human-readable documentation of the JSON files under /api/v1/ (concept
+// section 3.6, Archiv-Issue 33). The machine-readable description is /api/v1/openapi.json. Texts: the catalogue
+// section `pages.api` (site-de.ts / site-en.ts); they hold inline HTML (<code>, <strong>, links built
+// here from constants), rendered with set:html. The attribution is the data's own text (German).
+import { LOCALES, type Lang } from '../i18n';
+import {
+  API_PATH,
+  apiTlds,
+  DATA_LICENSE,
+  buildAll,
+  offersPath,
+  SCHEMA_NAMES,
+  schemaPath,
+  SITE_ORIGIN,
+} from '../lib/api';
+import { correctionUrl, repoLink } from '../lib/report.mjs';
+import { siteData } from '../lib/site-data';
+import Layout from '../layouts/Layout.astro';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const L = LOCALES[lang];
+const t = L.s.pages.api;
+
+const data = siteData();
+const tlds = apiTlds(data);
+const all = buildAll(data);
+const example = tlds.includes('de') ? 'de' : (tlds[0] ?? 'de');
+const fetchExample = `const res = await fetch('${SITE_ORIGIN}${offersPath(example)}');
+if (!res.ok) throw new Error(\`HTTP \${res.status}\`); // ${t.example.unknownPaths}
+const { offers, derived } = await res.json();
+for (const o of offers) {
+  const tco = derived.tco[\`\${o.provider}/\${o.tld}\`];
+  // ${t.example.unit}
+  console.log(o.provider, o.price.year1, o.price.unit, o.currency, tco.gross.avg_3y); // ${t.example.cents}
+}`;
+
+/** Text or an attribute value for HTML built here (set:html), escaped like Astro does. */
+const esc = (v: string) =>
+  v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const attr = esc;
+const link = (href: string, text: string) => `<a href="${attr(href)}"><code>${text}</code></a>`;
+const schemaList = SCHEMA_NAMES.map((n) => link(schemaPath(n), n)).join(', ');
+const tldList = tlds.map((x) => `<a href="${attr(offersPath(x))}">.${esc(x)}</a>`).join(', ');
+const date = (iso: string | null | undefined) => (iso ? L.f.date(iso) : '–');
+const licensePage = lang === 'en' ? '/en/lizenz/' : '/lizenz/';
+---
+
+<Layout title={t.title} description={t.description} other={lang === 'de' ? '/en/api/' : '/api/'}>
+  <article class="doc tc-prose">
+    <h1>{t.h1}</h1>
+    <p set:html={t.intro(`${SITE_ORIGIN}${API_PATH}`)} />
+
+    <h2>{t.files.h2}</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label={t.files.aria}>
+      <table>
+        <thead>
+          <tr><th scope="col">{t.files.path}</th><th scope="col">{t.files.content}</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href={`${API_PATH}/all.json`}><code>{API_PATH}/all.json</code></a></td>
+            <td>{t.files.all}</td>
+          </tr>
+          <tr>
+            <td><a href={`${API_PATH}/tlds.json`}><code>{API_PATH}/tlds.json</code></a></td>
+            <td>{t.files.tlds}</td>
+          </tr>
+          <tr>
+            <td><code>{API_PATH}/offers/&lt;tld&gt;.json</code></td>
+            <td set:html={t.files.offers(link(offersPath(example), offersPath(example)))} />
+          </tr>
+          <tr>
+            <td><a href={`${API_PATH}/openapi.json`}><code>{API_PATH}/openapi.json</code></a></td>
+            <td>{t.files.openapi}</td>
+          </tr>
+          <tr>
+            <td><code>{API_PATH}/schema/&lt;name&gt;.schema.json</code></td>
+            <td set:html={t.files.schema(schemaList)} />
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p set:html={t.tldCount(tlds.length, tldList)} />
+
+    <h2>{t.structure.h2}</h2>
+    <p>{t.structure.intro}</p>
+    <dl>
+      <dt><code>api_version</code>, <code>schema_version</code></dt>
+      <dd set:html={t.structure.versions} />
+      <dt><code>data_version</code></dt>
+      <dd set:html={t.structure.dataVersion} />
+      <dt><code>license</code></dt>
+      <dd set:html={t.structure.license(`<a href="#${t.license.id}">${t.license.h2}</a>`)} />
+      <dt><code>data_updated</code>, <code>data_oldest</code></dt>
+      <dd set:html={t.structure.dates(date(all.data_oldest), date(all.data_updated))} />
+    </dl>
+    <p set:html={t.structure.raw} />
+    <p set:html={t.structure.unit} />
+    <p set:html={t.structure.derived} />
+    <p set:html={t.structure.example} />
+
+    <h2>{t.example.h2}</h2>
+    <pre><code>{fetchExample}</code></pre>
+    <pre><code>curl -s {SITE_ORIGIN}{API_PATH}/tlds.json</code></pre>
+
+    <h2>{t.rules.h2}</h2>
+    <ul>
+      <li>{t.rules.noWarranty}</li>
+      <li>{t.rules.notFound}</li>
+      <li set:html={t.rules.v1} />
+      <li set:html={t.rules.report(attr(correctionUrl()))} />
+    </ul>
+
+    <h2 id={t.license.id}>{t.license.h2}</h2>
+    <p set:html={t.license.text(`<a href="${t.license.deed}">${DATA_LICENSE.name}</a>`)} />
+    <blockquote><p lang="de">{DATA_LICENSE.attribution}</p></blockquote>
+    <p
+      set:html={t.license.after(
+        `<a href="${SITE_ORIGIN}/">${SITE_ORIGIN.replace('https://', '')}</a>`,
+        `<a href="${attr(repoLink('blob/main/LICENSE', licensePage) ?? licensePage)}">Apache License 2.0</a>`,
+      )}
+    />
+  </article>
+</Layout>
+
+<style>
+  /* the API page is a text page (tc-prose); only its own bits here */
+  .doc {
+    max-width: 52rem;
+  }
+  .doc dt {
+    font-weight: 600;
+    margin-top: var(--space-3);
+  }
+  .doc dd {
+    margin: var(--space-1) 0 0 var(--space-5);
+  }
+  .doc blockquote {
+    padding-left: var(--space-4);
+    border-left: 3px solid var(--line-strong);
+  }
+  .doc td:first-child {
+    white-space: nowrap;
+  }
+  /* :global: links inside set:html content get no scope attribute */
+  .doc :global(a) {
+    display: inline-block;
+    min-height: 24px;
+  }
+</style>

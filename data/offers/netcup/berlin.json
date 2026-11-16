@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "berlin",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "month",
+    "setup": 0,
+    "year1": 734,
+    "year1_regular": 734,
+    "renewal": 734,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-berlin",
+    "fetched_at": "2026-11-13T06:23:22Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:5b32c2a437cd91d1a5541009c9442fc66b7e192b03b1531c4dfa8b03e9d7fc76",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

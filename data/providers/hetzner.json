@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "hetzner",
+  "name": "Hetzner",
+  "website": "https://www.hetzner.com/de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.hetzner.com/de/legal/terms-and-conditions/",
+    "section": "AGB Ziff. 2.5 (unbestimmte Zeit), 2.6 (30 Tage zum Monatsende); Abrechnung je volles Jahr lt. Docs",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

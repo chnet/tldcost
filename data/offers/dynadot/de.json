@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "provider": "dynadot",
+  "tld": "de",
+  "currency": "USD",
+  "vat_included": null,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 386,
+    "year1_regular": 386,
+    "renewal": 386,
+    "transfer_in": 386,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "features": {
+    "whois_privacy": "n/a"
+  },
+  "evidence": {
+    "source_url": "https://www.dynadot.com/domain/prices",
+    "fetched_at": "2026-11-15T09:06:21Z",
+    "method": "manual",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

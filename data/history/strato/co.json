@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "strato",
+  "tld": "co",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 90,
+      "renewal": 400,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.strato.de/domains/co-domain/",
+        "fetched_at": "2026-11-15T05:38:32Z"
+      }
+    }
+  ]
+}

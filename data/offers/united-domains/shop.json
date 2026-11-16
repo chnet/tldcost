@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "provider": "united-domains",
+  "tld": "shop",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 300,
+    "year1_regular": null,
+    "renewal": 6600,
+    "transfer_in": null
+  },
+  "promo": {
+    "conditions": ".shop-Aktion: 3 € (inkl. 19 % MwSt.) im ersten Jahr für Neu-Registrierungen von .shop-Standard-Domains. Nicht für Transfers gültig. Ab dem 2. Jahr 66 € (inkl. 19 % MwSt.) / Jahr. Vertragslaufzeit mind. 12 Monate. Aktion gilt nicht für Premium-Domains.",
+    "valid_until": null
+  },
+  "features": {
+    "ssl_free": "paid",
+    "dnssec": "paid",
+    "api": "paid"
+  },
+  "feature_costs": {
+    "api": {
+      "source": {
+        "url": "https://www.united-domains.de/domain-registrieren/preisliste/",
+        "quote": "DNS API 60 € /Jahr"
+      },
+      "price_cents": 6000,
+      "unit": "year"
+    },
+    "dnssec": {
+      "source": {
+        "url": "https://www.united-domains.de/domain-registrieren/preisliste/",
+        "quote": "Domain-Tresor (Domain Privacy, DNSSEC, 2FA) 7,50 € /1. Jahr, danach 15 €/Jahr"
+      },
+      "price_cents": 1500,
+      "unit": "year",
+      "note": "Paket Domain-Tresor (Domain Privacy, DNSSEC, 2FA); 1. Jahr 7,50 €"
+    },
+    "ssl_free": {
+      "source": {
+        "url": "https://www.united-domains.de/domain-registrieren/preisliste/",
+        "quote": "SSL-Zertifikat Basis 36 € /Jahr"
+      },
+      "price_cents": 3600,
+      "unit": "year"
+    }
+  },
+  "evidence": {
+    "source_url": "https://www.united-domains.de/domain-registrieren/preisliste/",
+    "fetched_at": "2026-11-15T05:38:20Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:c0c3c7c83ce2bd7baaf59bc70656b66b91cfce5b79ccb87277cedbe83c99108e",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

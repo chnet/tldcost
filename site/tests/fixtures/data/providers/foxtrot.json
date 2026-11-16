@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "foxtrot",
+  "name": "Foxtrot Web",
+  "website": "https://foxtrot.example",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://foxtrot.example/agb",
+    "section": "§ 3",
+    "min_term_months": 1,
+    "notice_period_days": 14,
+    "billing_cycle": "monthly",
+    "auto_renew_default": true,
+    "notes": {
+      "notice_period_days": "AGB § 3: 14 Tage zum Ende der Laufzeit; FAQ: 7 Tage."
+    }
+  }
+}

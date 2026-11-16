@@ -1,0 +1,41 @@
+{
+  "schema_version": 2,
+  "provider": "charlie",
+  "tld": "com",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 1000,
+    "renewal": 1000,
+    "transfer_in": null,
+    "transfer_out": 0
+  },
+  "contract": {
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "features": {
+    "ssl_free": true,
+    "forward_301": true,
+    "forward_302": true,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": true,
+    "email_forwarding": false,
+    "whois_privacy": "n/a",
+    "api": false,
+    "two_factor": true,
+    "payment_methods": ["sepa", "card"]
+  },
+  "evidence": {
+    "source_url": "https://charlie.example/preise",
+    "fetched_at": "2026-11-12T08:00:00Z",
+    "method": "manual",
+    "confidence": "low"
+  },
+  "provider_verified": false
+}

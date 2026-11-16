@@ -1,0 +1,48 @@
+{
+  "schema_version": 2,
+  "provider": "porkbun",
+  "tld": "eu",
+  "currency": "USD",
+  "vat_included": null,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 588,
+    "renewal": 588,
+    "transfer_in": 588,
+    "transfer_out": null,
+    "icann_fee_included": null,
+    "year1_regular": 588
+  },
+  "promo": null,
+  "features": {
+    "ssl_free": true,
+    "forward_301": true,
+    "forward_302": true,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": true,
+    "whois_privacy": "none",
+    "api": true,
+    "two_factor": true,
+    "payment_methods": [
+      "card",
+      "paypal",
+      "apple_pay",
+      "google_pay",
+      "amazon_pay",
+      "alipay",
+      "crypto"
+    ]
+  },
+  "evidence": {
+    "source_url": "https://porkbun.com/products/domains",
+    "source_endpoint": "https://api.porkbun.com/api/json/v3/pricing/get",
+    "fetched_at": "2026-11-13T06:23:38Z",
+    "method": "api",
+    "evidence_hash": "sha256:1423377f9a2b95839774fc04ad15546ef1b166ac477efba97f35b48fa540d645",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

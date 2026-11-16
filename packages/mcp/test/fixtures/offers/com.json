@@ -1,0 +1,537 @@
+{
+  "api_version": 1,
+  "schema_version": 2,
+  "data_version": "sha256:b3f8108146627cce9633d52749cb6c2a3664a3fdfbab493836dc4ca21da953c5",
+  "data_updated": "2026-11-15T04:28:49Z",
+  "data_oldest": "2026-11-13T05:04:21Z",
+  "documentation": "https://tldcost.io/api/",
+  "license": {
+    "name": "CC BY 4.0",
+    "spdx": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Quelle: tldcost.io (CHnet Solutions Plus UG), CC BY 4.0"
+  },
+  "tld": "com",
+  "providers": [
+    {
+      "schema_version": 1,
+      "id": "chnet-domains",
+      "name": "chnet.domains",
+      "website": "https://chnet.domains/",
+      "country": "DE",
+      "vat_rate": 1900,
+      "operator": true,
+      "terms": {
+        "url": "https://app.chnet.domains/agb.html",
+        "section": "AGB § 5 Abs. 1-2 (12 Mon., .gr/.nu/.tk 24; Verlängerung), Anlage A (7 Tage für .de/.com/.eu, je TLD abweichend), § 6 Abs. 1",
+        "min_term_months": 12,
+        "notice_period_days": 7,
+        "billing_cycle": "yearly",
+        "auto_renew_default": true
+      },
+      "reviewed_at": "2026-11-12"
+    },
+    {
+      "schema_version": 1,
+      "id": "inwx",
+      "name": "INWX",
+      "website": "https://www.inwx.de/de",
+      "country": "DE",
+      "vat_rate": 1900,
+      "operator": false,
+      "terms": {
+        "url": "https://www.inwx.de/de/aboutus/termsdomains",
+        "section": "Domainvertrag Nr. 6 (jährl. Verlängerung bei Guthaben), Nr. 7 (vor Verlängerungsdatum; TLD-Seiten: 1 Tag), Nr. 8; Konflikt: Nr. 5 1 Monat, AGB § 4 4 Wochen",
+        "min_term_months": 12,
+        "notice_period_days": 1,
+        "billing_cycle": "yearly",
+        "auto_renew_default": true,
+        "notes": {
+          "notice_period_days": "Widersprüchliche Angaben: Domainvertrag Nr. 7 verlangt die Kündigung vor dem Verlängerungsdatum, die TLD-Seiten nennen 1 Tag. Domainvertrag Nr. 5 nennt einen Monat zum Monatsende, AGB § 4 vier Wochen. Die Tabelle zeigt den Wert für Domains (1 Tag)."
+        }
+      },
+      "reviewed_at": "2026-11-12"
+    },
+    {
+      "schema_version": 1,
+      "id": "ionos",
+      "name": "IONOS",
+      "website": "https://www.ionos.de/",
+      "country": "DE",
+      "vat_rate": 1900,
+      "operator": false,
+      "terms": {
+        "url": "https://www.ionos.de/hilfe/domains/laufzeiten-und-kuendigung/automatische-verlaengerung-einer-domain/",
+        "section": "Nur Hilfeseiten (Laufzeit 12 Mon., Auto-Renew um 1 Jahr); AGB unter /terms- per robots.txt gesperrt, nicht gelesen",
+        "min_term_months": 12,
+        "notice_period_days": null,
+        "billing_cycle": null,
+        "auto_renew_default": true
+      },
+      "reviewed_at": "2026-11-12"
+    },
+    {
+      "schema_version": 1,
+      "id": "netcup",
+      "name": "netcup",
+      "website": "https://www.netcup.com/de",
+      "country": "DE",
+      "vat_rate": 1900,
+      "operator": false,
+      "terms": {
+        "url": "https://www.netcup.com/de/agb",
+        "section": "AGB Ziff. 6 Abs. 1 (1 Monat zum Monatsende, unbestimmte Zeit; Helpcenter: 31 Tage), Ziff. 4 Abs. 1; Produktseite: 12 Mon., Abrechnung 12 Mon.",
+        "min_term_months": 12,
+        "notice_period_days": 30,
+        "billing_cycle": "yearly",
+        "auto_renew_default": true,
+        "notes": {
+          "notice_period_days": "AGB Ziff. 6 Abs. 1: Kündigung mit einer Frist von einem Monat zum Monatsende. Je nach Ablaufdatum muss die Kündigung früher eingehen; 30 Tage sind die Untergrenze. Das Helpcenter nennt mindestens 31 Tage."
+        }
+      },
+      "reviewed_at": "2026-11-12"
+    },
+    {
+      "schema_version": 1,
+      "id": "one-com",
+      "name": "one.com",
+      "website": "https://www.one.com/de/",
+      "country": "SE",
+      "vat_rate": 1900,
+      "operator": false,
+      "terms": {
+        "url": "https://www.one.com/de-de/legal/agb/",
+        "section": "AGB v.17 Abschn. 1 (12 Monate, Verlängerung), 1.6 (30 Tage), 4.5 (12 Monate im Voraus)",
+        "min_term_months": 12,
+        "notice_period_days": 30,
+        "billing_cycle": "yearly",
+        "auto_renew_default": true
+      },
+      "reviewed_at": "2026-11-12"
+    },
+    {
+      "schema_version": 1,
+      "id": "porkbun",
+      "name": "Porkbun",
+      "website": "https://porkbun.com/",
+      "country": "US",
+      "vat_rate": null,
+      "operator": false,
+      "terms": {
+        "url": "https://porkbun.com/legal/agreement/domain_name_registration_agreement",
+        "section": "TERM OF SERVICE (1 Jahr, Auto-Renew), TERMINATION OR SUSPENSION OF SERVICES (30 Tage schriftlich; Auto-Renew im Konto abschaltbar)",
+        "min_term_months": 12,
+        "notice_period_days": 30,
+        "billing_cycle": "yearly",
+        "auto_renew_default": true
+      },
+      "reviewed_at": "2026-11-12"
+    }
+  ],
+  "offers": [
+    {
+      "schema_version": 2,
+      "provider": "chnet-domains",
+      "tld": "com",
+      "currency": "EUR",
+      "vat_included": true,
+      "price": {
+        "unit": "year",
+        "setup": 0,
+        "year1": 1557,
+        "renewal": 1557,
+        "transfer_in": null,
+        "transfer_out": 0,
+        "icann_fee_included": null
+      },
+      "promo": null,
+      "features": {
+        "ssl_free": null,
+        "forward_301": null,
+        "forward_302": null,
+        "dns_editor": null,
+        "custom_ns": null,
+        "dnssec": null,
+        "email_forwarding": null,
+        "whois_privacy": null,
+        "api": null,
+        "two_factor": true,
+        "payment_methods": ["paypal", "sepa", "card"]
+      },
+      "evidence": {
+        "source_url": "https://chnet.domains/preise/",
+        "fetched_at": "2026-11-13T05:04:21Z",
+        "method": "scrape",
+        "evidence_hash": "sha256:54dc31b18c94e11dc25d5a24382350548e41ee723ae2ca6b6f986b1f91f92a4c",
+        "confidence": "high"
+      },
+      "provider_verified": false
+    },
+    {
+      "schema_version": 2,
+      "provider": "inwx",
+      "tld": "com",
+      "currency": "EUR",
+      "vat_included": false,
+      "price": {
+        "unit": "year",
+        "setup": 0,
+        "year1": 1550,
+        "renewal": 1550,
+        "transfer_in": 1550,
+        "transfer_out": 0,
+        "icann_fee_included": null,
+        "year1_regular": 1550
+      },
+      "promo": null,
+      "features": {
+        "ssl_free": null,
+        "forward_301": true,
+        "forward_302": null,
+        "dns_editor": true,
+        "custom_ns": true,
+        "dnssec": true,
+        "email_forwarding": false,
+        "whois_privacy": "paid",
+        "api": true,
+        "two_factor": true,
+        "payment_methods": ["prepaid", "invoice", "paypal", "sepa"]
+      },
+      "feature_costs": {
+        "whois_privacy": {
+          "source": {
+            "url": "https://www.inwx.de/de/domain/pricelist/vat/1/file/csv",
+            "quote": "Whois Privacy: 4.19"
+          },
+          "price_cents": 419,
+          "unit": "year",
+          "note": "Spalte „Whois Privacy“ der CSV-Preisliste (netto, wie die INWX-Preise)"
+        }
+      },
+      "evidence": {
+        "source_url": "https://www.inwx.de/de/domain/pricelist",
+        "source_endpoint": "https://www.inwx.de/api/v1/domain/all-prices",
+        "fetched_at": "2026-11-13T06:23:05Z",
+        "method": "api",
+        "evidence_hash": "sha256:2eb2689cadfdac5015c85dcdebf50328ea888a1792b2c056066a27a6cc2f4303",
+        "confidence": "high"
+      },
+      "provider_verified": false
+    },
+    {
+      "schema_version": 2,
+      "provider": "ionos",
+      "tld": "com",
+      "currency": "EUR",
+      "vat_included": true,
+      "price": {
+        "unit": "month",
+        "setup": 0,
+        "year1": 8,
+        "year1_regular": 200,
+        "renewal": 200,
+        "transfer_in": null,
+        "transfer_out": 0,
+        "icann_fee_included": true
+      },
+      "promo": {
+        "conditions": "Willkommensangebot laut Preistabelle, gilt im ersten Jahr (12 Monate), im Voraus zahlbar",
+        "valid_until": null
+      },
+      "features": {
+        "ssl_free": true,
+        "forward_301": null,
+        "forward_302": null,
+        "dns_editor": true,
+        "custom_ns": true,
+        "dnssec": null,
+        "email_forwarding": null,
+        "whois_privacy": "none",
+        "api": null,
+        "two_factor": null,
+        "payment_methods": ["card", "paypal", "sepa"]
+      },
+      "evidence": {
+        "source_url": "https://www.ionos.de/domains/domain-preistabelle",
+        "fetched_at": "2026-11-15T04:25:12Z",
+        "method": "manual",
+        "evidence_hash": "sha256:99108886a7140f772f556b5f76a7c9ca4076c4580e104f3b3a43a8fc7c915543",
+        "confidence": "medium"
+      },
+      "provider_verified": false
+    },
+    {
+      "schema_version": 2,
+      "provider": "netcup",
+      "tld": "com",
+      "currency": "EUR",
+      "vat_included": true,
+      "price": {
+        "unit": "month",
+        "setup": 0,
+        "year1": 138,
+        "renewal": 138,
+        "transfer_in": null,
+        "transfer_out": null,
+        "icann_fee_included": null,
+        "year1_regular": 138
+      },
+      "promo": null,
+      "features": {
+        "ssl_free": null,
+        "forward_301": null,
+        "forward_302": null,
+        "dns_editor": true,
+        "custom_ns": true,
+        "dnssec": null,
+        "email_forwarding": null,
+        "whois_privacy": null,
+        "api": true,
+        "two_factor": true,
+        "payment_methods": ["sepa", "invoice", "paypal", "card"]
+      },
+      "evidence": {
+        "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-com",
+        "fetched_at": "2026-11-13T06:23:09Z",
+        "method": "scrape",
+        "evidence_hash": "sha256:9538488e87e0c30d31de89e00fa85750c209561a574cc48aa96e49bb52a9cd45",
+        "confidence": "high"
+      },
+      "provider_verified": false
+    },
+    {
+      "schema_version": 2,
+      "provider": "one-com",
+      "tld": "com",
+      "currency": "EUR",
+      "vat_included": true,
+      "price": {
+        "unit": "year",
+        "setup": 0,
+        "year1": 417,
+        "year1_regular": 2880,
+        "renewal": 2880,
+        "transfer_in": 417
+      },
+      "promo": {
+        "conditions": "Sonderangebote gelten nur für den ersten Vertragszeitraum.",
+        "valid_until": null
+      },
+      "evidence": {
+        "source_url": "https://www.one.com/de/domains/preise",
+        "fetched_at": "2026-11-15T04:28:49Z",
+        "method": "scrape",
+        "evidence_hash": "sha256:6817c19f72cf5b24299a818fc041431ada0937a694c7863bf373ad2467cf3c94",
+        "confidence": "high"
+      },
+      "provider_verified": false
+    },
+    {
+      "schema_version": 2,
+      "provider": "porkbun",
+      "tld": "com",
+      "currency": "USD",
+      "vat_included": null,
+      "price": {
+        "unit": "year",
+        "setup": 0,
+        "year1": 1181,
+        "renewal": 1181,
+        "transfer_in": 1181,
+        "transfer_out": null,
+        "icann_fee_included": true,
+        "year1_regular": 1181
+      },
+      "promo": null,
+      "features": {
+        "ssl_free": true,
+        "forward_301": true,
+        "forward_302": true,
+        "dns_editor": true,
+        "custom_ns": true,
+        "dnssec": null,
+        "email_forwarding": true,
+        "whois_privacy": "free",
+        "api": true,
+        "two_factor": true,
+        "payment_methods": [
+          "card",
+          "paypal",
+          "apple_pay",
+          "google_pay",
+          "amazon_pay",
+          "alipay",
+          "crypto"
+        ]
+      },
+      "evidence": {
+        "source_url": "https://porkbun.com/products/domains",
+        "source_endpoint": "https://api.porkbun.com/api/json/v3/pricing/get",
+        "fetched_at": "2026-11-13T06:23:38Z",
+        "method": "api",
+        "evidence_hash": "sha256:1423377f9a2b95839774fc04ad15546ef1b166ac477efba97f35b48fa540d645",
+        "confidence": "medium"
+      },
+      "provider_verified": false
+    }
+  ],
+  "derived": {
+    "description": "Abgeleitete Werte, berechnet mit @tldcost/core (computeTco) aus den Rohdaten in \"offers\" (siehe Methodik). Maßgeblich sind die Rohdaten. Beträge in Euro-Cent, brutto und netto; Monatspreise (price.unit \"month\") sind auf das Jahr hochgerechnet (mal 12), Fremdwährungen zum EZB-Kurs umgerechnet. setup ist einmalig, sum_Ny die Summe über N Jahre (Einrichtung und jede innerhalb von N Jahren fällige Zahlung in voller Höhe), avg_Ny der Durchschnitt pro Jahr.",
+    "tco": {
+      "chnet-domains/com": {
+        "currency": "EUR",
+        "fx": null,
+        "vat_not_stated": false,
+        "gross": {
+          "setup": 0,
+          "sum_2y": 3114,
+          "avg_2y": 1557,
+          "sum_3y": 4671,
+          "avg_3y": 1557,
+          "sum_5y": 7785,
+          "avg_5y": 1557,
+          "missing": []
+        },
+        "net": {
+          "setup": 0,
+          "sum_2y": 2616,
+          "avg_2y": 1308,
+          "sum_3y": 3924,
+          "avg_3y": 1308,
+          "sum_5y": 6540,
+          "avg_5y": 1308,
+          "missing": []
+        }
+      },
+      "inwx/com": {
+        "currency": "EUR",
+        "fx": null,
+        "vat_not_stated": false,
+        "gross": {
+          "setup": 0,
+          "sum_2y": 3690,
+          "avg_2y": 1845,
+          "sum_3y": 5535,
+          "avg_3y": 1845,
+          "sum_5y": 9225,
+          "avg_5y": 1845,
+          "missing": []
+        },
+        "net": {
+          "setup": 0,
+          "sum_2y": 3100,
+          "avg_2y": 1550,
+          "sum_3y": 4650,
+          "avg_3y": 1550,
+          "sum_5y": 7750,
+          "avg_5y": 1550,
+          "missing": []
+        }
+      },
+      "ionos/com": {
+        "currency": "EUR",
+        "fx": null,
+        "vat_not_stated": false,
+        "gross": {
+          "setup": 0,
+          "sum_2y": 2496,
+          "avg_2y": 1248,
+          "sum_3y": 4896,
+          "avg_3y": 1632,
+          "sum_5y": 9696,
+          "avg_5y": 1939,
+          "missing": []
+        },
+        "net": {
+          "setup": 0,
+          "sum_2y": 2098,
+          "avg_2y": 1049,
+          "sum_3y": 4115,
+          "avg_3y": 1372,
+          "sum_5y": 8149,
+          "avg_5y": 1630,
+          "missing": []
+        }
+      },
+      "netcup/com": {
+        "currency": "EUR",
+        "fx": null,
+        "vat_not_stated": false,
+        "gross": {
+          "setup": 0,
+          "sum_2y": 3312,
+          "avg_2y": 1656,
+          "sum_3y": 4968,
+          "avg_3y": 1656,
+          "sum_5y": 8280,
+          "avg_5y": 1656,
+          "missing": []
+        },
+        "net": {
+          "setup": 0,
+          "sum_2y": 2784,
+          "avg_2y": 1392,
+          "sum_3y": 4176,
+          "avg_3y": 1392,
+          "sum_5y": 6960,
+          "avg_5y": 1392,
+          "missing": []
+        }
+      },
+      "one-com/com": {
+        "currency": "EUR",
+        "fx": null,
+        "vat_not_stated": false,
+        "gross": {
+          "setup": 0,
+          "sum_2y": 3297,
+          "avg_2y": 1649,
+          "sum_3y": 6177,
+          "avg_3y": 2059,
+          "sum_5y": 11937,
+          "avg_5y": 2387,
+          "missing": []
+        },
+        "net": {
+          "setup": 0,
+          "sum_2y": 2770,
+          "avg_2y": 1385,
+          "sum_3y": 5190,
+          "avg_3y": 1730,
+          "sum_5y": 10030,
+          "avg_5y": 2006,
+          "missing": []
+        }
+      },
+      "porkbun/com": {
+        "currency": "EUR",
+        "fx": {
+          "currency": "USD",
+          "date": "2026-11-12",
+          "per_eur": 1.1081
+        },
+        "vat_not_stated": true,
+        "gross": {
+          "setup": 0,
+          "sum_2y": 2132,
+          "avg_2y": 1066,
+          "sum_3y": 3198,
+          "avg_3y": 1066,
+          "sum_5y": 5330,
+          "avg_5y": 1066,
+          "missing": []
+        },
+        "net": {
+          "setup": 0,
+          "sum_2y": 2132,
+          "avg_2y": 1066,
+          "sum_3y": 3198,
+          "avg_3y": 1066,
+          "sum_5y": 5330,
+          "avg_5y": 1066,
+          "missing": []
+        }
+      }
+    }
+  }
+}

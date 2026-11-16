@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "provider": "aws-route53",
+  "tld": "org",
+  "currency": "USD",
+  "vat_included": false,
+  "vat_rate": 1900,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 1600,
+    "renewal": 1600,
+    "transfer_in": 1600,
+    "transfer_includes_term": true,
+    "transfer_includes_term_source": {
+      "url": "https://d32ze2gidvkk54.cloudfront.net/Amazon_Route_53_Domain_Registration_Pricing_20140731.pdf",
+      "quote": "Renewed with Transfer"
+    },
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "features": {
+    "dns_editor": "paid"
+  },
+  "feature_costs": {
+    "dns_editor": {
+      "source": {
+        "url": "https://aws.amazon.com/route53/pricing/",
+        "quote": "0,50 USD pro gehostete Zone im Monat für die ersten 25 gehosteten Zonen"
+      },
+      "price_cents": 50,
+      "unit": "month",
+      "note": "für die ersten 25 gehosteten Zonen; danach 0,10 USD je Zone und Monat"
+    }
+  },
+  "evidence": {
+    "source_url": "https://d32ze2gidvkk54.cloudfront.net/Amazon_Route_53_Domain_Registration_Pricing_20140731.pdf",
+    "fetched_at": "2026-11-15T09:06:21Z",
+    "method": "manual",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

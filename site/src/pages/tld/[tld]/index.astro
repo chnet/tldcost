@@ -1,0 +1,12 @@
+---
+// /tld/<tld>/: the German TLD page (src/components/TldPage.astro).
+import TldPage from '../../../components/TldPage.astro';
+import { apiTlds } from '../../../lib/api';
+import { siteData } from '../../../lib/site-data';
+
+export function getStaticPaths() {
+  return apiTlds(siteData()).map((tld) => ({ params: { tld } }));
+}
+---
+
+<TldPage lang="de" tld={String(Astro.params.tld)} />

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "ionos",
+  "tld": "ch",
+  "entries": [
+    {
+      "date": "2026-11-15",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 50,
+      "renewal": 100,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.ionos.de/domains/domain-preistabelle",
+        "fetched_at": "2026-11-15T04:25:12Z"
+      }
+    }
+  ]
+}

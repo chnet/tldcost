@@ -1,0 +1,136 @@
+{
+  "api_version": 1,
+  "schema_version": 2,
+  "data_version": "sha256:b3f8108146627cce9633d52749cb6c2a3664a3fdfbab493836dc4ca21da953c5",
+  "data_updated": "2026-11-15T04:28:49Z",
+  "data_oldest": "2026-11-13T05:04:21Z",
+  "documentation": "https://tldcost.io/api/",
+  "license": {
+    "name": "CC BY 4.0",
+    "spdx": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Quelle: tldcost.io (CHnet Solutions Plus UG), CC BY 4.0"
+  },
+  "tlds": [
+    {
+      "tld": "de",
+      "offers": 6,
+      "href": "/api/v1/offers/de.json",
+      "page": "/tld/de/"
+    },
+    {
+      "tld": "com",
+      "offers": 6,
+      "href": "/api/v1/offers/com.json",
+      "page": "/tld/com/"
+    },
+    {
+      "tld": "net",
+      "offers": 6,
+      "href": "/api/v1/offers/net.json",
+      "page": "/tld/net/"
+    },
+    {
+      "tld": "org",
+      "offers": 6,
+      "href": "/api/v1/offers/org.json",
+      "page": "/tld/org/"
+    },
+    {
+      "tld": "eu",
+      "offers": 6,
+      "href": "/api/v1/offers/eu.json",
+      "page": "/tld/eu/"
+    },
+    {
+      "tld": "io",
+      "offers": 6,
+      "href": "/api/v1/offers/io.json",
+      "page": "/tld/io/"
+    },
+    {
+      "tld": "dev",
+      "offers": 5,
+      "href": "/api/v1/offers/dev.json",
+      "page": "/tld/dev/"
+    },
+    {
+      "tld": "app",
+      "offers": 5,
+      "href": "/api/v1/offers/app.json",
+      "page": "/tld/app/"
+    },
+    {
+      "tld": "shop",
+      "offers": 6,
+      "href": "/api/v1/offers/shop.json",
+      "page": "/tld/shop/"
+    },
+    {
+      "tld": "info",
+      "offers": 6,
+      "href": "/api/v1/offers/info.json",
+      "page": "/tld/info/"
+    },
+    {
+      "tld": "at",
+      "offers": 4,
+      "href": "/api/v1/offers/at.json",
+      "page": "/tld/at/"
+    },
+    {
+      "tld": "ch",
+      "offers": 4,
+      "href": "/api/v1/offers/ch.json",
+      "page": "/tld/ch/"
+    },
+    {
+      "tld": "me",
+      "offers": 5,
+      "href": "/api/v1/offers/me.json",
+      "page": "/tld/me/"
+    },
+    {
+      "tld": "co",
+      "offers": 5,
+      "href": "/api/v1/offers/co.json",
+      "page": "/tld/co/"
+    },
+    {
+      "tld": "online",
+      "offers": 6,
+      "href": "/api/v1/offers/online.json",
+      "page": "/tld/online/"
+    },
+    {
+      "tld": "berlin",
+      "offers": 4,
+      "href": "/api/v1/offers/berlin.json",
+      "page": "/tld/berlin/"
+    },
+    {
+      "tld": "xyz",
+      "offers": 6,
+      "href": "/api/v1/offers/xyz.json",
+      "page": "/tld/xyz/"
+    },
+    {
+      "tld": "ai",
+      "offers": 2,
+      "href": "/api/v1/offers/ai.json",
+      "page": "/tld/ai/"
+    },
+    {
+      "tld": "biz",
+      "offers": 6,
+      "href": "/api/v1/offers/biz.json",
+      "page": "/tld/biz/"
+    },
+    {
+      "tld": "cloud",
+      "offers": 6,
+      "href": "/api/v1/offers/cloud.json",
+      "page": "/tld/cloud/"
+    }
+  ]
+}

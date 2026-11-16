@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "netcup",
+  "tld": "ch",
+  "entries": [
+    {
+      "date": "2026-11-13",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 230,
+      "renewal": 230,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.netcup.com/de/domain/zusaetzliche-domain-ch",
+        "fetched_at": "2026-11-13T06:23:19Z"
+      }
+    }
+  ]
+}

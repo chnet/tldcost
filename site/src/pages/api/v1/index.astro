@@ -1,0 +1,81 @@
+---
+// `/api/v1/`: the base address of the JSON API answers with a short index instead of the 404 page
+// (archive issue 59): links to the documentation (/api/, /en/api/) and to every file. One path for
+// both languages, so the page is bilingual like 404.astro: German first, then English
+// (lang="en"). Not indexed; the sitemap and tests/check-build.mjs skip /api/v1/. Texts: the
+// catalogue sections `pages.apiIndex` and `pages.api.files` (site-de.ts / site-en.ts); the file
+// descriptions hold inline HTML with links built here from constants, rendered with set:html.
+import { LOCALES } from '../../../i18n';
+import { API_PATH, apiTlds, offersPath, SCHEMA_NAMES, schemaPath } from '../../../lib/api';
+import { siteData } from '../../../lib/site-data';
+import Layout from '../../../layouts/Layout.astro';
+
+const tlds = apiTlds(siteData());
+const example = tlds.includes('de') ? 'de' : (tlds[0] ?? 'de');
+
+/** Text or an attribute value for HTML built here (set:html), escaped like Astro does. */
+const esc = (v: string) =>
+  v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const link = (href: string, text: string) => `<a href="${esc(href)}"><code>${esc(text)}</code></a>`;
+const schemaList = SCHEMA_NAMES.map((n) => link(schemaPath(n), n)).join(', ');
+
+const parts = (['de', 'en'] as const).map((lang) => {
+  const s = LOCALES[lang].s.pages;
+  return {
+    lang,
+    t: s.apiIndex,
+    f: s.api.files,
+    doc: lang === 'en' ? '/en/api/' : '/api/',
+  };
+});
+const de = LOCALES.de.s.pages.apiIndex;
+const en = LOCALES.en.s.pages.apiIndex;
+---
+
+<Layout
+  title={`${de.title} | tldcost`}
+  description={`${de.description} ${en.description}`}
+  noindex
+>
+  <div class="tc-prose">
+    {
+      parts.map(({ lang, t, f, doc }) => (
+        <section lang={lang === 'en' ? 'en' : undefined}>
+          {lang === 'de' ? <h1>{t.h}</h1> : <h2>{t.h}</h2>}
+          <p>{t.intro}</p>
+          <p>
+            <a href={doc}>{t.doc}</a>
+          </p>
+          {lang === 'de' ? <h2>{t.files}</h2> : <h3>{t.files}</h3>}
+          <ul>
+            <li>
+              <a href={`${API_PATH}/all.json`}>
+                <code>{API_PATH}/all.json</code>
+              </a>
+              : {f.all}
+            </li>
+            <li>
+              <a href={`${API_PATH}/tlds.json`}>
+                <code>{API_PATH}/tlds.json</code>
+              </a>
+              : {f.tlds}
+            </li>
+            <li>
+              <code>{API_PATH}/offers/&lt;tld&gt;.json</code>:{' '}
+              <Fragment set:html={f.offers(link(offersPath(example), offersPath(example)))} />
+            </li>
+            <li>
+              <a href={`${API_PATH}/openapi.json`}>
+                <code>{API_PATH}/openapi.json</code>
+              </a>
+              : {f.openapi}
+            </li>
+            <li>
+              <code>{API_PATH}/schema/</code>: <Fragment set:html={f.schema(schemaList)} />
+            </li>
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</Layout>

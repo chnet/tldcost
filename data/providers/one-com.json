@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "one-com",
+  "name": "one.com",
+  "website": "https://www.one.com/de/",
+  "country": "SE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.one.com/de-de/legal/agb/",
+    "section": "AGB v.17 Abschn. 1 (12 Monate, Verlängerung), 1.6 (30 Tage), 4.5 (12 Monate im Voraus)",
+    "min_term_months": 12,
+    "notice_period_days": 30,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

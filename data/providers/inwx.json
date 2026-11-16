@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "inwx",
+  "name": "INWX",
+  "website": "https://www.inwx.de/de",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.inwx.de/de/aboutus/termsdomains",
+    "section": "Domainvertrag Nr. 6 (jährl. Verlängerung bei Guthaben), Nr. 7 (vor Verlängerungsdatum; TLD-Seiten: 1 Tag), Nr. 8; Konflikt: Nr. 5 1 Monat, AGB § 4 4 Wochen",
+    "min_term_months": 12,
+    "notice_period_days": 1,
+    "billing_cycle": "yearly",
+    "auto_renew_default": true,
+    "notes": {
+      "notice_period_days": "Widersprüchliche Angaben: Domainvertrag Nr. 7 verlangt die Kündigung vor dem Verlängerungsdatum, die TLD-Seiten nennen 1 Tag. Domainvertrag Nr. 5 nennt einen Monat zum Monatsende, AGB § 4 vier Wochen. Die Tabelle zeigt den Wert für Domains (1 Tag)."
+    }
+  },
+  "reviewed_at": "2026-11-12"
+}

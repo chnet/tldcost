@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "ionos",
+  "name": "IONOS",
+  "website": "https://www.ionos.de/",
+  "country": "DE",
+  "vat_rate": 1900,
+  "operator": false,
+  "terms": {
+    "url": "https://www.ionos.de/hilfe/domains/laufzeiten-und-kuendigung/automatische-verlaengerung-einer-domain/",
+    "section": "Nur Hilfeseiten (Laufzeit 12 Mon., Auto-Renew um 1 Jahr); AGB unter /terms- per robots.txt gesperrt, nicht gelesen",
+    "min_term_months": 12,
+    "notice_period_days": null,
+    "billing_cycle": null,
+    "auto_renew_default": true
+  },
+  "reviewed_at": "2026-11-12"
+}

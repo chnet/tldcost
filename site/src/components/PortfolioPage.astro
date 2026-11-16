@@ -1,0 +1,38 @@
+---
+// `/portfolio/` and `/en/portfolio/`: the portfolio calculator (Archiv-Issue 74). Data comes only from data/
+// through @tldcost/core; the island computes the totals in the browser with computeBasket (no API,
+// no request).
+import { LOCALES, type Lang } from '../i18n';
+import { buildBasketPayload } from '../lib/basket-payload';
+import { siteData } from '../lib/site-data';
+import Layout from '../layouts/Layout.astro';
+import BasketCalculatorDe from './BasketCalculatorDe';
+import BasketCalculatorEn from './BasketCalculatorEn';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = LOCALES[lang].s.pages.portfolio;
+const json = JSON.stringify(buildBasketPayload(siteData(), lang));
+---
+
+<Layout
+  footnotes
+  title={t.title}
+  description={t.description}
+  other={lang === 'de' ? '/en/portfolio/' : '/portfolio/'}
+>
+  <h1>{t.h1}</h1>
+  <p class="tc-intro">{t.intro}</p>
+  {
+    lang === 'de' ? (
+      <BasketCalculatorDe client:load data={json} />
+    ) : (
+      <BasketCalculatorEn client:load data={json} />
+    )
+  }
+  <noscript>
+    <p class="noscript">{t.noscript}</p>
+  </noscript>
+</Layout>

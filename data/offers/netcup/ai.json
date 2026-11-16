@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "provider": "netcup",
+  "tld": "ai",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 22992,
+    "year1_regular": 22992,
+    "renewal": 22992,
+    "term_years": 2,
+    "renewal_term_years": 2,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "contract": {
+    "min_term_months": 24,
+    "billing_cycle": "multi-year"
+  },
+  "features": {
+    "ssl_free": null,
+    "forward_301": null,
+    "forward_302": null,
+    "dns_editor": true,
+    "custom_ns": true,
+    "dnssec": null,
+    "email_forwarding": null,
+    "whois_privacy": null,
+    "api": true,
+    "two_factor": true,
+    "payment_methods": ["sepa", "invoice", "paypal", "card"]
+  },
+  "evidence": {
+    "source_url": "https://www.netcup.com/de/domain/domain-.ai",
+    "fetched_at": "2026-11-13T06:23:25Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:fb16ba4f5fb818681a1fe794f27e6ee33e7e2a12e6f41a69bb011eba3ec0682a",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

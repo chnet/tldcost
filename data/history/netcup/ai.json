@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "netcup",
+  "tld": "ai",
+  "entries": [
+    {
+      "date": "2026-11-13",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 22992,
+      "renewal": 22992,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.netcup.com/de/domain/domain-.ai",
+        "fetched_at": "2026-11-13T06:23:25Z"
+      }
+    }
+  ]
+}

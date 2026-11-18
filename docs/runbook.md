@@ -128,13 +128,16 @@ The three identifiers are **secrets**, because the Actions log prints every step
 | `DEPLOY_ROLE_ARN` | secret | Output `GithubDeployRoleArn` |
 | `SITE_BUCKET` | secret | Output `SiteBucketName` |
 | `DISTRIBUTION_ID` | secret | Output `DistributionId` |
+| `DEPLOY_ROLE_ID` | secret | Unique ID of the deploy role (`AROA…`), see below |
 | `AWS_REGION` | variable | `SITE_REGION` from step 4 (region of the site stack) |
 
-For example with `gh secret set DEPLOY_ROLE_ARN --env production --repo chnet/tldcost` (the value is read from the prompt, not from argv), the same for `SITE_BUCKET` and `DISTRIBUTION_ID`, and `gh variable set AWS_REGION --env production --repo chnet/tldcost --body '<SITE_REGION>'`.
+For example with `gh secret set DEPLOY_ROLE_ARN --env production --repo chnet/tldcost` (the value is read from the prompt, not from argv), the same for `SITE_BUCKET`, `DISTRIBUTION_ID` and `DEPLOY_ROLE_ID`, and `gh variable set AWS_REGION --env production --repo chnet/tldcost --body '<SITE_REGION>'`.
+
+`DEPLOY_ROLE_ID` is not a stack output. `configure-aws-credentials` logs the role unique ID on every deploy, and that ID encodes the account ID; `deploy.yml` masks it with this secret and stops without it. Read it with `aws iam get-role --role-name "${ROLE_ARN##*/}" --profile <profile> --query Role.RoleId --output text | tr -d '\n'` (with `ROLE_ARN` set to the output `GithubDeployRoleArn`) and pipe it straight into `gh secret set DEPLOY_ROLE_ID --env production --repo chnet/tldcost`, without echoing it. If the role is ever recreated, its unique ID changes: update the secret, otherwise the deploy fails after the log line was written, and delete that run's log.
 
 Transition: `deploy.yml` reads `secrets.X || vars.X`, so an environment that still has the three values as variables keeps deploying, but those values then show in the first step's log. Once the secrets are set, delete the three variables.
 
-Check (expected: three secrets by name, and the variable `AWS_REGION`):
+Check (expected: four secrets by name, and the variable `AWS_REGION`):
 
 ```bash
 gh secret list --env production --repo chnet/tldcost

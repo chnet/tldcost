@@ -16,7 +16,12 @@
 #   DEPLOY_ROLE_ARN  secret    GithubDeployRoleArn (contains the account ID)
 #   SITE_BUCKET      secret    SiteBucketName
 #   DISTRIBUTION_ID  secret    DistributionId
+#   DEPLOY_ROLE_ID   secret    unique ID of the deploy role (AROA...; `aws iam get-role ... --query Role.RoleId`)
 #   AWS_REGION       variable  region of the stack `tldcost` (siteRegion, e.g. eu-west-1)
+# configure-aws-credentials always logs "Authenticated as assumedRoleId <role unique ID>:<session>",
+# and mask-aws-account-id does not cover it. The role unique ID encodes the account ID, so the job
+# masks DEPLOY_ROLE_ID before that step, refuses to run without it, and fails if it no longer
+# matches the assumed role (role recreated: update the secret and delete that run's log).
 # Actions prints every step's env, inputs and script in the log, and never masks variables, so the
 # three identifiers must be secrets (masked everywhere). Transition: `secrets.X || vars.X` keeps the
 # existing variables working until the secrets are set; a value from a variable is masked only from
@@ -98,7 +103,10 @@ jobs:
           AWS_REGION: ${{ vars.AWS_REGION }}
           SITE_BUCKET: ${{ secrets.SITE_BUCKET || vars.SITE_BUCKET }}
           DISTRIBUTION_ID: ${{ secrets.DISTRIBUTION_ID || vars.DISTRIBUTION_ID }}
+          DEPLOY_ROLE_ID: ${{ secrets.DEPLOY_ROLE_ID }}
         run: |
+          # The role unique ID must be masked before configure-aws-credentials prints it.
+          if [ -n "$DEPLOY_ROLE_ID" ]; then echo "::add-mask::$DEPLOY_ROLE_ID"; fi
           # extra guard for values that still come from variables (secrets are masked anyway)
           for v in "$DEPLOY_ROLE_ARN" "$SITE_BUCKET" "$DISTRIBUTION_ID"; do
             if [ -n "$v" ]; then echo "::add-mask::$v"; fi
@@ -122,6 +130,7 @@ jobs:
           check AWS_REGION '^[a-z]{2}(-[a-z]+)+-[0-9]+$'
           check SITE_BUCKET '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
           check DISTRIBUTION_ID '^[A-Z0-9]{10,20}$'
+          check DEPLOY_ROLE_ID '^AROA[A-Z0-9]{12,28}$'
           exit "$fail"
 
       # The artifact of this run only (no cross-run download, so no token needed); v8 fails on a
@@ -148,6 +157,18 @@ jobs:
           role-session-name: tldcost-deploy-${{ github.run_id }}
           role-duration-seconds: 1800
           mask-aws-account-id: true
+
+      # The mask above only works while DEPLOY_ROLE_ID is the role's current unique ID. Nothing here is
+      # printed: the comparison runs on variables only.
+      - name: Check role unique ID mask
+        env:
+          DEPLOY_ROLE_ID: ${{ secrets.DEPLOY_ROLE_ID }}
+        run: |
+          uid=$(aws sts get-caller-identity --query UserId --output text)
+          if [ "${uid%%:*}" != "$DEPLOY_ROLE_ID" ]; then
+            echo "::error::DEPLOY_ROLE_ID does not match the assumed role (role recreated?). Update the secret and delete this run's log before the repository is public."
+            exit 1
+          fi
 
       # The role allows exactly s3:ListBucket on the bucket and s3:PutObject/s3:DeleteObject on its objects.
       # --only-show-errors: the per-file lines would print the bucket name into the public log; errors

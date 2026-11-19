@@ -2,7 +2,7 @@
 title: Legal notice
 slug: impressum
 lang: en
-source_sha256: '7a2826a1ccdcea6c158893e35946f57a3ab3a7311db9e37e51f2d6e820bbc1a9'
+source_sha256: 'e7988e53f894da1f7da0fb8f6fe3da8c512ace144d393874fd97b651a0efcbd1'
 ---
 
 <!--
@@ -32,7 +32,7 @@ Germany
 Email: [hello@chnet.solutions](mailto:hello@chnet.solutions)
 Phone: +49 30 2201269 80
 
-Please report wrong data through the “Report an error” link in the table or by email to [hello@chnet.solutions](mailto:hello@chnet.solutions). As soon as the repository is public, we also take reports as issues on GitHub, so that every correction can be traced.
+Please report wrong data through the “Report an error” link in the table or by email to [hello@chnet.solutions](mailto:hello@chnet.solutions). We also take reports as issues on GitHub (github.com/chnet/tldcost), so that every correction can be traced.
 
 ## Responsible for the content pursuant to § 18 (2) MStV (Medienstaatsvertrag, German Interstate Media Treaty)
 

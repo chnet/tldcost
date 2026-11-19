@@ -2,7 +2,7 @@
 title: Privacy policy
 slug: datenschutz
 lang: en
-source_sha256: 'fc8a5b05b57f2ebb230b36d731c0d141cc1491bf4f7c4cd35ed14fc4ef323c79'
+source_sha256: '5b6af211850a1dac24599e05db49fee94fe3486b27906b10da60529744671967'
 ---
 
 <!--
@@ -108,4 +108,4 @@ You can lodge a complaint with a data protection supervisory authority (Art. 77 
 
 We update this privacy policy when the technology of tldcost or the legal situation changes.
 
-Last updated: 14 Nov 2026
+Last updated: 19 Nov 2026

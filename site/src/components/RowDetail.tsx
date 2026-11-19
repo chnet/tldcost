@@ -1,7 +1,8 @@
 // RowDetail (design system): everything behind the numbers of one row. Raw prices in the
 // provider's own unit and VAT mode next to what the table shows, the promo conditions (quoted),
 // the contract terms with their source and the provider's terms notes, paid features (price, note,
-// quoted source; Archiv-Issue 124), the evidence, and at the end the tc-source line: source link, fetch date,
+// quoted source; Archiv-Issue 124), the price history from 3 entries on (RowHistory; Archiv-Issue 51),
+// the evidence, and at the end the tc-source line: source link, fetch date,
 // "Fehler melden". Display only: nothing here feeds into sorting.
 import { Fragment } from 'preact';
 import { useLocale } from '../i18n/context';
@@ -13,6 +14,7 @@ import type { SortKey } from '../lib/sort';
 import type { Vat } from '../lib/url-state';
 import { columnText, contractNote, formatPerMonth, formatValue, reportUrl } from '../lib/view';
 import NoteBody from './NoteBody';
+import RowHistory from './RowHistory';
 
 const EXTERNAL = 'noopener noreferrer nofollow';
 
@@ -121,6 +123,8 @@ export default function RowDetail({
           )}
         </dl>
       </section>
+
+      {d.history && <RowHistory h={d.history} vat={vat} />}
 
       <section>
         <h2>{t.contractHeading}</h2>

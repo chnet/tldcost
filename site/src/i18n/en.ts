@@ -186,6 +186,13 @@ export const en: Messages = {
     notStated: 'not stated',
     expiredNote: 'expired, the price may be out of date',
     regularYear1: 'Regular in the first year',
+    historyHeading: 'Price history',
+    historyCaption: (mode, capped) =>
+      `${capped ? 'Last 12 changes' : 'Per data state'}, ${mode} in euros per year:`,
+    historyUnknown: 'cannot be converted',
+    historyBreak: (date, currency, market) =>
+      `From ${date} a new segment (${currency}${market ? `, prices of the ${market} market` : ''}): ` +
+      'currency, VAT statement, unit or market changed, so the line is broken there.',
     paidHeading: 'Paid features',
     paidUnit: { year: '/year', month: '/month', once: ' one-off' },
     paidSource: 'source',

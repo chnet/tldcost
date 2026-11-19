@@ -201,6 +201,13 @@ export const de = {
     notStated: 'nicht angegeben',
     expiredNote: 'abgelaufen, der Preis kann veraltet sein',
     regularYear1: 'Regulär im ersten Jahr',
+    historyHeading: 'Preisverlauf',
+    historyCaption: (mode: string, capped: boolean) =>
+      `${capped ? 'Letzte 12 Änderungen' : 'Je Datenstand'}, ${mode} in Euro pro Jahr:`,
+    historyUnknown: 'nicht umrechenbar',
+    historyBreak: (date: string, currency: string, market: string | null) =>
+      `Ab ${date} neuer Abschnitt (${currency}${market ? `, Preise des Marktes ${market}` : ''}): ` +
+      'Währung, MwSt.-Angabe, Einheit oder Markt haben sich geändert, die Linie ist dort unterbrochen.',
     paidHeading: 'Kostenpflichtige Leistungen',
     paidUnit: { year: '/Jahr', month: '/Monat', once: ' einmalig' },
     paidSource: 'Quelle',

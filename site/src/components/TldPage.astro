@@ -5,7 +5,7 @@
 import { LOCALES, pathIn, type Lang } from '../i18n';
 import { apiTlds, offersPath, tldPagePath } from '../lib/api';
 import { buildPayload } from '../lib/rows';
-import { siteData } from '../lib/site-data';
+import { siteData, siteHistory } from '../lib/site-data';
 import { payloadForTld } from '../lib/tld-payload';
 import Layout from '../layouts/Layout.astro';
 import PriceTableDe from './PriceTableDe';
@@ -20,7 +20,7 @@ const { lang, tld } = Astro.props;
 const L = LOCALES[lang];
 const t = L.s.pages.tld;
 const data = siteData();
-const payload = payloadForTld(buildPayload(data, { locale: L }), tld);
+const payload = payloadForTld(buildPayload(data, { locale: L, history: siteHistory() }), tld);
 const offers = data.offers.filter((o) => o.tld === tld);
 const providerCount = new Set(offers.map((o) => o.provider)).size;
 const fetched = offers.map((o) => o.evidence.fetched_at).sort();

@@ -4,6 +4,17 @@
   "tld": "de",
   "entries": [
     {
+      "date": "2026-11-05",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 450,
+      "renewal": 450,
+      "transfer_in": 450,
+      "source": { "url": "https://bravo.example/preise", "fetched_at": "2026-11-05T08:00:00Z" }
+    },
+    {
       "date": "2026-11-12",
       "currency": "EUR",
       "vat_included": true,

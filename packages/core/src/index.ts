@@ -30,7 +30,13 @@ export type {
   SetupSource,
 } from './types.js';
 export { PAYABLE_FEATURES } from './types.js';
-export { appendHistory, HISTORY_STATE_FIELDS, priceState, samePriceState } from './history.js';
+export {
+  appendHistory,
+  comparable,
+  HISTORY_STATE_FIELDS,
+  priceState,
+  samePriceState,
+} from './history.js';
 export {
   FOREIGN_MARKET_CURRENCIES,
   isMarketSwitch,

@@ -4,6 +4,28 @@
   "tld": "de",
   "entries": [
     {
+      "date": "2026-11-01",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 99,
+      "renewal": 500,
+      "transfer_in": 500,
+      "source": { "url": "https://alpha.example/preise", "fetched_at": "2026-11-01T08:00:00Z" }
+    },
+    {
+      "date": "2026-11-06",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "year",
+      "setup": 0,
+      "year1": 199,
+      "renewal": 550,
+      "transfer_in": 550,
+      "source": { "url": "https://alpha.example/preise", "fetched_at": "2026-11-06T08:00:00Z" }
+    },
+    {
       "date": "2026-11-12",
       "currency": "EUR",
       "vat_included": true,

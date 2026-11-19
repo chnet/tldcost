@@ -3,6 +3,7 @@ import { computeTco, effectiveContract } from '@tldcost/core';
 import { loadData } from '@tldcost/core/load';
 import { describe, expect, it } from 'vitest';
 import { COLUMN_IDS } from '../../src/lib/columns';
+import { LOCALES } from '../../src/i18n';
 import { buildPayload, NOTE_VAT_NOT_STATED } from '../../src/lib/rows';
 import { footnotes, orderedRows, sortableRows } from '../../src/lib/view';
 import { defaultState } from '../../src/lib/url-state';
@@ -45,6 +46,80 @@ describe('buildPayload', () => {
     expect(payload.notes['fx-USD-2026-11-11']).toContain('11.11.2026');
     expect(echo?.notes).toContain(NOTE_VAT_NOT_STATED);
     expect(echo?.gross.sum_3y).toBe(echo?.net.sum_3y); // no VAT statement: same in both modes
+  });
+
+  it('foreign market display (owner decision 2026-11-19): converted, VAT added, a market note per mode', () => {
+    const provider = data.providers.find((p) => p.id === 'alpha')!;
+    const base = data.offers.find((o) => o.provider === 'alpha' && o.tld === 'de')!;
+    const offer = {
+      ...base,
+      currency: 'USD',
+      vat_included: false,
+      price: { ...base.price, setup: 0, year1: 1299, year1_regular: 1299, renewal: 1299 },
+      promo: null,
+      foreign_market: { country: 'US', currency: 'USD', quote: 'Domainpreise in USD: .de 12,99' },
+      evidence: { ...base.evidence, fetched_at: '2026-11-12T06:00:00Z' },
+    };
+    const build = (locale?: 'en') =>
+      buildPayload(
+        { providers: [provider], offers: [offer], fx: data.fx },
+        locale ? { locale: LOCALES.en } : {},
+      );
+    const de = build();
+    const row = de.rows[0]!;
+    // 12.99 USD at 1.0834 USD per EUR (ECB 2026-11-11, the last table on or before the fetch),
+    // plus 19 %, rounded once: 1299 / 1.0834 * 1.19 = 1426.81 -> 1427
+    expect(row.gross.year1).toBe(1427);
+    expect(row.net.year1).toBe(Math.round(1299 / 1.0834)); // 1199
+    const id = 'market-US-USD-2026-11-11-1900';
+    const netId = 'market-net-US-USD-2026-11-11';
+    // a cell note per VAT mode on the price cells, no row note
+    expect(row.notes).toEqual([]);
+    expect(row.cellNotes.gross.year1).toEqual([id]);
+    expect(row.cellNotes.gross.renewal).toEqual([id]);
+    expect(row.cellNotes.net.year1).toEqual([netId]);
+    expect(row.cellNotes.net.renewal).toEqual([netId]);
+    expect(JSON.stringify(row.cellNotes.gross)).not.toContain(netId);
+    expect(JSON.stringify(row.cellNotes.net)).not.toContain(id);
+    // gross: the owner's wording verbatim; net: without the VAT part
+    expect(de.notes[id]).toBe(
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026, zzgl. 19 % MwSt.; der Preis für Kunden in Deutschland kann abweichen.',
+    );
+    expect(de.notes[netId]).toBe(
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026; der Preis für Kunden in Deutschland kann abweichen.',
+    );
+    // neither the generic FX note nor the net-price note: the market notes cover both
+    expect(
+      Object.keys(de.notes).filter((k) => k.startsWith('fx-') || k.startsWith('vat-')),
+    ).toEqual([]);
+    const en = build('en');
+    expect(en.notes[id]).toBe(
+      'US price, converted at the rate of 11 Nov 2026, plus 19% VAT; the price for customers in Germany may differ.',
+    );
+    expect(en.notes[netId]).toBe(
+      'US price, converted at the rate of 11 Nov 2026; the price for customers in Germany may differ.',
+    );
+    // the same offer without foreign_market keeps the generic notes
+    const withoutMarket: Partial<typeof offer> = { ...offer };
+    delete withoutMarket.foreign_market;
+    // the note names the date of the ECB table used (fx.date), not the fetch date: here the
+    // fetch is on 12.11., the newest table on or before it is 11.11.; a later table is not used
+    const later = { ...data.fx[0]!, date: '2026-11-13', rates: { USD: 1.2 } };
+    const fallback = buildPayload({
+      providers: [provider],
+      offers: [offer],
+      fx: [...data.fx, later],
+    });
+    expect(fallback.rows[0]?.cellNotes.gross.year1).toEqual([id]);
+    expect(fallback.notes[id]).toContain('vom 11.11.2026,');
+    expect(fallback.notes[id]).not.toContain('12.11.2026');
+    expect(fallback.rows[0]?.gross.year1).toBe(1427);
+    const plain = buildPayload({
+      providers: [provider],
+      offers: [withoutMarket as typeof base],
+      fx: data.fx,
+    });
+    expect(plain.rows[0]?.notes).toEqual(['fx-USD-2026-11-11']);
   });
 
   it('provider vat_rate null (non-EU): no VAT statement as stated, stated VAT without rate unknown', () => {

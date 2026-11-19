@@ -9,12 +9,14 @@
 // phone panel, tc-best over the shown rows; rows without a total always come last.
 import {
   computeBasket,
+  offerMarket,
   type BasketLine,
   type BasketProvider,
   type BasketPromoPool,
   type BasketResult,
   type FxRate,
   type Offer,
+  type PriceMode,
 } from '@tldcost/core';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
@@ -113,6 +115,23 @@ const termNoteId = (provider: string, tld: string) =>
 function termNoteText(L: Locale, offer: Offer): NoteText {
   const src = offer.price.transfer_includes_term_source;
   return L.m.basket.notes.term(offer.tld, src?.quote || null, src?.url || null);
+}
+/** Another market's prices (Offer.foreign_market): converted, in gross mode with VAT added. */
+interface MarketNote {
+  fx: FxRate;
+  market: string;
+  rate: number;
+}
+export const marketNoteId = (n: MarketNote, vat: PriceMode) =>
+  vat === 'gross'
+    ? `market-${n.market}-${n.fx.currency}-${n.fx.date}-${n.rate}`
+    : `market-net-${n.market}-${n.fx.currency}-${n.fx.date}`;
+/** Gross: the owner's wording (2026-11-19); net: without the VAT part. */
+export function marketNoteText(L: Locale, n: MarketNote, vat: PriceMode): string {
+  const date = L.f.date(n.fx.date);
+  return vat === 'gross'
+    ? L.m.basket.notes.foreignMarket(n.market, date, L.f.decimal(n.rate / 100))
+    : L.m.basket.notes.foreignMarketNet(n.market, date);
 }
 const netNoteId = (rate: number) => `vat-net-${rate}`;
 const netNoteText = (L: Locale, rate: number) => L.m.basket.notes.vatNet(L.f.decimal(rate / 100));
@@ -270,12 +289,16 @@ function Calculator({ data, L }: BasketCalculatorProps) {
     for (const line of p.lines) {
       const offer = offerOf.get(`${p.provider}/${line.tld}`);
       if (!offer) continue;
-      if (line.fx) {
+      const rate = offer.vat_rate ?? payload.providers[p.provider]?.vat_rate ?? null;
+      // another market's prices (owner decision 2026-11-19): a note per VAT mode on the line's
+      // subtotal (conversion, in gross mode also the added VAT), in place of the FX and net notes
+      const market = offerMarket(offer);
+      const marketNote = line.fx && market && rate !== null ? { fx: line.fx, market, rate } : null;
+      if (!marketNote && line.fx) {
         ids.push(fxNoteId(line.fx));
         texts.set(fxNoteId(line.fx), fxNoteText(L, line.fx));
       }
-      const rate = offer.vat_rate ?? payload.providers[p.provider]?.vat_rate ?? null;
-      if (offer.vat_included === false && state.vat === 'gross' && rate !== null) {
+      if (offer.vat_included === false && state.vat === 'gross' && rate !== null && !marketNote) {
         ids.push(netNoteId(rate));
         texts.set(netNoteId(rate), netNoteText(L, rate));
       }
@@ -285,6 +308,11 @@ function Calculator({ data, L }: BasketCalculatorProps) {
       }
       if (offer.price.unit === 'month') ids.push(NOTE_MONTHLY);
       const cell: string[] = [];
+      if (marketNote) {
+        const id = marketNoteId(marketNote, state.vat);
+        texts.set(id, marketNoteText(L, marketNote, state.vat));
+        (line.subtotal !== null ? cell : ids).push(id);
+      }
       if (line.promoDomains !== null && line.subtotal !== null) {
         const id = promoNoteId(p.provider, line.tld);
         texts.set(id, promoNoteText(L, offer, line.promoScope === 'unlimited'));

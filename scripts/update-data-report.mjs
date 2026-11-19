@@ -46,7 +46,8 @@ export const CAPS = {
   failures: 7000,
   reasons: 5000,
   log: 6000,
-  priceChanges: 8000,
+  priceChanges: 7000,
+  markets: 1000,
   alerts: 5000,
   warnings: 5000,
   plausibility: 3000,
@@ -296,9 +297,22 @@ export function assess({ report, scrapeExit, validateExit, changedFiles, dataDir
     .map((c) =>
       [
         `${c.kind === 'added' ? '+' : '~'} ${c.provider}/.${c.tld}${c.kind === 'added' ? ' (neu)' : ''}`,
+        ...(c.market ? [`    Markt ${c.market}`] : []),
         ...(c.fields ?? []).map((f) => `    ${f.path}: ${fmt(f.from)} -> ${fmt(f.to)}`),
       ].join('\n'),
     );
+  // market switches (owner decision 2026-11-19, "Fremdmarkt"): one line per provider and direction,
+  // shown above the price changes and in the data commit, so the review of the data PR sees them
+  const switches = new Map();
+  for (const c of report?.changes ?? []) {
+    if (!c.market) continue;
+    const key = `${c.market}\u0000${c.provider}`;
+    switches.set(key, [...(switches.get(key) ?? []), `.${c.tld}`]);
+  }
+  const marketSwitches = [...switches].map(([key, tlds]) => {
+    const [label, provider] = key.split('\u0000');
+    return `Markt ${label}: ${provider} (${tlds.join(', ')})`;
+  });
   return {
     gateFailed: reasons.length > 0,
     reasons,
@@ -314,6 +328,7 @@ export function assess({ report, scrapeExit, validateExit, changedFiles, dataDir
     changedFiles: dataFiles,
     hasChanges: dataFiles.length > 0,
     priceChanges,
+    marketSwitches,
     changes: priceChanges.length,
     refreshed: (report?.changes ?? []).filter((c) => c.kind === 'refreshed').length,
   };
@@ -402,6 +417,16 @@ export function renderIssue({
       '',
       `**PR öffnen:** [Vergleich main…${branch}](${compareUrl}) → „Create pull request“. CI läuft normal; Merge nach Review.`,
       '',
+      ...((a.marketSwitches ?? []).length
+        ? [
+            '## Marktwechsel',
+            '',
+            'Preise eines anderen Marktes (Fremdmarkt, siehe docs/decisions.md): im Review prüfen.',
+            '',
+            list(a.marketSwitches, CAPS.markets),
+            '',
+          ]
+        : []),
       '## Preisänderungen',
       '',
       priceChanges.length ? fence(cap(priceChanges.join('\n'), CAPS.priceChanges)) : '_keine_',

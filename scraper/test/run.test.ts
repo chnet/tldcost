@@ -8,10 +8,17 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendHistory, HISTORY_STATE_FIELDS, type FxRates, type Offer } from '@tldcost/core';
+import {
+  appendHistory,
+  FOREIGN_MARKET_CURRENCIES,
+  HISTORY_STATE_FIELDS,
+  type FxRates,
+  type Offer,
+} from '@tldcost/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 // @ts-expect-error plain .mjs without types
 import {
+  FOREIGN_MARKET_CURRENCIES as VALIDATE_MARKET_CURRENCIES,
   HISTORY_STATE_FIELDS as VALIDATE_STATE_FIELDS,
   validateDir,
 } from '../../scripts/validate-data.mjs';
@@ -639,6 +646,8 @@ describe('run', () => {
     );
     expect([...HISTORY_STATE_FIELDS]).toEqual(required);
     expect([...VALIDATE_STATE_FIELDS]).toEqual(required);
+    // and the currencies of a foreign market display (owner decision 2026-11-19)
+    expect([...VALIDATE_MARKET_CURRENCIES]).toEqual([...FOREIGN_MARKET_CURRENCIES]);
   });
 
   it('dry run writes nothing but reports everything', async () => {
@@ -1172,5 +1181,174 @@ describe('unknownFees', () => {
     const unknown = next({ transfer_in: null });
     expect(unknownFees(unknown, next({ transfer_in: null }))).toEqual([]);
     expect(unknownFees(unknown, next({ transfer_in: 1500 }))).toEqual([]);
+  });
+});
+
+describe('market switch (owner decision 2026-11-19, Fremdmarkt)', () => {
+  const US = { country: 'US', currency: 'USD', quote: 'Domainpreise in USD: .de 9,99 9,99' };
+  /** The German display: EUR, gross. */
+  const german = (over: Partial<ScrapedOffer['price']> = {}): ScrapedOffer => ({
+    ...scraped('de', over),
+    vat_included: true,
+  });
+  /** The US display: USD, net, foreign_market. */
+  const us = (
+    over: Partial<ScrapedOffer['price']> = {},
+    market: ScrapedOffer['foreign_market'] | null = US,
+  ): ScrapedOffer => ({
+    ...scraped('de', over),
+    currency: 'USD',
+    vat_included: false,
+    ...(market ? { foreign_market: market } : {}),
+  });
+  const deOffer = mergeOffer('reg', undefined, german());
+  const usOffer = mergeOffer('reg', undefined, us());
+
+  it('mergeOffer takes foreign_market from the scraped offer and drops a stored one', () => {
+    expect(usOffer.foreign_market).toEqual(US);
+    expect(Object.keys(usOffer)).toEqual([
+      'schema_version',
+      'provider',
+      'tld',
+      'currency',
+      'vat_included',
+      'price',
+      'promo',
+      'foreign_market',
+      'evidence',
+      'provider_verified',
+    ]);
+    expect(mergeOffer('reg', usOffer, german()).foreign_market).toBeUndefined();
+  });
+
+  it('the gate lets the switch through only with foreign_market, in both directions', () => {
+    const toUs = mergeOffer('reg', deOffer, us({ renewal: 5000 }));
+    expect(gate(deOffer, toUs)).toEqual([]);
+    expect(compareOffer(deOffer, toUs).market).toBe('DE -> US');
+    const back = mergeOffer('reg', usOffer, german({ renewal: 5000 }));
+    expect(gate(usOffer, back)).toEqual([]);
+    expect(compareOffer(usOffer, back).market).toBe('US -> DE');
+    // the same currency and VAT change without foreign_market: blocked as before
+    const plainUsd = mergeOffer('reg', deOffer, us({}, null));
+    expect(gate(deOffer, plainUsd)).toEqual(['currency EUR -> USD', 'vat_included changed']);
+    expect(compareOffer(deOffer, plainUsd).market).toBeUndefined();
+    expect(gate(plainUsd, mergeOffer('reg', plainUsd, german()))).toEqual([
+      'currency USD -> EUR',
+      'vat_included changed',
+    ]);
+  });
+
+  it('the gate keeps every other rule on a switch and within a market', () => {
+    // unit change on a switch
+    expect(gate(deOffer, mergeOffer('reg', deOffer, us({ unit: 'month' })))).toEqual([
+      'currency EUR -> USD',
+      'foreign_market changed without a market switch (EUR/vat_included true -> USD/vat_included false/foreign_market US; only EUR gross <-> USD net with foreign_market)',
+      'unit year -> month',
+      'vat_included changed',
+    ]);
+    // term change on a switch
+    expect(gate(deOffer, mergeOffer('reg', deOffer, us({ renewal_term_years: 2 })))).toEqual([
+      'term years changed',
+    ]);
+    // foreign_market whose currency is not the offer's: no switch
+    const wrong = mergeOffer('reg', deOffer, us({}, { ...US, currency: 'GBP' }));
+    expect(gate(deOffer, wrong)).toEqual(['currency EUR -> USD', 'vat_included changed']);
+    // a foreign market display in EUR or gross is no switch either
+    const eurNet = mergeOffer('reg', deOffer, {
+      ...us(),
+      currency: 'EUR',
+      foreign_market: { ...US, currency: 'EUR' },
+    });
+    expect(gate(deOffer, eurNet)).toEqual([
+      'foreign_market changed without a market switch (EUR/vat_included true -> EUR/vat_included false/foreign_market US; only EUR gross <-> USD net with foreign_market)',
+      'vat_included changed',
+    ]);
+    // > 30 % within the same market still blocks
+    expect(gate(usOffer, mergeOffer('reg', usOffer, us({ renewal: 1400 })))).toEqual([
+      'renewal 1000 -> 1400 (40 %)',
+    ]);
+    // USD net without foreign_market -> USD net with it: a market change that is no switch
+    const plainUsd = mergeOffer('reg', undefined, us({}, null));
+    // the real reason, not "DE -> US": the stored offer was not the German display
+    expect(gate(plainUsd, mergeOffer('reg', plainUsd, us()))).toEqual([
+      'foreign_market changed without a market switch (USD/vat_included false -> USD/vat_included false/foreign_market US; only EUR gross <-> USD net with foreign_market)',
+    ]);
+  });
+
+  it('a run writes the switch, starts a history segment and reports "Markt DE -> US"', async () => {
+    provider('reg');
+    writeOffer(deOffer);
+    await syncHistory(dir);
+    const report = await run(
+      opts([
+        adapter('reg', {
+          offers: [
+            {
+              ...us({ renewal: 5000 }),
+              evidence: { ...scraped('de').evidence, fetched_at: '2026-11-20T06:00:00Z' },
+            },
+          ],
+        }),
+      ]),
+    );
+    expect(report.violations).toEqual([]);
+    expect(readOffer('reg', 'de')).toMatchObject({
+      currency: 'USD',
+      vat_included: false,
+      foreign_market: US,
+    });
+    const history = JSON.parse(readFileSync(historyFile(dir, 'reg', 'de'), 'utf8'));
+    expect(
+      history.entries.map((e: { currency: string; market?: string }) => [e.currency, e.market]),
+    ).toEqual([
+      ['EUR', undefined],
+      ['USD', 'US'],
+    ]);
+    expect(validateDir(dir)).toEqual([]);
+    expect(summarize(report)).toMatch(/~ reg\/de\n {4}Markt DE -> US\n/);
+    // and back: a new segment without market
+    const back = await run(
+      opts([
+        adapter('reg', {
+          offers: [
+            {
+              ...german(),
+              evidence: { ...scraped('de').evidence, fetched_at: '2026-11-27T06:00:00Z' },
+            },
+          ],
+        }),
+      ]),
+    );
+    expect(back.violations).toEqual([]);
+    expect(back.changes[0]?.market).toBe('US -> DE');
+    const after = JSON.parse(readFileSync(historyFile(dir, 'reg', 'de'), 'utf8'));
+    expect(after.entries.map((e: { market?: string }) => e.market ?? 'DE')).toEqual([
+      'DE',
+      'US',
+      'DE',
+    ]);
+    expect(validateDir(dir)).toEqual([]);
+  });
+
+  it('a currency or VAT change within a market still stops the history', () => {
+    const later = (o: Offer, over: Partial<Offer>) => ({
+      ...o,
+      ...over,
+      evidence: { ...o.evidence, fetched_at: '2026-11-20T06:00:00Z' },
+    });
+    const usHistory = appendHistory(undefined, usOffer).history;
+    // US market, but gross
+    expect(() => appendHistory(usHistory, later(usOffer, { vat_included: true }))).toThrow(
+      /currency, price unit or VAT mode changed \(USD\/year\/vat_included false\/market US -> USD\/year\/vat_included true\/market US\)/,
+    );
+    // German market, net EUR
+    const deHistory = appendHistory(undefined, deOffer).history;
+    expect(() => appendHistory(deHistory, later(deOffer, { vat_included: false }))).toThrow(
+      /VAT mode changed/,
+    );
+    // USD without foreign_market: no switch
+    expect(() =>
+      appendHistory(deHistory, later(deOffer, { currency: 'USD', vat_included: false })),
+    ).toThrow(/EUR\/year\/vat_included true -> USD\/year\/vat_included false\)/);
   });
 });

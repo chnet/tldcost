@@ -9,6 +9,8 @@ import {
   lineGap,
   perDomain,
   poolNoteText,
+  marketNoteId,
+  marketNoteText,
   promoNoteText,
 } from '../../src/components/BasketCalculator';
 import { buildBasketPayload } from '../../src/lib/basket-payload';
@@ -200,5 +202,29 @@ describe('promo texts', () => {
     expect(t(3)).toBe('je Domain 21,00 € (Aktion)');
     expect(t(0)).toBe('je Domain 30,00 €');
     expect(t(1)).toBe('1 × 21,00 € (Aktion), 2 × 30,00 €');
+  });
+});
+
+describe('market note of the calculator (owner decision 2026-11-19, Fremdmarkt)', () => {
+  const note = {
+    fx: { currency: 'USD', perEur: 1.0834, date: '2026-11-11' },
+    market: 'US',
+    rate: 1900,
+  };
+  it('gross: the owner wording with the VAT part; net: without it, own ids per mode', () => {
+    expect(marketNoteId(note, 'gross')).toBe('market-US-USD-2026-11-11-1900');
+    expect(marketNoteId(note, 'net')).toBe('market-net-US-USD-2026-11-11');
+    expect(marketNoteText(DE, note, 'gross')).toBe(
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026, zzgl. 19 % MwSt.; der Preis für Kunden in Deutschland kann abweichen.',
+    );
+    expect(marketNoteText(DE, note, 'net')).toBe(
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026; der Preis für Kunden in Deutschland kann abweichen.',
+    );
+    expect(marketNoteText(EN, note, 'gross')).toBe(
+      'US price, converted at the rate of 11 Nov 2026, plus 19% VAT; the price for customers in Germany may differ.',
+    );
+    expect(marketNoteText(EN, note, 'net')).toBe(
+      'US price, converted at the rate of 11 Nov 2026; the price for customers in Germany may differ.',
+    );
   });
 });

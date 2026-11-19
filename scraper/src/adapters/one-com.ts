@@ -21,6 +21,16 @@
 // must therefore say countryCode 'DE', showVAT 'true' and vatPercentage '19', besides the gross
 // note: any other country's display throws instead of being written, and the error names what the
 // page said, so a failed run shows the country the server detected.
+//
+// One exception, a separate branch (owner decision 2026-11-19, "Fremdmarkt", docs/decisions.md):
+// the data run's runners are shown the US display (countryCode 'US', showVAT 'false',
+// vatPercentage '0'), with amounts in US notation ("38.99", read strictly by usdCents; the German
+// branch keeps euroCents). Its prices are recorded as quoted, in USD and net, with foreign_market and the
+// literal heading and row as the quote; the site converts them at the ECB rate of the fetch date and
+// adds German VAT, with a footnote. The branch requires that exact display, the currency USD in both
+// onecomConfig.currency and the heading "Domainpreise in USD", and no VAT note; a US display in EUR
+// or any other currency throws (no decision for it). The German branch above is unchanged.
+import type { ForeignMarket } from '@tldcost/core';
 import { evidenceHash } from '../evidence.js';
 import { isoSeconds } from '../tlds.js';
 import { newResult, type Adapter } from '../types.js';
@@ -44,6 +54,16 @@ export function euroCents(text: string): number {
   if (!m) throw new RangeError(`not a German euro price: ${JSON.stringify(text)}`);
   const euros = Number((m[1] as string).replaceAll('.', ''));
   return euros * 100 + (m[2] === '-' ? 0 : Number(m[2]));
+}
+
+/**
+ * US display (Fremdmarkt branch only): "38.99" -> 3899, "2,791.09" -> 279109, optionally with "$"
+ * before or "USD" after the amount. Strict: two decimals, no other notation.
+ */
+export function usdCents(text: string): number {
+  const m = /^(?:\$ ?)?(\d{1,3}(?:,\d{3})+|\d{1,4})\.(\d{2})(?: ?USD)?$/.exec(text.trim());
+  if (!m) throw new RangeError(`not a US dollar price: ${JSON.stringify(text)}`);
+  return Number((m[1] as string).replaceAll(',', '')) * 100 + Number(m[2]);
 }
 
 const plain = (html: string) =>
@@ -89,6 +109,59 @@ export function checkGermanVat(html: string): void {
   }
 }
 
+/** The country, VAT and currency settings of the US display, as the data run's runners see it. */
+const US_DISPLAY = { countryCode: 'US', showVAT: 'false', vatPercentage: '0' } as const;
+/** A VAT statement ("inkl. 19% MwSt.", "zzgl. MwSt.", "USt."): the US notices must have none. */
+const VAT_STATEMENT = /\b(?:MwSt|USt|VAT|Mehrwertsteuer|Umsatzsteuer)\b/i;
+
+/**
+ * The US display's currency heading, e.g. "Domainpreise in USD". Throws unless the page is that
+ * display: onecomConfig countryCode 'US', showVAT 'false', vatPercentage '0', currency USD in
+ * onecomConfig.currency and in the heading, notices under the table without a VAT statement and no
+ * German gross note anywhere on the page.
+ */
+export function checkUsDisplay(html: string): string {
+  const display = {
+    countryCode: configValue(html, 'countryCode'),
+    showVAT: configValue(html, 'showVAT'),
+    vatPercentage: configValue(html, 'vatPercentage'),
+    currency: configValue(html, 'currency'),
+  };
+  const headingMatch = /<h1 class="pubPriceList-title">([\s\S]*?)<\/h1>/.exec(html);
+  const heading = headingMatch ? plain(headingMatch[1] as string) : null;
+  const notice = /<p class="notices">([\s\S]*?)<\/p>/.exec(html);
+  const noticeText = notice ? plain(notice[1] as string) : null;
+  const said =
+    Object.entries(display)
+      .map(([k, v]) => `${k} ${JSON.stringify(v)}`)
+      .join(', ') +
+    `, heading ${JSON.stringify(heading)}, notice ${JSON.stringify(noticeText?.slice(0, 160) ?? null)}`;
+  if (
+    display.countryCode !== US_DISPLAY.countryCode ||
+    display.showVAT !== US_DISPLAY.showVAT ||
+    display.vatPercentage !== US_DISPLAY.vatPercentage
+  ) {
+    throw new Error(`not the US price display (${said}): country detection changed the prices`);
+  }
+  if (display.currency === 'EUR') {
+    throw new Error(`US view in EUR (${said}): owner decision needed`);
+  }
+  if (display.currency !== 'USD' || heading !== 'Domainpreise in USD') {
+    throw new Error(
+      `US view without the currency USD in config and heading (${said}): layout changed`,
+    );
+  }
+  // the notices under the table carry the German gross note; on the US display they must exist
+  // and state no VAT, and the gross note must be nowhere on the page
+  if (noticeText === null) {
+    throw new Error(`US view without the notices under the table (${said}): layout changed`);
+  }
+  if (VAT_STATEMENT.test(noticeText) || GROSS_NOTE_PATTERN.test(plain(html))) {
+    throw new Error(`US view with a VAT statement (${said}): VAT statement changed`);
+  }
+  return heading;
+}
+
 export interface OneComCell {
   /** Price shown now (without hosting). */
   current: number;
@@ -96,8 +169,11 @@ export interface OneComCell {
   regular: number | null;
 }
 
-/** One price cell; null for an empty cell. Badges (e.g. "Gratis mit Hosting") are dropped. */
-export function parseCell(html: string): OneComCell | null {
+/**
+ * One price cell; null for an empty cell. Badges (e.g. "Gratis mit Hosting") are dropped. `money`
+ * reads the amounts: euroCents on the German display, usdCents on the US one.
+ */
+export function parseCell(html: string, money = euroCents): OneComCell | null {
   const struck = /<span class="line-through">([\s\S]*?)<\/span>/.exec(html);
   const rest = plain(
     html
@@ -106,12 +182,14 @@ export function parseCell(html: string): OneComCell | null {
   );
   if (rest === '' && !struck) return null;
   return {
-    current: euroCents(rest),
-    regular: struck ? euroCents(plain(struck[1] as string)) : null,
+    current: money(rest),
+    regular: struck ? money(plain(struck[1] as string)) : null,
   };
 }
 
 export interface OneComRow {
+  /** The row's text as the page shows it, e.g. ".de Gratis mit Hosting 0,90 17,99 …" (the quote). */
+  text: string;
   registration: OneComCell | null;
   transfer: OneComCell | null;
   renewal: OneComCell | null;
@@ -120,6 +198,28 @@ export interface OneComRow {
 /** TLD (without dot) -> row. Throws when the page no longer looks like the price list. */
 export function parsePriceList(html: string): Map<string, OneComRow> {
   checkGermanVat(html);
+  return parseRows(html);
+}
+
+/** The US display: TLD -> row (USD, net) and its literal row text for the quote. */
+export function parseUsPriceList(html: string): { heading: string; rows: Map<string, OneComRow> } {
+  const heading = checkUsDisplay(html);
+  return { heading, rows: parseRows(html, usdCents) };
+}
+
+/** What the page showed, for the run log before anything is parsed (US display). */
+export function displayLine(html: string): string {
+  const heading = /<h1 class="pubPriceList-title">([\s\S]*?)<\/h1>/.exec(html);
+  const firstRow = /<tr data-pub-price-row>([\s\S]*?)<\/tr>/.exec(html);
+  return (
+    `countryCode ${JSON.stringify(configValue(html, 'countryCode'))}, ` +
+    `currency ${JSON.stringify(configValue(html, 'currency'))}, ` +
+    `heading ${JSON.stringify(heading ? plain(heading[1] as string) : null)}, ` +
+    `first row ${JSON.stringify(firstRow ? plain(firstRow[1] as string).slice(0, 200) : null)}`
+  );
+}
+
+function parseRows(html: string, money = euroCents): Map<string, OneComRow> {
   const rows = new Map<string, OneComRow>();
   for (const m of html.matchAll(/<tr data-pub-price-row>([\s\S]*?)<\/tr>/g)) {
     const row = m[1] as string;
@@ -127,9 +227,15 @@ export function parsePriceList(html: string): Map<string, OneComRow> {
     if (!tld) continue;
     const cell = (label: string) => {
       const c = new RegExp(`<td data-label='${label}'>([\\s\\S]*?)</td>`).exec(row);
-      return c ? parseCell(c[1] as string) : null;
+      try {
+        return c ? parseCell(c[1] as string, money) : null;
+      } catch (err) {
+        // name the row and column, so a failed run shows where the page changed
+        throw new Error(`.${tld} ${label}: ${(err as Error).message}`, { cause: err });
+      }
     };
     rows.set(tld, {
+      text: plain(row),
       registration: cell('Registrierung'),
       transfer: cell('Umzug'),
       renewal: cell('Erneuerung'),
@@ -144,7 +250,26 @@ export const oneCom: Adapter = {
   async fetch(ctx) {
     const res = await ctx.http.get(ONECOM_PRICE_LIST, 'text/html');
     const fetchedAt = isoSeconds(ctx.now());
-    const rows = parsePriceList(res.text);
+    // the US display is its own branch; every other display goes through the German check
+    const us = configValue(res.text, 'countryCode') === US_DISPLAY.countryCode;
+    let rows: Map<string, OneComRow>;
+    let quoteOf: ((row: OneComRow) => ForeignMarket) | null = null;
+    if (us) {
+      // logged before any check or parsing, so a failed run still shows what the page said
+      ctx.log(`one-com: US price display? ${displayLine(res.text)}`);
+      const list = parseUsPriceList(res.text);
+      rows = list.rows;
+      quoteOf = (row) => ({
+        country: 'US',
+        currency: 'USD',
+        quote: `${list.heading}: ${row.text}`.slice(0, 500),
+      });
+      ctx.log(
+        `one-com: US price display (${list.heading}), ${rows.size} rows; recorded in USD, net, as foreign_market`,
+      );
+    } else {
+      rows = parsePriceList(res.text);
+    }
     const firstTermOnly = plain(res.text).includes(FIRST_TERM_NOTE);
     const hash = evidenceHash(res.bytes);
     const result = newResult();
@@ -183,8 +308,9 @@ export const oneCom: Adapter = {
       }
       result.offers.push({
         tld,
-        currency: 'EUR',
-        vat_included: true,
+        currency: quoteOf ? 'USD' : 'EUR',
+        vat_included: !quoteOf,
+        ...(quoteOf ? { foreign_market: quoteOf(row) } : {}),
         price: {
           unit: 'year',
           setup: 0,

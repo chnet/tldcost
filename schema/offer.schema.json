@@ -282,6 +282,31 @@
         }
       }
     },
+    "foreign_market": {
+      "description": "Set when the amounts are another market's prices, not the German ones (owner decision 2026-11-19, docs/decisions.md): the provider's page detects the visitor's country and showed the fetch another market. The amounts are that market's prices as quoted, in its currency and net (vat_included false); the site and the API convert them with the ECB rate of the fetch date (fx) and add the VAT rate of the offer or provider. Only an adapter that recognises the market sets it; validate-data checks that currency matches and vat_included is false.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country", "currency", "quote"],
+      "properties": {
+        "country": {
+          "description": "ISO 3166-1 alpha-2 code of the country whose prices the page showed, e.g. US. Never DE.",
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "not": { "const": "DE" }
+        },
+        "currency": {
+          "description": "ISO 4217 code of that market's prices; equals the offer's currency.",
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "quote": {
+          "description": "Verbatim text of the source showing the market's currency and the price row (e.g. the table heading and the row of the TLD).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
     "evidence": {
       "type": "object",
       "additionalProperties": false,

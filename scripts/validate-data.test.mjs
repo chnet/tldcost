@@ -290,6 +290,51 @@ test('provider vat_rate null only outside the EU; offers with stated VAT then ne
   }
 });
 
+test('foreign_market (owner decision 2026-11-19): currency matches, USD only, net prices', () => {
+  const market = { country: 'US', currency: 'USD', quote: 'Domainpreise in USD .de 9,99 9,99' };
+  const offer = (o) => ({ ...read(OFFER), foreign_market: market, ...o });
+  const check = (o) => validateDir(dataDir({ [PROVIDER]: read(PROVIDER), [OFFER]: offer(o) }), V);
+  assert.deepEqual(check({ currency: 'USD', vat_included: false }), []);
+  let f = check({ currency: 'EUR', vat_included: false });
+  assert.ok(
+    f.some((x) => x.includes('foreign_market.currency USD differs from currency EUR')),
+    `${f}`,
+  );
+  f = check({
+    currency: 'EUR',
+    vat_included: false,
+    foreign_market: { ...market, currency: 'EUR' },
+  });
+  assert.ok(
+    f.some((x) => x.includes('foreign_market.currency EUR is not one of USD')),
+    `${f}`,
+  );
+  // GBP: no decision, fails even when it matches the offer
+  f = check({
+    currency: 'GBP',
+    vat_included: false,
+    foreign_market: { ...market, currency: 'GBP' },
+  });
+  assert.ok(
+    f.some((x) => x.includes('foreign_market.currency GBP is not one of USD')),
+    `${f}`,
+  );
+  f = check({ currency: 'USD', vat_included: true });
+  assert.ok(
+    f.some((x) => x.includes('foreign_market needs vat_included false')),
+    `${f}`,
+  );
+  // schema: never the German market, all three fields required
+  f = check({ currency: 'USD', vat_included: false, foreign_market: { ...market, country: 'DE' } });
+  assert.ok(f.length > 0, 'country DE is rejected');
+  f = check({
+    currency: 'USD',
+    vat_included: false,
+    foreign_market: { country: 'US', currency: 'USD' },
+  });
+  assert.ok(f.length > 0, 'quote is required');
+});
+
 test('multi-year terms: integer 1..10, monthly prices only with 1-year terms', () => {
   assert.deepEqual(
     validateDir(

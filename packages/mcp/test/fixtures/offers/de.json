@@ -374,6 +374,7 @@
         "currency": "EUR",
         "fx": null,
         "vat_not_stated": false,
+        "foreign_market": null,
         "gross": {
           "setup": 0,
           "sum_2y": 1100,
@@ -399,6 +400,7 @@
         "currency": "EUR",
         "fx": null,
         "vat_not_stated": false,
+        "foreign_market": null,
         "gross": {
           "setup": 0,
           "sum_2y": 1062,
@@ -424,6 +426,7 @@
         "currency": "EUR",
         "fx": null,
         "vat_not_stated": false,
+        "foreign_market": null,
         "gross": {
           "setup": 0,
           "sum_2y": 1656,
@@ -449,6 +452,7 @@
         "currency": "EUR",
         "fx": null,
         "vat_not_stated": false,
+        "foreign_market": null,
         "gross": {
           "setup": 0,
           "sum_2y": 1008,
@@ -474,6 +478,7 @@
         "currency": "EUR",
         "fx": null,
         "vat_not_stated": false,
+        "foreign_market": null,
         "gross": {
           "setup": 0,
           "sum_2y": 1889,
@@ -503,6 +508,7 @@
           "per_eur": 1.1081
         },
         "vat_not_stated": true,
+        "foreign_market": null,
         "gross": {
           "setup": 0,
           "sum_2y": 629,

@@ -2,7 +2,7 @@
 title: Methodology
 slug: methodik
 lang: en
-source_sha256: "223ee8436c7f607da44804a5af38f72c8485f7200964ae0f547fe0414509b0de"
+source_sha256: "784991695df857ade74f1068631d2b6e87ecbef019c9b3d564df6aa49a3f83dd"
 ---
 
 # Methodology
@@ -103,6 +103,7 @@ The [portfolio calculator](/en/portfolio/) calculates a whole portfolio of sever
 - If a provider states net prices, we convert them to gross with the provider’s VAT rate.
 - The “net” switch is meant for business customers.
 - We convert prices in a foreign currency to euros with the reference rate of the European Central Bank. The rate and its date are shown with the value.
+- **Prices of another market (exception):** Some providers detect the visitor's country and show our automated fetch the prices of another country, with no way for us to choose the German market. Only then do we take these prices verbatim with source, retrieval date and quote; currently only US prices in US dollars. We convert them to euros at the European Central Bank's reference rate of the retrieval day (or of the last business day before it) and add 19% VAT. A footnote marks the value: “US price, converted at the rate of \<date\>, plus 19% VAT; the price for customers in Germany may differ.” The data and the API name the market (`foreign_market`).
 
 ## Promotional prices
 

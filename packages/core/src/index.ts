@@ -10,6 +10,7 @@ export type {
   FeatureCostUnit,
   FeatureCosts,
   FeatureValue,
+  ForeignMarket,
   CostedFeature,
   FxRate,
   FxRates,
@@ -29,6 +30,14 @@ export type {
 } from './types.js';
 export { PAYABLE_FEATURES } from './types.js';
 export { appendHistory, HISTORY_STATE_FIELDS, priceState, samePriceState } from './history.js';
+export {
+  FOREIGN_MARKET_CURRENCIES,
+  isMarketSwitch,
+  marketBasis,
+  marketSwitchLabel,
+  offerMarket,
+} from './market.js';
+export type { MarketBasis } from './market.js';
 export type { HistoryEntry, PriceHistory, PriceState } from './history.js';
 export { normalizePrice, isCents, isVatRate, assertFx } from './normalize.js';
 export type { PriceContext } from './normalize.js';

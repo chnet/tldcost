@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto';
 import {
   computeTco,
   fxRateFor,
+  offerMarket,
   type Cents,
   type FxRate,
   type FxRates,
@@ -84,6 +85,12 @@ export interface DerivedOffer {
   fx: DerivedFx | null;
   /** The offer makes no VAT statement: amounts as stated, gross and net equal. */
   vat_not_stated: boolean;
+  /**
+   * Country of a foreign market display (offer.foreign_market, owner decision 2026-11-19): the
+   * amounts are that market's prices, converted and with German VAT added, not the German price.
+   * null for the German display.
+   */
+  foreign_market: string | null;
   gross: DerivedTcoMode;
   net: DerivedTcoMode;
 }
@@ -183,6 +190,7 @@ export function deriveTco(data: TldcostData, offers: readonly Offer[]): Derived 
       currency: 'EUR',
       fx: fx ? { currency: fx.currency, date: fx.date, per_eur: fx.perEur } : null,
       vat_not_stated: offer.vat_included === null,
+      foreign_market: offerMarket(offer) ?? null,
       gross: tcoMode(offer, provider, 'gross', fx),
       net: tcoMode(offer, provider, 'net', fx),
     };

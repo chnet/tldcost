@@ -68,6 +68,24 @@ describe('API documents', () => {
     }
   });
 
+  it('flags a foreign market display in derived (owner decision 2026-11-19)', () => {
+    const all = buildAll(data);
+    for (const d of Object.values(all.derived.tco)) expect(d.foreign_market).toBeNull();
+    const base = data.offers.find((o) => o.provider === 'alpha' && o.tld === 'de')!;
+    const us = {
+      ...base,
+      currency: 'USD',
+      vat_included: false,
+      foreign_market: { country: 'US', currency: 'USD', quote: 'Domainpreise in USD: .de 12,99' },
+    };
+    const doc = buildAll({ ...data, offers: [us] });
+    expect(doc.offers[0]?.foreign_market).toEqual(us.foreign_market);
+    expect(doc.derived.tco['alpha/de']).toMatchObject({
+      foreign_market: 'US',
+      fx: { currency: 'USD', date: '2026-11-11', per_eur: 1.0834 },
+    });
+  });
+
   it('offers/<tld>.json holds only that TLD and the providers behind it', () => {
     for (const tld of apiTlds(data)) {
       const doc = buildTld(data, tld);

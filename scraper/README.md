@@ -71,6 +71,14 @@ multi-year term is not verified (whether the price is per year or per term) are 
   (year-1) promo and the new one has none; for `transfer_in` always the end of a transfer
   promotion or a price increase (the data records no transfer promotion, so the source has to be
   checked).
+- Market switch (owner decision 2026-11-19, „Fremdmarkt“ in docs/decisions.md): the switch between
+  the German display (EUR, gross, no `foreign_market`) and a foreign market display (USD, net,
+  `foreign_market` with the offer's currency) passes the gate in both directions, without the
+  currency, VAT and price checks (the amounts of two markets are not comparable); unit and term
+  checks stay. The summary, the tracking issue („Marktwechsel“) and the data commit name it as
+  „Markt DE -> US“. In the price history it starts a new segment (entry field `market`); any other
+  change of currency, VAT mode or market is blocked as before. The scraper owns `foreign_market`
+  like the prices: an offer without it is the German display.
 - Reported only (exit 0, stored data untouched):
   - `delisted`: a stored offer the provider no longer lists; the file is kept.
   - `blocked`: an offer the adapter marks as untrustworthy, e.g. a CSV price that may be an
@@ -114,3 +122,5 @@ outlier cannot dampen its own detection.
 responses from 2026-11-12/13 (MVP TLDs only; netcup pages reduced with
 `scripts/trim-netcup-fixture.mjs`; the Hetzner page from 2026-11-15, reduced to its price card; the all-inkl list from 2026-11-15, MVP TLDs plus .gr and .lv for the two-year marker; the checkdomain pages from 2026-11-15, MVP TLDs plus .art for its English promo hint, kept as ISO-8859-1 bytes, and the .com and .at pages from 2026-11-19 (UTF-8), reduced to their footnote list; the united-domains list from 2026-11-15, MVP TLDs plus multi-level, IDN and edge rows, reduced with
 `scripts/trim-united-domains-fixture.mjs`) and are excluded from prettier so they stay byte-exact.
+The one.com US display has no fetched fixture (a German address cannot see it): `one-com.test.ts`
+builds a synthetic one from the German list under the runners' display settings, marked there.

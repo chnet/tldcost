@@ -37,7 +37,9 @@ export default function RowHistory({ h, vat }: { h: History; vat: Vat }) {
         <span class="tc-spark-key tc-spark-year1" aria-hidden="true" /> {t.raw.year1}{' '}
         <span class="tc-spark-key tc-spark-renewal" aria-hidden="true" /> {t.raw.renewal}
       </p>
-      <p class="tc-unit">{t.historyCaption(vat === 'gross' ? L.m.common.gross : L.m.common.net)}</p>
+      <p class="tc-unit">
+        {t.historyCaption(vat === 'gross' ? L.m.common.gross : L.m.common.net, h.capped === true)}
+      </p>
       <ol class="tc-history-list">
         {h.dates.map((d, i) => {
           const b = h.breaks.find((x) => x.index === i);

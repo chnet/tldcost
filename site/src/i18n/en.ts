@@ -187,7 +187,8 @@ export const en: Messages = {
     expiredNote: 'expired, the price may be out of date',
     regularYear1: 'Regular in the first year',
     historyHeading: 'Price history',
-    historyCaption: (mode) => `Per data state, ${mode} in euros per year:`,
+    historyCaption: (mode, capped) =>
+      `${capped ? 'Last 12 changes' : 'Per data state'}, ${mode} in euros per year:`,
     historyUnknown: 'cannot be converted',
     historyBreak: (date, currency, market) =>
       `From ${date} a new segment (${currency}${market ? `, prices of the ${market} market` : ''}): ` +

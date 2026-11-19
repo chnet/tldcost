@@ -101,7 +101,7 @@ export interface HistorySeries {
   path?: HistoryPath;
 }
 
-/** The price history of a row: entry dates (oldest first) and the amounts per VAT mode. */
+/** The price history of a row: entry dates (oldest first, at most 12) and the amounts per VAT mode. */
 export interface RowHistory {
   dates: string[];
   /**
@@ -112,6 +112,8 @@ export interface RowHistory {
   breaks: { index: number; currency: string; market: string | null }[];
   gross: HistorySeries;
   net: HistorySeries;
+  /** Set when older entries were left out: only the newest MAX_HISTORY_POINTS are shown. */
+  capped?: true;
 }
 
 /** Badges shown next to the provider name. The operator badge lives in ProviderMeta. */

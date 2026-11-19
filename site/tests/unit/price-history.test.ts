@@ -12,7 +12,14 @@ import {
 import { loadData, loadHistories } from '@tldcost/core/load';
 import { describe, expect, it } from 'vitest';
 import { HISTORY_SVG } from '../../src/lib/history-svg';
-import { historyPath, MIN_HISTORY_POINTS, rowHistory } from '../../src/lib/price-history';
+import { DE } from '../../src/i18n/de';
+import { EN } from '../../src/i18n/en';
+import {
+  historyPath,
+  MAX_HISTORY_POINTS,
+  MIN_HISTORY_POINTS,
+  rowHistory,
+} from '../../src/lib/price-history';
 import { buildPayload } from '../../src/lib/rows';
 
 const FIXTURES = fileURLToPath(new URL('../fixtures/data', import.meta.url));
@@ -133,6 +140,51 @@ describe('price history in the payload', () => {
     expect(breaks(entry('2026-11-03', { unit: 'month' }))).toEqual([2]);
     expect(breaks(entry('2026-11-03', { currency: 'USD' }))).toEqual([2]);
     expect(breaks(entry('2026-11-03', { year1: 900 }))).toEqual([]);
+  });
+});
+
+describe('at most the newest 12 entries', () => {
+  const days = (n: number) =>
+    Array.from({ length: n }, (_, i) =>
+      entry(`2026-12-${String(i + 1).padStart(2, '0')}`, { year1: 100 + i }),
+    );
+  const amounts = (e: HistoryEntry) => ({ year1: e.year1, renewal: e.renewal });
+
+  it('15 entries: the newest 12, marked as capped; 12 entries: all, not capped', () => {
+    expect(MAX_HISTORY_POINTS).toBe(12);
+    const h = rowHistory(days(15), amounts)!;
+    expect(h.dates).toHaveLength(12);
+    expect(h.dates[0]).toBe('2026-12-04');
+    expect(h.dates.at(-1)).toBe('2026-12-15');
+    expect(h.gross.year1).toEqual(
+      days(15)
+        .slice(-12)
+        .map((e) => e.year1),
+    );
+    expect(h.capped).toBe(true);
+    const all = rowHistory(days(12), amounts)!;
+    expect(all.dates).toHaveLength(12);
+    expect(all).not.toHaveProperty('capped');
+  });
+
+  it('a break inside the shown entries is indexed within them', () => {
+    const e = days(14);
+    e[10] = { ...(e[10] as HistoryEntry), vat_included: false };
+    e[11] = { ...(e[11] as HistoryEntry), vat_included: false };
+    // 14 entries, the first 2 left out: the change at entry 10 is shown entry 8, back at 12 is 10
+    expect(rowHistory(e, amounts)!.breaks.map((b) => b.index)).toEqual([8, 10]);
+  });
+
+  it('the caption says so in both languages', () => {
+    expect(DE.m.detail.historyCaption('brutto', true)).toBe(
+      'Letzte 12 Änderungen, brutto in Euro pro Jahr:',
+    );
+    expect(DE.m.detail.historyCaption('netto', false)).toBe(
+      'Je Datenstand, netto in Euro pro Jahr:',
+    );
+    expect(EN.m.detail.historyCaption('gross', true)).toBe(
+      'Last 12 changes, gross in euros per year:',
+    );
   });
 });
 

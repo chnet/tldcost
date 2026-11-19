@@ -1,7 +1,8 @@
 // Build time only: the price history of one offer (data/history/, Archiv-Issue 51) for the row
 // detail. Per entry the year-1 and renewal amounts in EUR per year, gross and net, computed by the
 // caller with the same core functions as the table (rows.ts), and the path data of a small static
-// SVG, so the page needs no chart code. Shown from MIN_HISTORY_POINTS entries on. An entry whose
+// SVG, so the page needs no chart code. Shown from MIN_HISTORY_POINTS entries on, at most the
+// newest MAX_HISTORY_POINTS (payload size: every row's history is in the page). An entry whose
 // currency, VAT mode, unit or market differs from the one before (core `comparable`) starts a new
 // segment: no line connects it to the earlier entries, and a dashed line marks the break.
 import { comparable, type Cents, type HistoryEntry, type PriceMode } from '@tldcost/core';
@@ -10,6 +11,8 @@ import type { HistoryPath, HistorySeries, RowHistory } from './payload';
 
 /** A row shows its price history from this many entries on. */
 export const MIN_HISTORY_POINTS = 3;
+/** At most this many entries, the newest ones; the list then says so. */
+export const MAX_HISTORY_POINTS = 12;
 
 /** Year-1 and renewal amount of one entry in one VAT mode (EUR cents per year; null: unknown). */
 export interface HistoryAmounts {
@@ -98,10 +101,11 @@ export function historyPath(
  * converts one entry in one VAT mode (rows.ts: the table's own core calls on the entry's prices).
  */
 export function rowHistory(
-  entries: readonly HistoryEntry[],
+  all: readonly HistoryEntry[],
   amountsOf: (entry: HistoryEntry, mode: PriceMode) => HistoryAmounts,
 ): RowHistory | undefined {
-  if (entries.length < MIN_HISTORY_POINTS) return undefined;
+  if (all.length < MIN_HISTORY_POINTS) return undefined;
+  const entries = all.slice(-MAX_HISTORY_POINTS);
   const dates = entries.map((e) => e.date);
   const breakAt = entries
     .map((e, i) => i)
@@ -132,5 +136,6 @@ export function rowHistory(
     }),
     gross,
     net: samePath ? { year1: net.year1, renewal: net.renewal } : net,
+    ...(all.length > entries.length ? { capped: true as const } : {}),
   };
 }

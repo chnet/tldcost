@@ -202,7 +202,8 @@ export const de = {
     expiredNote: 'abgelaufen, der Preis kann veraltet sein',
     regularYear1: 'Regulär im ersten Jahr',
     historyHeading: 'Preisverlauf',
-    historyCaption: (mode: string) => `Je Datenstand, ${mode} in Euro pro Jahr:`,
+    historyCaption: (mode: string, capped: boolean) =>
+      `${capped ? 'Letzte 12 Änderungen' : 'Je Datenstand'}, ${mode} in Euro pro Jahr:`,
     historyUnknown: 'nicht umrechenbar',
     historyBreak: (date: string, currency: string, market: string | null) =>
       `Ab ${date} neuer Abschnitt (${currency}${market ? `, Preise des Marktes ${market}` : ''}): ` +

@@ -3,6 +3,7 @@
 // GitHub link: issues are public (no personal data), and the e-mail route (REPORT_NOTES).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 import { DE, EN } from '../../src/i18n';
 import { reportLinksFor } from '../../src/lib/report-links.mjs';
 import {
@@ -29,14 +30,24 @@ describe('report routes', () => {
     expect(EN.m.detail.noGithubHint(REPORT_EMAIL)).toBe(REPORT_NOTES.en.noGithub);
   });
 
+  it('the row detail says "public" once, in the privacy note', () => {
+    for (const [m, word] of [
+      [DE.m, /öffentlich/gi],
+      [EN.m, /public/gi],
+    ] as const) {
+      const line = `${m.detail.reportGithub(m.detail.noGithubHint(REPORT_EMAIL))} ${m.detail.reportPrivacy}`;
+      expect(line.match(word), line).toHaveLength(1);
+    }
+  });
+
   it('every issue form opens with the public-issue note (German and English)', () => {
     for (const form of ['preis-falsch.yml', 'anbieter-vorschlagen.yml']) {
-      const yml = readFileSync(
-        new URL(`../../../.github/ISSUE_TEMPLATE/${form}`, import.meta.url),
-        'utf8',
-      );
-      const body = yml.slice(yml.indexOf('\nbody:\n'));
-      const first = body.slice(0, body.indexOf('\n  - type:', 10)).replace(/\s*\n\s*>?\s*/g, ' ');
+      const { body } = parse(
+        readFileSync(new URL(`../../../.github/ISSUE_TEMPLATE/${form}`, import.meta.url), 'utf8'),
+      ) as { body: { type: string; attributes: { value?: string } }[] };
+      expect(body[0]?.type, form).toBe('markdown');
+      // The note is a Markdown blockquote: drop the quote markers, join its lines into one text.
+      const first = (body[0]?.attributes.value ?? '').replace(/^>\s?/gm, '').replace(/\s+/g, ' ');
       expect(first, form).toContain('Issues sind öffentlich.');
       expect(first, form).toContain(
         'Bitte keine personenbezogenen Daten eintragen (Name, Adresse, Kundennummer, Rechnungen, Screenshots mit persönlichen Daten).',

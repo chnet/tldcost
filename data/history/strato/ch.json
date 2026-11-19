@@ -16,6 +16,20 @@
         "url": "https://www.strato.de/domains/ch-domain/",
         "fetched_at": "2026-11-15T05:38:30Z"
       }
+    },
+    {
+      "date": "2026-11-19",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 250,
+      "year1": 390,
+      "renewal": 390,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.strato.de/domains/ch-domain/",
+        "fetched_at": "2026-11-19T06:12:15Z"
+      }
     }
   ]
 }

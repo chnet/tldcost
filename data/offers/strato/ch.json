@@ -6,7 +6,7 @@
   "vat_included": true,
   "price": {
     "unit": "month",
-    "setup": 0,
+    "setup": 250,
     "year1": 390,
     "year1_regular": 390,
     "renewal": 390,
@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/ch-domain/",
-    "fetched_at": "2026-11-15T05:38:30Z",
+    "fetched_at": "2026-11-19T06:12:15Z",
     "method": "scrape",
-    "evidence_hash": "sha256:f9daf6fb4644edea678fc4434208dbad41cec6c6fec5b00c0260b47675b28863",
+    "evidence_hash": "sha256:88b5277d1cd81b0f4d9334b00c479f0c16bb851de22ab1660d0a908af0862739",
     "confidence": "high"
   },
   "provider_verified": false

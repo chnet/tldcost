@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "checkdomain",
+  "tld": "at",
+  "entries": [
+    {
+      "date": "2026-11-19",
+      "currency": "EUR",
+      "vat_included": true,
+      "unit": "month",
+      "setup": 0,
+      "year1": 299,
+      "renewal": 299,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.checkdomain.de/at-domain/",
+        "fetched_at": "2026-11-19T07:14:42Z"
+      }
+    }
+  ]
+}

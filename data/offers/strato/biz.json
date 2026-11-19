@@ -18,10 +18,7 @@
     "conditions": "Aktionspreis „für 12 Monate“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
     "valid_until": null
   },
-  "contract": {
-    "min_term_months": 12,
-    "billing_cycle": "yearly"
-  },
+  "contract": { "min_term_months": 12, "billing_cycle": "yearly" },
   "features": {
     "ssl_free": true,
     "forward_301": null,
@@ -48,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/biz-domain/",
-    "fetched_at": "2026-11-15T05:38:37Z",
+    "fetched_at": "2026-11-19T07:15:45Z",
     "method": "scrape",
-    "evidence_hash": "sha256:23e7b6cd7eca912e4b56c21c76b0e36b0f25024207f35e59bcdb46e3abbbc5a6",
+    "evidence_hash": "sha256:978c5c229c40d947f6cd9d71c18717b64bb7f86c1fe5131f88f142e6d8167cfc",
     "confidence": "high"
   },
   "provider_verified": false

@@ -28,9 +28,9 @@
   },
   "evidence": {
     "source_url": "https://www.hetzner.com/de/registrationrobot/",
-    "fetched_at": "2026-11-15T04:32:29Z",
+    "fetched_at": "2026-11-19T07:14:49Z",
     "method": "scrape",
-    "evidence_hash": "sha256:36830fdcb2de21ed2bc08e3f1f990dcc35a18ed7858283293b1baf2350b89729",
+    "evidence_hash": "sha256:f8c794d7efcd0778bbcf334f151e815fe14b18dc1125d19b2117c3a5c642f4a5",
     "confidence": "medium"
   },
   "provider_verified": false

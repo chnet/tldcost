@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "provider": "checkdomain",
+  "tld": "com",
+  "currency": "EUR",
+  "vat_included": true,
+  "price": { "unit": "month", "setup": 0, "year1": 7, "year1_regular": 239, "renewal": 239 },
+  "promo": {
+    "conditions": "Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,39EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde.",
+    "valid_until": null
+  },
+  "evidence": {
+    "source_url": "https://www.checkdomain.de/com-domain/",
+    "source_endpoint": "https://www.checkdomain.de/domains/",
+    "fetched_at": "2026-11-19T07:14:42Z",
+    "method": "scrape",
+    "evidence_hash": "sha256:901e4b3410439a2758088a2b9f1e4493fd47c0a4405912620775b708b40fd773",
+    "confidence": "high"
+  },
+  "provider_verified": false
+}

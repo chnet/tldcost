@@ -4,13 +4,7 @@
   "tld": "ch",
   "currency": "EUR",
   "vat_included": true,
-  "price": {
-    "unit": "year",
-    "setup": 0,
-    "year1": 2990,
-    "year1_regular": 2990,
-    "renewal": 2990
-  },
+  "price": { "unit": "year", "setup": 0, "year1": 2990, "year1_regular": 2990, "renewal": 2990 },
   "promo": null,
   "features": {
     "ssl_free": null,
@@ -27,9 +21,9 @@
   },
   "evidence": {
     "source_url": "https://all-inkl.com/domains/preise",
-    "fetched_at": "2026-11-15T05:26:13Z",
+    "fetched_at": "2026-11-19T07:14:37Z",
     "method": "scrape",
-    "evidence_hash": "sha256:185ed239cc0faa8293e2145bdff8752f20a0b8b57c0d9b275c2cf34d4121e249",
+    "evidence_hash": "sha256:27a1ba3088094853e4c8ccd02ecc29ae1cad41cac34419bc6c711a9e43ee482d",
     "confidence": "medium"
   },
   "provider_verified": false

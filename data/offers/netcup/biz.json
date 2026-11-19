@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-biz",
-    "fetched_at": "2026-11-13T06:23:26Z",
+    "fetched_at": "2026-11-19T07:15:11Z",
     "method": "scrape",
-    "evidence_hash": "sha256:cb7554484b65b0f3210f8aacd6b22911eb722c16216032a31af9ccea9086ee40",
+    "evidence_hash": "sha256:90b92ba1ebc03df675ffa41fdf7d2deb4a26be847faf18e840af4374bae6329d",
     "confidence": "high"
   },
   "provider_verified": false

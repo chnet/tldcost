@@ -24,7 +24,8 @@
 //
 // One exception, a separate branch (owner decision 2026-11-19, "Fremdmarkt", docs/decisions.md):
 // the data run's runners are shown the US display (countryCode 'US', showVAT 'false',
-// vatPercentage '0'). Its prices are recorded as quoted, in USD and net, with foreign_market and the
+// vatPercentage '0'), with amounts in US notation ("38.99", read strictly by usdCents; the German
+// branch keeps euroCents). Its prices are recorded as quoted, in USD and net, with foreign_market and the
 // literal heading and row as the quote; the site converts them at the ECB rate of the fetch date and
 // adds German VAT, with a footnote. The branch requires that exact display, the currency USD in both
 // onecomConfig.currency and the heading "Domainpreise in USD", and no VAT note; a US display in EUR
@@ -53,6 +54,16 @@ export function euroCents(text: string): number {
   if (!m) throw new RangeError(`not a German euro price: ${JSON.stringify(text)}`);
   const euros = Number((m[1] as string).replaceAll('.', ''));
   return euros * 100 + (m[2] === '-' ? 0 : Number(m[2]));
+}
+
+/**
+ * US display (Fremdmarkt branch only): "38.99" -> 3899, "2,791.09" -> 279109, optionally with "$"
+ * before or "USD" after the amount. Strict: two decimals, no other notation.
+ */
+export function usdCents(text: string): number {
+  const m = /^(?:\$ ?)?(\d{1,3}(?:,\d{3})+|\d{1,4})\.(\d{2})(?: ?USD)?$/.exec(text.trim());
+  if (!m) throw new RangeError(`not a US dollar price: ${JSON.stringify(text)}`);
+  return Number((m[1] as string).replaceAll(',', '')) * 100 + Number(m[2]);
 }
 
 const plain = (html: string) =>
@@ -158,8 +169,11 @@ export interface OneComCell {
   regular: number | null;
 }
 
-/** One price cell; null for an empty cell. Badges (e.g. "Gratis mit Hosting") are dropped. */
-export function parseCell(html: string): OneComCell | null {
+/**
+ * One price cell; null for an empty cell. Badges (e.g. "Gratis mit Hosting") are dropped. `money`
+ * reads the amounts: euroCents on the German display, usdCents on the US one.
+ */
+export function parseCell(html: string, money = euroCents): OneComCell | null {
   const struck = /<span class="line-through">([\s\S]*?)<\/span>/.exec(html);
   const rest = plain(
     html
@@ -168,8 +182,8 @@ export function parseCell(html: string): OneComCell | null {
   );
   if (rest === '' && !struck) return null;
   return {
-    current: euroCents(rest),
-    regular: struck ? euroCents(plain(struck[1] as string)) : null,
+    current: money(rest),
+    regular: struck ? money(plain(struck[1] as string)) : null,
   };
 }
 
@@ -190,10 +204,22 @@ export function parsePriceList(html: string): Map<string, OneComRow> {
 /** The US display: TLD -> row (USD, net) and its literal row text for the quote. */
 export function parseUsPriceList(html: string): { heading: string; rows: Map<string, OneComRow> } {
   const heading = checkUsDisplay(html);
-  return { heading, rows: parseRows(html) };
+  return { heading, rows: parseRows(html, usdCents) };
 }
 
-function parseRows(html: string): Map<string, OneComRow> {
+/** What the page showed, for the run log before anything is parsed (US display). */
+export function displayLine(html: string): string {
+  const heading = /<h1 class="pubPriceList-title">([\s\S]*?)<\/h1>/.exec(html);
+  const firstRow = /<tr data-pub-price-row>([\s\S]*?)<\/tr>/.exec(html);
+  return (
+    `countryCode ${JSON.stringify(configValue(html, 'countryCode'))}, ` +
+    `currency ${JSON.stringify(configValue(html, 'currency'))}, ` +
+    `heading ${JSON.stringify(heading ? plain(heading[1] as string) : null)}, ` +
+    `first row ${JSON.stringify(firstRow ? plain(firstRow[1] as string).slice(0, 200) : null)}`
+  );
+}
+
+function parseRows(html: string, money = euroCents): Map<string, OneComRow> {
   const rows = new Map<string, OneComRow>();
   for (const m of html.matchAll(/<tr data-pub-price-row>([\s\S]*?)<\/tr>/g)) {
     const row = m[1] as string;
@@ -201,7 +227,12 @@ function parseRows(html: string): Map<string, OneComRow> {
     if (!tld) continue;
     const cell = (label: string) => {
       const c = new RegExp(`<td data-label='${label}'>([\\s\\S]*?)</td>`).exec(row);
-      return c ? parseCell(c[1] as string) : null;
+      try {
+        return c ? parseCell(c[1] as string, money) : null;
+      } catch (err) {
+        // name the row and column, so a failed run shows where the page changed
+        throw new Error(`.${tld} ${label}: ${(err as Error).message}`, { cause: err });
+      }
     };
     rows.set(tld, {
       text: plain(row),
@@ -224,6 +255,8 @@ export const oneCom: Adapter = {
     let rows: Map<string, OneComRow>;
     let quoteOf: ((row: OneComRow) => ForeignMarket) | null = null;
     if (us) {
+      // logged before any check or parsing, so a failed run still shows what the page said
+      ctx.log(`one-com: US price display? ${displayLine(res.text)}`);
       const list = parseUsPriceList(res.text);
       rows = list.rows;
       quoteOf = (row) => ({

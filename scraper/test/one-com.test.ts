@@ -5,6 +5,7 @@ import {
   ONECOM_PRICE_LIST,
   oneCom,
   parseCell,
+  usdCents,
 } from '../src/adapters/one-com.js';
 import { MVP_TLDS } from '../src/tlds.js';
 import { ctxFor, fixture, testHttp } from './helpers.js';
@@ -20,8 +21,9 @@ const page = fixture('one-com/preise.html');
 /**
  * SYNTHETIC US display, not a fetched page: the German fixture under the settings the data run's
  * runners were shown (countryCode, showVAT, vatPercentage as in the run log of 2026-11-19), plus the
- * assumed currency USD in onecomConfig and the heading, without the gross note. A German address
- * cannot see the real page; the rows and amounts are the German ones, unchanged.
+ * assumed currency USD in onecomConfig and the heading, without the gross note. The amounts are
+ * the German ones in the US notation the run showed ("38.99": decimal point, thousands with a
+ * comma); a German address cannot see the real page.
  */
 const usPage = [
   ["onecomConfig.showVAT = 'true';", "onecomConfig.showVAT = 'false';"],
@@ -36,10 +38,19 @@ const usPage = [
     '<h1 class="pubPriceList-title">\n\t\t\tDomainpreise in USD\n\t\t</h1>\n<table class="pubPriceList-table',
   ],
   ['Alle Preise inkl. 19% MwSt.', ''],
-].reduce((html, [from, to]) => {
-  if (!html.includes(from as string)) throw new Error(`fixture changed: ${from}`);
-  return html.replace(from as string, to as string);
-}, page);
+]
+  .reduce((html, [from, to]) => {
+    if (!html.includes(from as string)) throw new Error(`fixture changed: ${from}`);
+    return html.replace(from as string, to as string);
+  }, page)
+  // German notation in the price cells -> US notation: "2.791,09" -> "2,791.09", "4,-" -> "4.00"
+  .replace(/<tr data-pub-price-row>[\s\S]*?<\/tr>/g, (row) =>
+    row.replace(
+      /(\d{1,3}(?:\.\d{3})*|\d+),(\d{2}|-)(?=\s*<)/g,
+      (_, euros: string, cents: string) =>
+        `${euros.replaceAll('.', ',')}.${cents === '-' ? '00' : cents}`,
+    ),
+  );
 const US_LINE = {
   currency: 'onecomConfig.currency = "USD";',
   heading: 'Domainpreise in USD',
@@ -235,7 +246,10 @@ describe('one.com adapter', () => {
       const result = await oneCom.fetch({ ...ctx, log: (m) => logs.push(m) });
       expect(result.failed).toEqual([]);
       expect(result.offers).toHaveLength(17);
+      // first what the page said (before any check or parsing), then the result
       expect(logs).toEqual([
+        'one-com: US price display? countryCode "US", currency "USD", heading "Domainpreise in USD", ' +
+          'first row ".ai 193.08 193.08 193.08 166.60"',
         expect.stringMatching(/^one-com: US price display \(Domainpreise in USD\), \d+ rows/),
       ]);
       const de = result.offers.find((o) => o.tld === 'de');
@@ -249,12 +263,49 @@ describe('one.com adapter', () => {
       });
       // the quote is the page's own text: heading and the row of the TLD
       expect(de?.foreign_market?.quote).toMatch(
-        /^Domainpreise in USD: \.de Gratis mit Hosting 0,90 17,99 Gratis mit Hosting 0,90 17,99 17,99$/,
+        /^Domainpreise in USD: \.de Gratis mit Hosting 0\.90 17\.99 Gratis mit Hosting 0\.90 17\.99 17\.99$/,
       );
       for (const o of result.offers) {
         expect(o.foreign_market?.quote).toContain(`.${o.tld} `);
         expect(o.foreign_market?.quote.length).toBeLessThanOrEqual(500);
       }
+    });
+
+    it('reads US amounts strictly, names the row of an unreadable amount', async () => {
+      expect(usdCents('38.99')).toBe(3899);
+      expect(usdCents(' $38.99 ')).toBe(3899);
+      expect(usdCents('38.99 USD')).toBe(3899);
+      expect(usdCents('2,791.09')).toBe(279109);
+      for (const bad of [
+        '38,99',
+        '38.9',
+        '4,-',
+        '38',
+        '$ 38.99 $',
+        '12345.00',
+        '1,23.45',
+        'Gratis',
+      ]) {
+        expect(() => usdCents(bad), bad).toThrow(/not a US dollar price/);
+      }
+      // the multi-level, thousands and "4,-" rows of the fixture, in US notation
+      const result = await run(usPage, ['co.uk', 'nl', 'travel', 'lotto']);
+      expect(result.failed).toEqual([]);
+      const by = (t: string) => result.offers.find((o) => o.tld === t)?.price;
+      expect(by('nl')).toMatchObject({ year1: 400, year1_regular: 1949 });
+      expect(by('lotto')).toMatchObject({ year1: 279109, renewal: 279109 });
+      // German notation on the US display: the error names row and column
+      const german = usPage.replace(
+        '<span class="no-rebate">\n\t193.08',
+        '<span class="no-rebate">\n\t193,08',
+      );
+      expect(german).not.toBe(usPage);
+      await expect(run(german)).rejects.toThrow(
+        /^\.ai Registrierung: not a US dollar price: "193,08"$/,
+      );
+      // and the German display keeps the German parser
+      expect(() => parseCell('<span>38.99</span>')).toThrow(/not a German euro price/);
+      expect(parseCell('<span>38.99</span>', usdCents)).toEqual({ current: 3899, regular: null });
     });
 
     it('the German page stays on the German branch: EUR, gross, no foreign_market', async () => {

@@ -12,8 +12,24 @@ const run = (body: string, tlds: readonly string[] = MVP_TLDS) =>
   oneCom.fetch(ctxFor(testHttp({ ...ROBOTS, [ONECOM_PRICE_LIST]: { body } }).http, tlds));
 const page = fixture('one-com/preise.html');
 
+/** The inline country and VAT settings as the German page has them (overrides per key). */
+const config = (over: Record<string, string> = {}) =>
+  '<script>' +
+  Object.entries({ showVAT: 'true', vatPercentage: '19', countryCode: 'DE', ...over })
+    .map(([k, v]) => `onecomConfig.${k} = '${v}';`)
+    .join('\n') +
+  '</script>';
+const DE = config();
+/** The settings lines exactly as in the fixture. */
+const DE_LINE = {
+  countryCode: "onecomConfig.countryCode = 'DE';",
+  showVAT: "onecomConfig.showVAT = 'true';",
+  vatPercentage: "onecomConfig.vatPercentage = '19';",
+};
+
 /** A price list with one row (cells as given) and the notes under the table. */
 const listWith = (cells: { reg: string; transfer?: string; renewal: string }, notes = true) =>
+  DE +
   `<table><tbody><tr data-pub-price-row><th scope="row" class="x">\n.de\n</th>` +
   `<td data-label='Registrierung'>${cells.reg}</td>` +
   (cells.transfer === undefined ? '' : `<td data-label='Umzug'>${cells.transfer}</td>`) +
@@ -129,14 +145,48 @@ describe('one.com adapter', () => {
   });
 
   it('throws when the page no longer looks like the price list', async () => {
-    await expect(run('<p>Wartung</p>')).rejects.toThrow(/without "Alle Preise inkl. 19% MwSt."/);
-    await expect(run('<p>Alle Preise inkl. 19% MwSt.</p>')).rejects.toThrow(/no price rows/);
+    await expect(run(`${DE}<p>Wartung</p>`)).rejects.toThrow(
+      /without "Alle Preise inkl. 19% MwSt.".*VAT statement changed/,
+    );
+    await expect(run(`${DE}<p>Alle Preise inkl. 19% MwSt.</p>`)).rejects.toThrow(/no price rows/);
     // a row without a TLD header is not a price row
     await expect(
       run(
-        '<tr data-pub-price-row><th scope="row">Summe</th><td>1,00</td></tr>' +
+        DE +
+          '<tr data-pub-price-row><th scope="row">Summe</th><td>1,00</td></tr>' +
           '<p>Alle Preise inkl. 19% MwSt.</p>',
       ),
     ).rejects.toThrow(/no price rows/);
+  });
+
+  it('accepts the gross note with other whitespace', async () => {
+    const list = page.replace('Alle Preise inkl. 19% MwSt.', 'Alle Preise inkl.\n\t19 % MwSt.');
+    expect(list).not.toBe(page);
+    expect((await run(list)).offers).toHaveLength(17);
+  });
+
+  it("throws on another country's price display (server-side country detection)", async () => {
+    // a visitor outside Germany: other country, no VAT shown, no gross note
+    const abroad = page
+      .replace(DE_LINE.countryCode, "onecomConfig.countryCode = 'US';")
+      .replace(DE_LINE.showVAT, "onecomConfig.showVAT = 'false';")
+      .replace(DE_LINE.vatPercentage, "onecomConfig.vatPercentage = '0';")
+      .replace('Alle Preise inkl. 19% MwSt.', '');
+    await expect(run(abroad)).rejects.toThrow(
+      /^not the German price display \(countryCode "US", showVAT "false", vatPercentage "0", notice "Geld-zurück-Garantie[^"]*"\): country detection changed the prices$/,
+    );
+    // German country code but another VAT rate, even with the note still on the page
+    await expect(
+      run(page.replace(DE_LINE.vatPercentage, "onecomConfig.vatPercentage = '20';")),
+    ).rejects.toThrow(/not the German price display \(.*vatPercentage "20"/);
+    await expect(
+      run(page.replace(DE_LINE.showVAT, "onecomConfig.showVAT = 'false';")),
+    ).rejects.toThrow(/not the German price display \(.*showVAT "false"/);
+  });
+
+  it('throws when the country and VAT settings are missing', async () => {
+    await expect(run(page.replace(DE_LINE.countryCode, ''))).rejects.toThrow(
+      /without the onecomConfig country and VAT settings \(countryCode null, .*\): layout changed/,
+    );
   });
 });

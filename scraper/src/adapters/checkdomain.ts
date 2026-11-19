@@ -12,7 +12,12 @@
 // Monat“), billed 12 months in advance (`unit: month`). A promo („Die .de-Domain kostet im ersten
 // Jahr nur 0,07EUR/Monat, danach 1,49EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde.“)
 // goes to year1 with the hint as condition, only when the hint names this TLD and both of its
-// amounts match the price data; otherwise the TLD fails. Every TLD must match the price list in
+// amounts match the price data. When the hint in the domain data does not match, the footnote of the
+// TLD's own page (the evidence source_url) is read instead: its hint is taken when it matches
+// (seen for .com: domain data "danach 2,19", price list, domain price and page footnote 2,39). A
+// hint that names another TLD with exactly this TLD's amounts (seen for .at: „Die .de-Domain kostet
+// … 0,49 … 2,99“ in both sources) states no promo for this TLD: the regular price applies, with a
+// warning. Anything else fails the TLD. Every TLD must match the price list in
 // price, setup and minimum term, or it fails. TLDs with a minimum term other than 12 months (.ai: 24)
 // are skipped: the payment per term with a first-year promo inside it is not stated.
 import { evidenceHash } from '../evidence.js';
@@ -35,8 +40,10 @@ const HREF =
   /^ data-href="(https:\/\/www\.checkdomain\.de\/([a-z0-9-]+)-domain\/(?:([a-z0-9-]+)\/)?)"$/;
 const EURO = /^(\d+),(\d{2}) €\*$/;
 const MONTHS = /^(\d+) Monate$/;
-const HINT =
-  /^Die \.([a-z0-9.-]+)-Domain kostet im ersten Jahr nur (\d+),(\d{2})EUR\/Monat, danach (\d+),(\d{2})EUR\/Monat\. Das Angebot ist limitiert auf 1 Domain pro Kunde\.$/;
+const HINT_TEXT =
+  /Die \.([a-z0-9.-]+)-Domain kostet im ersten Jahr nur (\d+),(\d{2})EUR\/Monat, danach (\d+),(\d{2})EUR\/Monat\. Das Angebot ist limitiert auf 1 Domain pro Kunde\./;
+const HINT = new RegExp(`^${HINT_TEXT.source}$`);
+const FOOTNOTES = /<ol data-app-main-footnotes-list>([\s\S]*?)<\/ol>/g;
 
 /** Body as text: ISO-8859-1 when the response says so, else UTF-8. */
 export function decode(res: Pick<HttpResponse, 'contentType' | 'bytes' | 'text'>): string {
@@ -144,19 +151,48 @@ const cents = (value: unknown, what: string): number => {
   return toCents(value);
 };
 
+export interface Hint {
+  /** The hint, whitespace normalised. */
+  text: string;
+  /** The TLD the hint names. */
+  tld: string;
+  promo: number;
+  regular: number;
+}
+
+/** A promo hint in the known wording, or null. */
+export function parseHint(hint: string): Hint | null {
+  const text = hint.replace(/\s+/g, ' ').trim();
+  const m = HINT.exec(text);
+  if (!m) return null;
+  return {
+    text,
+    tld: m[1] as string,
+    promo: toCents(`${m[2] as string}.${m[3] as string}`),
+    regular: toCents(`${m[4] as string}.${m[5] as string}`),
+  };
+}
+
 /** The promo hint, checked against the TLD and the amounts; returns the normalised text. */
 export function checkHint(tld: string, promo: number, regular: number, hint: unknown): string {
   if (typeof hint !== 'string') throw new Error('promo without a hint text');
   if (promo >= regular) throw new Error(`promo price ${promo} not below the regular ${regular}`);
-  const normalised = hint.replace(/\s+/g, ' ').trim();
-  const m = HINT.exec(normalised);
-  const ok =
-    m !== null &&
-    m[1] === tld &&
-    toCents(`${m[2] as string}.${m[3] as string}`) === promo &&
-    toCents(`${m[4] as string}.${m[5] as string}`) === regular;
-  if (!ok) throw new Error(`promo hint does not match the price data: ${JSON.stringify(hint)}`);
-  return normalised;
+  const h = parseHint(hint);
+  if (h?.tld !== tld || h.promo !== promo || h.regular !== regular) {
+    throw new Error(`promo hint does not match the price data: ${JSON.stringify(hint)}`);
+  }
+  return h.text;
+}
+
+/** The distinct promo hints in the footnote list of a TLD page (`<ol data-app-main-footnotes-list>`). */
+export function pageHints(html: string): string[] {
+  const hints = new Set<string>();
+  for (const [, list] of html.matchAll(FOOTNOTES)) {
+    for (const [hint] of text(list as string).matchAll(new RegExp(HINT_TEXT.source, 'g'))) {
+      hints.add(hint);
+    }
+  }
+  return [...hints];
 }
 
 export const checkdomain: Adapter = {
@@ -168,6 +204,54 @@ export const checkdomain: Adapter = {
     const tlds = parseTldList(decode(res));
     const hash = evidenceHash(res.bytes);
     const result = newResult();
+
+    /**
+     * Conditions of a promo: the hint of the domain data, else the one footnote hint of the TLD
+     * page; undefined (regular price, warning) when every hint names another TLD with exactly
+     * these amounts. Throws the domain data's mismatch otherwise.
+     */
+    const promoConditions = async (
+      tld: string,
+      promo: number,
+      regular: number,
+      hint: unknown,
+      page: string,
+    ): Promise<string | undefined> => {
+      try {
+        return checkHint(tld, promo, regular, hint);
+      } catch (err) {
+        // no hint text or no discount: nothing on the page can change that
+        if (typeof hint !== 'string' || promo >= regular) throw err;
+        let onPage: string[];
+        try {
+          onPage = pageHints(decode(await ctx.http.get(page, 'text/html')));
+        } catch (pageErr) {
+          throw new Error(`${(err as Error).message}; TLD page: ${(pageErr as Error).message}`, {
+            cause: pageErr,
+          });
+        }
+        if (onPage.length === 1) {
+          try {
+            const quoted = checkHint(tld, promo, regular, onPage[0]);
+            result.warnings.push(
+              `.${tld}: promo hint taken from ${page}; the domain data states ${JSON.stringify(hint)}`,
+            );
+            return quoted;
+          } catch {
+            // the page hint does not match either
+          }
+        }
+        const other = [hint, ...onPage].map(parseHint);
+        if (other.every((h) => h && h.tld !== tld && h.promo === promo && h.regular === regular)) {
+          result.warnings.push(
+            `.${tld}: promo hint names another TLD, regular price without the promo: ${JSON.stringify(hint)}`,
+          );
+          return undefined;
+        }
+        throw err;
+      }
+    };
+
     for (const tld of ctx.tlds) {
       const row = list.get(tld);
       const entry = tlds.get(tld);
@@ -205,8 +289,8 @@ export const checkdomain: Adapter = {
           const promoPrice = cents(discount.price, 'promo price');
           // a "discount" at the regular price is no promo
           if (promoPrice !== monthly) {
-            conditions = checkHint(tld, promoPrice, monthly, discount.hint);
-            year1 = promoPrice;
+            conditions = await promoConditions(tld, promoPrice, monthly, discount.hint, row.url);
+            if (conditions) year1 = promoPrice;
           }
         }
         result.offers.push({

@@ -25,7 +25,7 @@ test('expanding rows shows evidence, terms and the report link, order unchanged'
   );
   await expect(detail).toContainText('Domain-AGB Nr. 4 und 5');
   await expect(detail).toContainText('Anbieter-bestätigt');
-  // REPORT_VIA 'mail' while the repository is private (src/lib/report.mjs)
+  // REPORT_VIA 'mail' (src/lib/report.mjs)
   const report = detail.locator('a', { hasText: 'Fehler melden' });
   const href = new URL((await report.getAttribute('href')) ?? '');
   expect(href.protocol + href.pathname).toBe('mailto:hello@chnet.solutions');

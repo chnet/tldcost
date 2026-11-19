@@ -46,8 +46,8 @@ describe('report routes', () => {
 });
 
 describe('repo links (REPO_PUBLIC)', () => {
-  it('the repository is treated as private for now', () => {
-    expect(REPO_PUBLIC).toBe(false);
+  it('the repository is public (since 19.11.2026)', () => {
+    expect(REPO_PUBLIC).toBe(true);
   });
 
   it('public: GitHub URLs; private: the site fallback or null (plain text)', () => {
@@ -57,7 +57,7 @@ describe('repo links (REPO_PUBLIC)', () => {
     );
     expect(repoLink('blob/main/LICENSE', '/lizenz/', false)).toBe('/lizenz/');
     expect(repoLink('', null, false)).toBeNull();
-    expect(repoLink()).toBeNull();
+    expect(repoLink()).toBe('https://github.com/chnet/tldcost');
   });
 });
 

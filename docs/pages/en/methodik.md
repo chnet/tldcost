@@ -2,7 +2,7 @@
 title: Methodology
 slug: methodik
 lang: en
-source_sha256: "5de3835bf38c609a8f9c2acef9cecd6f14f3838e287b6794ddbc37e444411ec5"
+source_sha256: "223ee8436c7f607da44804a5af38f72c8485f7200964ae0f547fe0414509b0de"
 ---
 
 # Methodology
@@ -125,8 +125,7 @@ Every price and every contract term carries:
 | `evidence_hash` | checksum of the fetched page or response |
 | `confidence` | `high`, `medium` or `low`; manual entries without evidence are always `low` |
 
-<!-- TODO C4: Datum der Veröffentlichung -->
-From the publication of the repository, every change to the data is a commit in the public repository; from then on, the Git history is the complete price history. Older states (since 13 Nov 2026) are in the private predecessor repository. In addition, `data/history/` keeps a price history per offer, with one entry per price change (date and source); it starts with the data as of November 2026 and holds no older prices.
+Since the publication of the repository on 19 Nov 2026, every change to the data is a commit in the public repository; since then, the Git history is the complete price history. Older states (since 13 Nov 2026) are in the private predecessor repository. In addition, `data/history/` keeps a price history per offer, with one entry per price change (date and source); it starts with the data as of November 2026 and holds no older prices.
 
 ## Collection and updates
 

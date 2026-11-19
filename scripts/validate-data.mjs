@@ -124,6 +124,9 @@ export function offerPriceState(offer) {
  */
 export const FOREIGN_MARKET_CURRENCIES = ['USD'];
 
+/** From this day (evidence.fetched_at) a hand-entered multi-year offer needs evidence.quote (#28). */
+export const QUOTE_REQUIRED_FROM = '2026-11-20';
+
 /** Fields that must be equal within one segment of a history (one market). */
 const SEGMENT_FIELDS = ['currency', 'unit', 'vat_included', 'market'];
 
@@ -300,6 +303,26 @@ export function validateDir(dir, validators = makeValidators()) {
         ) {
           findings.push(
             `${rel(file)}: promo.max_per_customer needs max_per_customer_source (url or quote)`,
+          );
+        }
+        // a hand-entered price with a multi-year term (e.g. .ai, 2 years): only with the verbatim
+        // source text, which shows whether the amount is per year or per term (#28). Required for
+        // entries read from QUOTE_REQUIRED_FROM on; older ones name their source in
+        // docs/research/providers.md and get the quote at their next manual check (30-day warning)
+        const quote = doc.evidence.quote;
+        if (quote !== undefined && !quote.trim()) {
+          findings.push(`${rel(file)}: evidence.quote is blank`);
+        }
+        const multiYear =
+          (doc.price.term_years ?? 1) > 1 || (doc.price.renewal_term_years ?? 1) > 1;
+        if (
+          doc.evidence.method === 'manual' &&
+          multiYear &&
+          quote === undefined &&
+          doc.evidence.fetched_at.slice(0, 10) >= QUOTE_REQUIRED_FROM
+        ) {
+          findings.push(
+            `${rel(file)}: a hand-entered offer with a multi-year term needs evidence.quote (verbatim source text: per year or per term)`,
           );
         }
         // another market's prices (owner decision 2026-11-19): in that market's currency, one of

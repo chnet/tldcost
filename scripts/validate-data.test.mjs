@@ -11,6 +11,7 @@ import {
   makeValidators,
   offerPriceState,
   PAYABLE_FEATURES,
+  QUOTE_REQUIRED_FROM,
   validateDir,
 } from './validate-data.mjs';
 
@@ -290,6 +291,74 @@ test('provider vat_rate null only outside the EU; offers with stated VAT then ne
   }
 });
 
+test('evidence.quote: hand-entered offers with a multi-year term need it, never blank (#28)', () => {
+  const QUOTE = '.ai Registrierung 2 Jahre 100,00 € inkl. MwSt.';
+  const manual = (o, price = {}, evidence = {}) => {
+    Object.assign(o.price, price);
+    Object.assign(o.evidence, { method: 'manual', fetched_at: '2026-11-20T09:00:00Z' }, evidence);
+  };
+  // 2-year term, by hand, with the quote: valid
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => manual(o, { term_years: 2, renewal_term_years: 2 }, { quote: QUOTE })),
+      V,
+    ),
+    [],
+  );
+  // the same without the quote: rejected, also for a multi-year renewal term alone
+  for (const price of [{ term_years: 2 }, { renewal_term_years: 2 }]) {
+    const f = validateDir(
+      withOffer((o) => manual(o, price)),
+      V,
+    );
+    assert.ok(
+      f.some((x) => x.includes('a hand-entered offer with a multi-year term needs evidence.quote')),
+      `${JSON.stringify(price)}: ${f}`,
+    );
+  }
+  // 1-year terms by hand, or a scraped multi-year offer: no quote needed (as before)
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => manual(o)),
+      V,
+    ),
+    [],
+  );
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => {
+        Object.assign(o.price, { term_years: 2 });
+        o.evidence.method = 'scrape';
+      }),
+      V,
+    ),
+    [],
+  );
+  // read before the rule applies (the hand-entered .ai offers of 2026-11-15): no quote needed yet
+  assert.equal(QUOTE_REQUIRED_FROM, '2026-11-20');
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => manual(o, { term_years: 2 }, { fetched_at: '2026-11-19T23:59:59Z' })),
+      V,
+    ),
+    [],
+  );
+  // blank or too long: rejected
+  let f = validateDir(
+    withOffer((o) => manual(o, { term_years: 2 }, { quote: '   ' })),
+    V,
+  );
+  assert.ok(
+    f.some((x) => x.includes('evidence.quote is blank')),
+    `${f}`,
+  );
+  f = validateDir(
+    withOffer((o) => manual(o, {}, { quote: 'x'.repeat(501) })),
+    V,
+  );
+  assert.ok(f.length > 0, 'quote longer than 500 characters is rejected');
+});
+
 test('foreign_market (owner decision 2026-11-19): currency matches, USD only, net prices', () => {
   const market = { country: 'US', currency: 'USD', quote: 'Domainpreise in USD .de 9,99 9,99' };
   const offer = (o) => ({ ...read(OFFER), foreign_market: market, ...o });
@@ -338,7 +407,11 @@ test('foreign_market (owner decision 2026-11-19): currency matches, USD only, ne
 test('multi-year terms: integer 1..10, monthly prices only with 1-year terms', () => {
   assert.deepEqual(
     validateDir(
-      withOffer((o) => Object.assign(o.price, { term_years: 2, renewal_term_years: 2 })),
+      withOffer((o) => {
+        Object.assign(o.price, { term_years: 2, renewal_term_years: 2 });
+        // the example is entered by hand: a multi-year term needs the verbatim quote (#28)
+        o.evidence.quote = '2 Jahre 10,00 € inkl. MwSt.';
+      }),
       V,
     ),
     [],

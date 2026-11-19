@@ -159,6 +159,11 @@ export interface Evidence {
   method: EvidenceMethod;
   evidence_hash?: string;
   screenshot_url?: string;
+  /**
+   * Verbatim source text for a hand-entered price (method manual): amount, currency, VAT statement
+   * and term as the page states them. Required for a multi-year term (validate-data).
+   */
+  quote?: string;
   confidence: Confidence;
 }
 

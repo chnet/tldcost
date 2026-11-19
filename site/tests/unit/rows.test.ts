@@ -88,6 +88,18 @@ describe('buildPayload', () => {
     // the same offer without foreign_market keeps the generic notes
     const withoutMarket: Partial<typeof offer> = { ...offer };
     delete withoutMarket.foreign_market;
+    // the note names the date of the ECB table used (fx.date), not the fetch date: here the
+    // fetch is on 12.11., the newest table on or before it is 11.11.; a later table is not used
+    const later = { ...data.fx[0]!, date: '2026-11-13', rates: { USD: 1.2 } };
+    const fallback = buildPayload({
+      providers: [provider],
+      offers: [offer],
+      fx: [...data.fx, later],
+    });
+    expect(fallback.rows[0]?.notes).toEqual([id]);
+    expect(fallback.notes[id]).toContain('vom 11.11.2026,');
+    expect(fallback.notes[id]).not.toContain('12.11.2026');
+    expect(fallback.rows[0]?.gross.year1).toBe(1427);
     const plain = buildPayload({
       providers: [provider],
       offers: [withoutMarket as typeof base],

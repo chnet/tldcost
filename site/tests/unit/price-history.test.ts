@@ -20,7 +20,8 @@ import {
   MIN_HISTORY_POINTS,
   rowHistory,
 } from '../../src/lib/price-history';
-import { buildPayload } from '../../src/lib/rows';
+import { LOCALES } from '../../src/i18n';
+import { buildPayload, historyOffer } from '../../src/lib/rows';
 
 const FIXTURES = fileURLToPath(new URL('../fixtures/data', import.meta.url));
 const data = loadData(FIXTURES);
@@ -94,6 +95,62 @@ describe('price history in the payload', () => {
     // one VAT rate for all entries: the net lines are the gross lines, not repeated in the payload
     expect(h.gross.path).toBeDefined();
     expect(h.net).not.toHaveProperty('path');
+    // no foreign market entry: no market notes
+    expect(h.gross).not.toHaveProperty('notes');
+    expect(h.net).not.toHaveProperty('notes');
+  });
+
+  it("historyOffer: the entry prices with today's terms and VAT rate, nothing else", () => {
+    const offer = {
+      ...data.offers.find((o) => o.provider === 'delta' && o.tld === 'io')!,
+      vat_rate: 700,
+    };
+    offer.price = { ...offer.price, year2: 1, year3: 2, year1_regular: 3, transfer_out: 4 };
+    const e = entry('2026-11-01', { currency: 'USD', vat_included: false, unit: 'month' });
+    const at = historyOffer(offer, e);
+    expect(at).toMatchObject({ currency: 'USD', vat_included: false, vat_rate: 700 });
+    expect(at.price).toEqual({
+      unit: 'month',
+      setup: 0,
+      year1: 500,
+      renewal: 1000,
+      transfer_in: 1000,
+      term_years: 2,
+      renewal_term_years: 1,
+    });
+    expect(offer.price).toMatchObject({ term_years: 2, renewal_term_years: 1 });
+    expect(at).not.toHaveProperty('promo');
+    expect(at).not.toHaveProperty('foreign_market');
+    expect(at.evidence).toMatchObject({
+      source_url: e.source.url,
+      fetched_at: e.source.fetched_at,
+    });
+  });
+
+  it('the last entry (= the offer) gives the table values, for every fixture offer and mode', () => {
+    // terms (delta .io: 2 years), monthly net prices (foxtrot), USD without VAT statement (echo)
+    const repeated = new Map(
+      data.offers.map((o) => {
+        const key = `${o.provider}/${o.tld}`;
+        const last = history.get(key)!.entries.at(-1)!;
+        const early = (date: string) => ({
+          ...last,
+          date,
+          source: { ...last.source, fetched_at: `${date}T00:00:00Z` },
+        });
+        return [
+          key,
+          { ...history.get(key)!, entries: [early('2026-10-01'), early('2026-10-02'), last] },
+        ];
+      }),
+    );
+    const p = buildPayload(data, { history: repeated });
+    for (const r of p.rows) {
+      for (const mode of ['gross', 'net'] as const) {
+        expect(r.detail.history![mode].year1.at(-1), `${r.key} ${mode}`).toBe(r[mode]['year1']);
+        expect(r.detail.history![mode].renewal.at(-1), `${r.key} ${mode}`).toBe(r[mode]['renewal']);
+      }
+    }
   });
 
   it('a market switch starts a new segment, converted at the ECB rate of its fetch date', () => {
@@ -108,7 +165,7 @@ describe('price history in the payload', () => {
     const h = buildPayload(data, { history: new Map([['alpha/de', switched]]) }).rows.find(
       (r) => r.key === 'alpha/de',
     )!.detail.history!;
-    expect(h.breaks).toEqual([{ index: 2, currency: 'USD', market: 'US' }]);
+    expect(h.breaks).toEqual([2]);
     const fx = fxRateFor(data.fx, 'USD', '2026-11-12T08:00:00Z')!;
     expect(fx.date).toBe('2026-11-11');
     const usd = (cents: number, mode: 'gross' | 'net') =>
@@ -128,6 +185,27 @@ describe('price history in the payload', () => {
     // gross and net scale the two segments differently: net keeps its own lines
     expect(h.net.path).toBeDefined();
     expect(h.net.path).not.toEqual(h.gross.path);
+    // the US entry carries the table's market note, per mode, with its rate date; the others none
+    expect(h.gross.notes).toEqual([
+      null,
+      null,
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026, zzgl. 19 % MwSt.; der Preis für Kunden in Deutschland kann abweichen.',
+    ]);
+    expect(h.net.notes).toEqual([
+      null,
+      null,
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026; der Preis für Kunden in Deutschland kann abweichen.',
+    ]);
+    const en = buildPayload(data, {
+      history: new Map([['alpha/de', switched]]),
+      locale: LOCALES.en,
+    }).rows.find((r) => r.key === 'alpha/de')!.detail.history!;
+    expect(en.gross.notes?.[2]).toBe(
+      'US price, converted at the rate of 11 Nov 2026, plus 19% VAT; the price for customers in Germany may differ.',
+    );
+    expect(en.net.notes?.[2]).toBe(
+      'US price, converted at the rate of 11 Nov 2026; the price for customers in Germany may differ.',
+    );
   });
 
   it('every change of currency, VAT mode or unit breaks the line, not only a market switch', () => {
@@ -135,7 +213,7 @@ describe('price history in the payload', () => {
       rowHistory([entry('2026-11-01'), entry('2026-11-02'), e], () => ({
         year1: 1,
         renewal: 1,
-      }))!.breaks.map((b) => b.index);
+      }))!.breaks;
     expect(breaks(entry('2026-11-03', { vat_included: false }))).toEqual([2]);
     expect(breaks(entry('2026-11-03', { unit: 'month' }))).toEqual([2]);
     expect(breaks(entry('2026-11-03', { currency: 'USD' }))).toEqual([2]);
@@ -172,7 +250,7 @@ describe('at most the newest 12 entries', () => {
     e[10] = { ...(e[10] as HistoryEntry), vat_included: false };
     e[11] = { ...(e[11] as HistoryEntry), vat_included: false };
     // 14 entries, the first 2 left out: the change at entry 10 is shown entry 8, back at 12 is 10
-    expect(rowHistory(e, amounts)!.breaks.map((b) => b.index)).toEqual([8, 10]);
+    expect(rowHistory(e, amounts)!.breaks).toEqual([8, 10]);
   });
 
   it('the caption says so in both languages', () => {

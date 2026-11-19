@@ -190,9 +190,8 @@ export const en: Messages = {
     historyCaption: (mode, capped) =>
       `${capped ? 'Last 12 changes' : 'Per data state'}, ${mode} in euros per year:`,
     historyUnknown: 'cannot be converted',
-    historyBreak: (date, currency, market) =>
-      `From ${date} a new segment (${currency}${market ? `, prices of the ${market} market` : ''}): ` +
-      'currency, VAT statement, unit or market changed, so the line is broken there.',
+    historyBreak: (date) =>
+      `From ${date} a new segment: currency, VAT statement, unit or market changed, so the line is broken there.`,
     paidHeading: 'Paid features',
     paidUnit: { year: '/year', month: '/month', once: ' one-off' },
     paidSource: 'source',

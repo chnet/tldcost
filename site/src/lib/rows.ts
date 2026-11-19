@@ -11,6 +11,7 @@ import {
   type ContractField,
   type CostedFeature,
   type FxRate,
+  type HistoryEntry,
   type Offer,
   type PriceHistory,
   type PriceMode,
@@ -250,6 +251,39 @@ function daysBefore(isoDate: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * The offer at one price-history entry, for the table's own core calls (Archiv-Issue 51). The
+ * history records the price state only: currency, VAT mode, unit, setup, year 1, renewal, transfer
+ * (and market). Taken from today's offer, on purpose:
+ * - term_years and renewal_term_years: a change of either stops the scraper gate (a person
+ *   decides), so the entries of one history share today's terms;
+ * - vat_rate: the history records none; the offer's rate, else the provider's (as in the table).
+ * Left out, because the history shows year 1 and renewal only: year1_regular, year2, year3,
+ * transfer_out, promo and everything that is not a price.
+ */
+export function historyOffer(offer: Offer, e: HistoryEntry): Offer {
+  const p = offer.price;
+  return {
+    schema_version: offer.schema_version,
+    provider: offer.provider,
+    tld: offer.tld,
+    currency: e.currency,
+    vat_included: e.vat_included,
+    ...(offer.vat_rate !== undefined ? { vat_rate: offer.vat_rate } : {}),
+    price: {
+      unit: e.unit,
+      setup: e.setup,
+      year1: e.year1,
+      renewal: e.renewal,
+      transfer_in: e.transfer_in,
+      ...(p.term_years !== undefined ? { term_years: p.term_years } : {}),
+      ...(p.renewal_term_years !== undefined ? { renewal_term_years: p.renewal_term_years } : {}),
+    },
+    evidence: { ...offer.evidence, source_url: e.source.url, fetched_at: e.source.fetched_at },
+    provider_verified: offer.provider_verified,
+  };
+}
+
 export interface BuildOptions {
   /** Reference date for expired promos (YYYY-MM-DD). Default: the build date (UTC). */
   today?: string;
@@ -306,28 +340,22 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
     const gross = modeValues(offer, provider, 'gross', fx);
     const net = modeValues(offer, provider, 'net', fx);
     // price history (Archiv-Issue 51): each entry's prices through the same modeValues as the
-    // table, with the entry's currency, VAT mode and unit and the ECB rate of its fetch date
+    // table (historyOffer), with the ECB rate of its fetch date. An entry of another market gets
+    // the table's market footnote for that entry: its rate date, in gross mode the added VAT.
     const entries = options.history?.get(key)?.entries;
     const history =
       entries &&
       rowHistory(entries, (e, mode): HistoryAmounts => {
-        const at: Offer = {
-          ...offer,
-          currency: e.currency,
-          vat_included: e.vat_included,
-          price: {
-            ...offer.price,
-            unit: e.unit,
-            setup: e.setup,
-            year1: e.year1,
-            renewal: e.renewal,
-            transfer_in: e.transfer_in,
-          },
-        };
         const atFx =
           e.currency === 'EUR' ? undefined : fxRateFor(data.fx, e.currency, e.source.fetched_at);
-        const v = modeValues(at, provider, mode, atFx);
-        return { year1: v['year1'] as Cents | null, renewal: v['renewal'] as Cents | null };
+        const v = modeValues(historyOffer(offer, e), provider, mode, atFx);
+        const note =
+          e.market && atFx && typeof vatRate === 'number'
+            ? mode === 'gross'
+              ? L.s.notes.foreignMarket(e.market, L.f.date(atFx.date), pct(vatRate))
+              : L.s.notes.foreignMarketNet(e.market, L.f.date(atFx.date))
+            : null;
+        return { year1: v['year1'] as Cents | null, renewal: v['renewal'] as Cents | null, note };
       });
     const cellNotes: PayloadRow['cellNotes'] = { gross: {}, net: {} };
     const promo = isPromo(offer);

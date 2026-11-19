@@ -2,7 +2,7 @@
 title: Methodology
 slug: methodik
 lang: en
-source_sha256: "d2fbc30cf0000b27cac7b746e003e9d6f1059fa6a42b900e6cfeba7a376b32c7"
+source_sha256: "1ceb00cef1c26c31ee7e81958ca7a40334a4832401d8669de45e359e48bf6478"
 ---
 
 # Methodology
@@ -16,7 +16,7 @@ This page explains which data tldcost collects, how the table is sorted and how 
 - Every column can be sorted. The chosen sorting is part of the URL, so you can share and reproduce it.
 - There is **no score, no recommendation, no “test winner” and no ratings**.
 - No provider pays for inclusion, placement or presentation. There are no affiliate links and no tracking.
-- Voluntary donations via [GitHub Sponsors](https://github.com/sponsors/chnet) have no influence on listing or ranking.
+- Voluntary support via [GitHub Sponsors](https://github.com/sponsors/chnet) has no influence on listing or ranking.
 - :::nur-oeffentlich
   Every value has a public source, a timestamp and evidence. All data is openly available in the [GitHub repository](tldcost:repo/).
   :::

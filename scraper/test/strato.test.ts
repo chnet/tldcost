@@ -157,6 +157,14 @@ describe('STRATO adapter', () => {
       [card({ unit: '/Jahr' }), 'card price unit "/Jahr", expected "/Mon."'],
       [card({ unit: null }), 'card price unit "", expected "/Mon."'],
       [card({ disclaimer: null }), 'setup fee missing'],
+      // an "Einrichtung" line in another form is not skipped in favour of the table or the list
+      [
+        card({
+          term: 'für 12 Monate',
+          disclaimer: 'danach 1 € /Mon.<br> Einrichtung: einmalig 2,50 €',
+        }),
+        'card line "danach 1 € /Mon. Einrichtung: einmalig 2,50 €" is not "Einrichtung: X €"',
+      ],
       [card({ term: 'für 12 Monate', disclaimer: 'Einrichtung: 0 €' }), 'without a "danach" price'],
       [card({ disclaimer: 'danach 1 € /Mon.<br> Einrichtung: 0 €' }), 'without a "danach" price'],
       [card({ term: 'für 24 Monate' }), 'unknown term "für 24 Monate"'],
@@ -473,7 +481,7 @@ describe('STRATO setup fee from the domain list', () => {
     expect(result.offers.map((o) => o.tld)).toEqual(['de']);
     expect(result.failed[0]?.reason).toMatch(/^setup fee missing: .*not fetched: .*503/);
     expect(result.warnings[0]).toMatch(
-      /^overview not fetched: .*503.*\(https:\/\/www\.strato\.de\/domains\/\)$/,
+      /^domain list not fetched: .*503.*\(https:\/\/www\.strato\.de\/domains\/\)$/,
     );
     expect(parseCard(fixture('strato/de.html'), 'de', { error: 'HTTP 503' }).listCheck).toBe(
       'not fetched',

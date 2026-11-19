@@ -14,7 +14,11 @@
 // or the list entry. When card, table and list entry state different setup fees, or none states
 // one, the TLD fails. The list also cross-checks TLDs whose fee comes from the card or the table
 // (a TLD missing from the list is not checked). When the list cannot be fetched, only the TLDs
-// that need it fail. robots.txt only disallows /apps/ and /error/. The AGB (17.90)
+// that need it fail. A list that is fetched but cannot be read (an entry text of another form, two
+// different entries for one order code, entry prices that differ from the card) fails every TLD
+// with a list entry, also those whose fee comes from the card or the table (fail closed): a layout
+// change of the list stops practically all STRATO TLDs until the adapter is adapted. A card line
+// with "Einrichtung" in another form than "Einrichtung: X €" fails the TLD too. robots.txt only disallows /apps/ and /error/. The AGB (17.90)
 // say nothing about automated access to the website. Domains are sold stand-alone (bundling rule
 // Archiv-Issue 75 not affected): "Sobald sie im Warenkorb ist, können Sie die ausgewählte Domain kaufen.
 // Optional kombinieren Sie Ihre neue Domain auch mit einer der STRATO Website-Lösungen" (domain-kaufen).
@@ -212,6 +216,9 @@ export function parseCard(html: string, tld: string, list?: DomainList): StratoC
   // setup fee: card line, product table row, domain list entry; all that are there must agree
   const sources: { from: StratoCard['setupSource']['from']; cents: number; text: string }[] = [];
   const cardSetup = /Einrichtung: (\S+) €/.exec(disclaimer);
+  if (!cardSetup && disclaimer.includes('Einrichtung')) {
+    throw new Error(`card line ${JSON.stringify(disclaimer)} is not "Einrichtung: X €"`);
+  }
   if (cardSetup) {
     sources.push({ from: 'card', cents: euroCents(cardSetup[1] as string), text: cardSetup[0] });
   }
@@ -309,7 +316,7 @@ export const strato: Adapter = {
       list = { html: (await ctx.http.get(STRATO_DOMAIN_LIST, 'text/html')).text };
     } catch (err) {
       list = { error: (err as Error).message };
-      result.warnings.push(`overview not fetched: ${list.error} (${STRATO_DOMAIN_LIST})`);
+      result.warnings.push(`domain list not fetched: ${list.error} (${STRATO_DOMAIN_LIST})`);
     }
     for (const tld of ctx.tlds) {
       let res;

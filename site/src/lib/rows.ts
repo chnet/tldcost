@@ -5,6 +5,7 @@ import {
   isPromo,
   effectiveContract,
   fxRateFor,
+  offerMarket,
   normalizePrice,
   type Cents,
   type ContractField,
@@ -271,12 +272,24 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
 
     const rowNotes: string[] = [];
     let fx: FxRate | undefined;
+    // another market's prices (owner decision 2026-11-19): one note for conversion and VAT, in place
+    // of the generic FX note and the net-price note
+    const market = offerMarket(offer);
+    const vatRate = offer.vat_rate ?? provider.vat_rate;
+    let marketNote = false;
     if (offer.currency !== 'EUR') {
       fx = fxRateFor(data.fx, offer.currency, offer.evidence.fetched_at);
-      const id = fx ? `fx-${fx.currency}-${fx.date}` : `fx-missing-${offer.currency}`;
-      notes[id] = fx
-        ? L.s.notes.fx(fx.currency, L.f.date(fx.date), L.f.decimal(fx.perEur))
-        : L.s.notes.fxMissing(offer.currency);
+      marketNote = Boolean(market && fx && typeof vatRate === 'number');
+      const id = !fx
+        ? `fx-missing-${offer.currency}`
+        : marketNote
+          ? `market-${market}-${fx.currency}-${fx.date}-${vatRate}`
+          : `fx-${fx.currency}-${fx.date}`;
+      notes[id] = !fx
+        ? L.s.notes.fxMissing(offer.currency)
+        : marketNote
+          ? L.s.notes.foreignMarket(market as string, L.f.date(fx.date), pct(vatRate as number))
+          : L.s.notes.fx(fx.currency, L.f.date(fx.date), L.f.decimal(fx.perEur));
       rowNotes.push(id);
     }
     if (offer.vat_included === null) {
@@ -300,9 +313,15 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
         notes[notePromo(key)] = promoText(L, offer, promoExpired);
         for (const col of PROMO_COLUMNS) if (has(col)) addCellNote(target, col, notePromo(key));
       }
-      // net prices of the provider, shown gross: VAT was added (only in gross mode)
-      const rate = offer.vat_rate ?? provider.vat_rate;
-      if (mode === 'gross' && offer.vat_included === false && typeof rate === 'number') {
+      // net prices of the provider, shown gross: VAT was added (only in gross mode; for another
+      // market's prices the market note says so)
+      const rate = vatRate;
+      if (
+        mode === 'gross' &&
+        offer.vat_included === false &&
+        typeof rate === 'number' &&
+        !marketNote
+      ) {
         const id = noteVatNet(rate);
         notes[id] = L.s.notes.vatNet(pct(rate));
         for (const col of PRICE_COLUMNS) if (has(col)) addCellNote(target, col, id);

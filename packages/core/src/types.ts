@@ -169,8 +169,24 @@ export interface Offer {
   features?: OfferFeatures;
   /** Source and stated price of each feature whose value is "paid" (Archiv-Issue 124). */
   feature_costs?: FeatureCosts;
+  /**
+   * Set when the price is the display for another market than Germany (owner decision
+   * 2026-11-19): the provider's page showed the fetch another country's prices. The amounts are
+   * that market's prices as quoted; the site converts them (ECB) and adds German VAT.
+   */
+  foreign_market?: ForeignMarket;
   evidence: Evidence;
   provider_verified: boolean;
+}
+
+/** The market whose prices an offer records instead of the German one (Offer.foreign_market). */
+export interface ForeignMarket {
+  /** ISO 3166-1 alpha-2 code of the country the page showed prices for, e.g. "US". */
+  country: string;
+  /** ISO 4217 currency of that market's prices; always the offer's `currency`. */
+  currency: string;
+  /** Verbatim text of the source that shows market, currency and price (heading and table row). */
+  quote: string;
 }
 
 export interface ProviderTerms {

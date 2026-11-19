@@ -80,6 +80,24 @@ describe('get_offers', () => {
     expect(porkbun?.tco.missing).toEqual([]);
   });
 
+  it('names a foreign market display in raw (owner decision 2026-11-19)', async () => {
+    const doc = fixture<{ offers: Record<string, unknown>[] }>('offers/com.json');
+    const offers = doc.offers.map((o) =>
+      o.provider === 'porkbun'
+        ? {
+            ...o,
+            foreign_market: { country: 'US', currency: 'USD', quote: 'Price list: .com 11.08' },
+          }
+        : o,
+    );
+    const { api } = fakeApi({ 'offers/com.json': { body: { ...doc, offers } } });
+    const r = await getOffers(api, { tld: 'com', years: 1 });
+    expect(r.offers.find((o) => o.provider === 'porkbun')?.raw.foreign_market).toBe('US');
+    for (const o of r.offers.filter((x) => x.provider !== 'porkbun')) {
+      expect(o.raw.foreign_market).toBeNull();
+    }
+  });
+
   it('agrees with the API derived block (same computeTco as the site), gross and net', async () => {
     const { api } = fakeApi();
     for (const tld of ['de', 'com']) {

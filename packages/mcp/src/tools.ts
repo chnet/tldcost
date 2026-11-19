@@ -14,6 +14,7 @@ import {
   computeTco,
   effectiveContract,
   MAX_TCO_YEARS,
+  offerMarket,
   type FxRate,
   type Offer,
   type PriceMode,
@@ -135,6 +136,11 @@ export interface OfferView {
      */
     term_years: number | null;
     renewal_term_years: number | null;
+    /**
+     * Country of a foreign market display (offer.foreign_market): the provider showed another
+     * market's prices; tco converts them and adds VAT. Not the price for customers in Germany.
+     */
+    foreign_market: string | null;
   };
   /** Computed in EUR for the requested years and VAT mode (annualised, converted). */
   tco: {
@@ -190,6 +196,7 @@ function offerView(doc: TldDocument, offer: Offer, years: number, vat: PriceMode
       transfer_in: p.transfer_in ?? null,
       term_years: p.term_years ?? termDefault,
       renewal_term_years: p.renewal_term_years ?? termDefault,
+      foreign_market: offerMarket(offer) ?? null,
     },
     tco: {
       years,

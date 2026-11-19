@@ -90,7 +90,7 @@ export function featureCostFindings(doc) {
 
 /**
  * Price state fields of a history entry (packages/core HISTORY_STATE_FIELDS; schema
- * $defs/entry besides date and source).
+ * $defs/entry besides date and source; the optional market is compared as well).
  */
 export const HISTORY_STATE_FIELDS = [
   'currency',
@@ -105,6 +105,7 @@ export const HISTORY_STATE_FIELDS = [
 /** The price state of an offer as a history entry records it. */
 export function offerPriceState(offer) {
   const p = offer.price;
+  const m = offer.foreign_market;
   return {
     currency: offer.currency,
     vat_included: offer.vat_included,
@@ -113,7 +114,24 @@ export function offerPriceState(offer) {
     year1: p.year1,
     renewal: p.renewal,
     transfer_in: p.transfer_in ?? null,
+    ...(m && m.currency === offer.currency ? { market: m.country } : {}),
   };
+}
+
+/** Fields that must be equal within one segment of a history (one market). */
+const SEGMENT_FIELDS = ['currency', 'unit', 'vat_included', 'market'];
+
+/**
+ * The switch between the German display (EUR, gross, no market) and a foreign market display
+ * (USD, net, market set) in either direction: it starts a new segment of the history (owner
+ * decision 2026-11-19; packages/core isMarketSwitch).
+ */
+export function isMarketSwitch(a, b) {
+  if (a.unit !== b.unit) return false;
+  const german = (x) => x.market === undefined && x.currency === 'EUR' && x.vat_included === true;
+  const foreign = (x) =>
+    x.market !== undefined && x.market !== 'DE' && x.currency === 'USD' && x.vat_included === false;
+  return (german(a) && foreign(b)) || (foreign(a) && german(b));
 }
 
 /** Cross-field rules of one schema-valid history against its schema-valid offer. */
@@ -126,15 +144,29 @@ export function historyFindings(history, offer) {
     }
   }
   const state = offerPriceState(offer);
-  entries.forEach((e, i) => {
-    for (const f of ['currency', 'unit', 'vat_included']) {
-      if (e[f] !== state[f]) {
-        out.push(`entries[${i}].${f} ${JSON.stringify(e[f])} != offer ${JSON.stringify(state[f])}`);
+  // segments: a market switch starts a new one. The last segment matches the offer, every earlier
+  // one is consistent with its own last entry (currency, unit, VAT mode and market).
+  const starts = [0];
+  for (let i = 1; i < entries.length; i++) {
+    if (isMarketSwitch(entries[i - 1], entries[i])) starts.push(i);
+  }
+  starts.forEach((start, k) => {
+    const end = k + 1 < starts.length ? starts[k + 1] : entries.length;
+    const lastSegment = end === entries.length;
+    const ref = lastSegment ? state : entries[end - 1];
+    const refName = lastSegment ? 'offer' : `entries[${end - 1}]`;
+    for (let i = start; i < end; i++) {
+      for (const f of SEGMENT_FIELDS) {
+        if (entries[i][f] !== ref[f]) {
+          out.push(
+            `entries[${i}].${f} ${JSON.stringify(entries[i][f])} != ${refName} ${JSON.stringify(ref[f])}`,
+          );
+        }
       }
     }
   });
   const last = entries.at(-1);
-  const differs = HISTORY_STATE_FIELDS.filter((f) => last[f] !== state[f]);
+  const differs = [...HISTORY_STATE_FIELDS, 'market'].filter((f) => last[f] !== state[f]);
   if (differs.length) {
     out.push(`last entry differs from the offer (${differs.join(', ')}); run npm run history:sync`);
   }
@@ -256,6 +288,22 @@ export function validateDir(dir, validators = makeValidators()) {
           findings.push(
             `${rel(file)}: promo.max_per_customer needs max_per_customer_source (url or quote)`,
           );
+        }
+        // another market's prices (owner decision 2026-11-19): in that market's currency (never EUR,
+        // no decision for a foreign EUR display) and net, so the site converts and adds German VAT
+        const market = doc.foreign_market;
+        if (market) {
+          if (market.currency !== doc.currency) {
+            findings.push(
+              `${rel(file)}: foreign_market.currency ${market.currency} differs from currency ${doc.currency}`,
+            );
+          }
+          if (doc.currency === 'EUR') {
+            findings.push(`${rel(file)}: foreign_market needs a currency other than EUR`);
+          }
+          if (doc.vat_included !== false) {
+            findings.push(`${rel(file)}: foreign_market needs vat_included false (net prices)`);
+          }
         }
         const provider = providers.get(doc.provider);
         if (!provider) {

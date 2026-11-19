@@ -9,6 +9,7 @@
 // phone panel, tc-best over the shown rows; rows without a total always come last.
 import {
   computeBasket,
+  offerMarket,
   type BasketLine,
   type BasketProvider,
   type BasketPromoPool,
@@ -270,12 +271,26 @@ function Calculator({ data, L }: BasketCalculatorProps) {
     for (const line of p.lines) {
       const offer = offerOf.get(`${p.provider}/${line.tld}`);
       if (!offer) continue;
-      if (line.fx) {
+      const rate = offer.vat_rate ?? payload.providers[p.provider]?.vat_rate ?? null;
+      // another market's prices (owner decision 2026-11-19): one note for conversion and VAT
+      const market = offerMarket(offer);
+      const marketNote = Boolean(market && line.fx && rate !== null);
+      if (line.fx && marketNote) {
+        const id = `market-${market}-${line.fx.currency}-${line.fx.date}-${rate}`;
+        ids.push(id);
+        texts.set(
+          id,
+          L.m.basket.notes.foreignMarket(
+            market as string,
+            L.f.date(line.fx.date),
+            L.f.decimal((rate as number) / 100),
+          ),
+        );
+      } else if (line.fx) {
         ids.push(fxNoteId(line.fx));
         texts.set(fxNoteId(line.fx), fxNoteText(L, line.fx));
       }
-      const rate = offer.vat_rate ?? payload.providers[p.provider]?.vat_rate ?? null;
-      if (offer.vat_included === false && state.vat === 'gross' && rate !== null) {
+      if (offer.vat_included === false && state.vat === 'gross' && rate !== null && !marketNote) {
         ids.push(netNoteId(rate));
         texts.set(netNoteId(rate), netNoteText(L, rate));
       }

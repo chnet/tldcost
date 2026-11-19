@@ -40,6 +40,8 @@ export function buildBasketPayload(data: TldcostData, lang: 'de' | 'en' = 'de'):
       ...(o.vat_rate !== undefined ? { vat_rate: o.vat_rate } : {}),
       price: o.price,
       ...(o.promo ? { promo: o.promo } : {}),
+      // another market's prices: the island shows the market note (owner decision 2026-11-19)
+      ...(o.foreign_market ? { foreign_market: o.foreign_market } : {}),
       evidence: {
         source_url: o.evidence.source_url,
         fetched_at: o.evidence.fetched_at,

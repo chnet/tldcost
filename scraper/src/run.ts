@@ -12,6 +12,9 @@ import {
   DEFAULT_PLAUSIBILITY_HIGH,
   DEFAULT_PLAUSIBILITY_LOW,
   DEFAULT_PLAUSIBILITY_MIN_OTHERS,
+  isMarketSwitch,
+  marketBasis,
+  marketSwitchLabel,
   plausibilityCheck,
   type FxRates,
   type Offer,
@@ -55,6 +58,11 @@ export interface OfferChange {
    * confidence). They do not make an offer "changed", but they are listed (empty for added).
    */
   evidence: FieldChange[];
+  /**
+   * Set when the offer switches between the German display and a foreign market display
+   * ("DE -> US", core isMarketSwitch): the reports show it on its own line for the human check.
+   */
+  market?: string;
 }
 
 /**
@@ -247,6 +255,7 @@ export function mergeOffer(provider: string, existing: Offer | undefined, s: Scr
     vat_included: s.vat_included,
     price: { ...existing?.price, ...s.price },
     promo: mergePromo(existing?.promo, s.promo, samePriceBasis(existing, s)),
+    ...(s.foreign_market ? { foreign_market: { ...s.foreign_market } } : {}),
     evidence: { ...s.evidence },
     provider_verified: existing?.provider_verified ?? false,
   };
@@ -270,6 +279,7 @@ export function mergeOffer(provider: string, existing: Offer | undefined, s: Scr
     contract,
     features,
     feature_costs,
+    foreign_market,
     evidence,
   } = offer;
   return Object.fromEntries(
@@ -285,6 +295,7 @@ export function mergeOffer(provider: string, existing: Offer | undefined, s: Scr
       contract,
       features,
       feature_costs,
+      foreign_market,
       evidence,
       provider_verified: offer.provider_verified,
     }).filter(([, v]) => v !== undefined),
@@ -319,11 +330,14 @@ export function compareOffer(existing: Offer | undefined, next: Offer): OfferCha
   leafDiff('', { ...existing, evidence: null }, { ...next, evidence: null }, fields);
   const evidence: FieldChange[] = [];
   leafDiff('evidence', existing.evidence, next.evidence, evidence);
+  const from = marketBasis(existing);
+  const to = marketBasis(next);
   return {
     ...base,
     kind: fields.length ? 'changed' : 'refreshed',
     fields,
     evidence: evidence.filter((f) => !VOLATILE_EVIDENCE.has(f.path.slice('evidence.'.length))),
+    ...(isMarketSwitch(from, to) ? { market: marketSwitchLabel(from, to) } : {}),
   };
 }
 
@@ -337,8 +351,18 @@ export function gate(
   const reasons: string[] = [];
   const o = existing.price;
   const n = next.price;
-  if (existing.currency !== next.currency)
-    reasons.push(`currency ${existing.currency} -> ${next.currency}`);
+  // a market switch (owner decision 2026-11-19: German display EUR gross <-> foreign market display
+  // USD net, marked with foreign_market) may change currency and VAT mode; it is reported on its own
+  // line ("Markt DE -> US") for the human check of the data PR. Its amounts are not comparable with
+  // the stored ones, so the price checks below apply within the same market only.
+  const from = marketBasis(existing);
+  const to = marketBasis(next);
+  const switched = isMarketSwitch(from, to);
+  if (!switched) {
+    if (existing.currency !== next.currency)
+      reasons.push(`currency ${existing.currency} -> ${next.currency}`);
+    if (from.market !== to.market) reasons.push(`market ${marketSwitchLabel(from, to)}`);
+  }
   if (o.unit !== n.unit) reasons.push(`unit ${o.unit} -> ${n.unit}`);
   if (
     (o.term_years ?? 1) !== (n.term_years ?? 1) ||
@@ -346,7 +370,9 @@ export function gate(
   ) {
     reasons.push('term years changed');
   }
-  if (existing.vat_included !== next.vat_included) reasons.push('vat_included changed');
+  if (!switched && existing.vat_included !== next.vat_included)
+    reasons.push('vat_included changed');
+  if (switched) return reasons;
   // the likely cause, named in the gate message so the human check is quick. `promo` is the year-1
   // registration promo: its end explains a year1_regular jump only, not renewal or one-time fees.
   const promoEnded = Boolean(existing.promo) && next.promo === null;
@@ -643,7 +669,12 @@ export function summarize(report: RunReport): string {
   const fieldLines = (fields: FieldChange[]) =>
     fields.map((f) => `    ${f.path}: ${fmt(f.from)} -> ${fmt(f.to)}`);
   for (const c of by('changed')) {
-    lines.push(`~ ${c.provider}/${c.tld}`, ...fieldLines(c.fields), ...fieldLines(c.evidence));
+    lines.push(
+      `~ ${c.provider}/${c.tld}`,
+      ...(c.market ? [`    Markt ${c.market}`] : []),
+      ...fieldLines(c.fields),
+      ...fieldLines(c.evidence),
+    );
   }
   const refreshed = by('refreshed');
   for (const c of refreshed.filter((r) => r.evidence.length)) {

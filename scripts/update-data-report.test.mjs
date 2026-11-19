@@ -552,6 +552,48 @@ test('render: price changes are listed in their own section', () => {
   );
 });
 
+test('render: a market switch (Fremdmarkt) gets its own section and line per offer', () => {
+  const dir = dataDir({ offers: { 'one-com/de': '2026-11-23T06:00:00Z' } });
+  const switched = (tld) => ({
+    provider: 'one-com',
+    tld,
+    kind: 'changed',
+    market: 'DE -> US',
+    fields: [{ path: 'currency', from: 'EUR', to: 'USD' }],
+  });
+  const a = assess({
+    report: okReport({ changes: [switched('de'), switched('com')] }),
+    scrapeExit: 0,
+    validateExit: 0,
+    changedFiles: ['data/offers/one-com/de.json', 'data/offers/one-com/com.json'],
+    dataDir: dir,
+    now: NOW,
+  });
+  assert.equal(a.gateFailed, false);
+  assert.deepEqual(a.marketSwitches, ['Markt DE -> US: one-com (.de, .com)']);
+  const body = renderIssue({ ...base, assessment: a, summary: '', pushed: true });
+  assert.match(
+    body,
+    /## Marktwechsel\n\n.*\n\n~~~text\n- Markt DE -> US: one-com \(\.de, \.com\)\n~~~/,
+  );
+  assert.ok(body.indexOf('## Marktwechsel') < body.indexOf('## Preisänderungen'));
+  assert.match(body, /~ one-com\/\.de\n {4}Markt DE -> US\n {4}currency: "EUR" -> "USD"/);
+  // no switch: no section
+  const plain = assess({
+    report: okReport(),
+    scrapeExit: 0,
+    validateExit: 0,
+    changedFiles: ['data/offers/inwx/de.json'],
+    dataDir: dir,
+    now: NOW,
+  });
+  assert.deepEqual(plain.marketSwitches, []);
+  assert.doesNotMatch(
+    renderIssue({ ...base, assessment: plain, summary: '', pushed: true }),
+    /Marktwechsel/,
+  );
+});
+
 test('issueTitle: gate failure and no change, always prefixed with the date', () => {
   assert.equal(
     issueTitle({ assessment: assessment({ gateFailed: true }), date: base.date, pushed: false }),

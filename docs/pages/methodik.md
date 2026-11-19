@@ -101,6 +101,7 @@ Der [Portfolio-Rechner](/portfolio/) rechnet ein ganzes Portfolio aus mehreren E
 - Nennt ein Anbieter Nettopreise, rechnen wir mit dem Steuersatz des Anbieters auf brutto um.
 - Der Umschalter „netto“ ist für Gewerbekunden gedacht.
 - Preise in Fremdwährung rechnen wir mit dem Referenzkurs der Europäischen Zentralbank in Euro um. Kurs und Datum stehen beim Wert.
+- **Preise eines anderen Marktes (Ausnahme):** Manche Anbieter erkennen das Land des Besuchers und zeigen unserem automatischen Abruf die Preise eines anderen Landes, ohne dass wir den deutschen Markt wählen können. Nur dann übernehmen wir diese Preise wörtlich mit Quelle, Abrufdatum und Zitat, derzeit nur US-Preise in US-Dollar. Wir rechnen sie zum Referenzkurs der Europäischen Zentralbank vom Abruftag (oder vom letzten Bankarbeitstag davor) in Euro um und schlagen 19 % Umsatzsteuer auf. Eine Fußnote kennzeichnet den Wert: „US-Preis, umgerechnet zum Kurs vom \<Datum\>, zzgl. 19 % MwSt.; der Preis für Kunden in Deutschland kann abweichen.“ In den Daten und in der API steht dabei der Markt (`foreign_market`).
 
 ## Aktionspreise
 

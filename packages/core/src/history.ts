@@ -1,9 +1,13 @@
 // Price history of one offer (schema/history.schema.json, data/history/<provider>/<tld>.json).
 // Append-only and small: a new entry only when the price state changes, dated with the day the new
 // state was first seen (evidence.fetched_at). No new fetches: everything comes from the offer.
+import { isMarketSwitch, offerMarket } from './market.js';
 import type { Cents, Offer, PriceUnit } from './types.js';
 
-/** Fields of an entry that make up the price state (schema $defs/entry, besides date and source). */
+/**
+ * Required fields of an entry that make up the price state (schema $defs/entry, besides date and
+ * source). The optional `market` belongs to the state as well (samePriceState).
+ */
 export const HISTORY_STATE_FIELDS = [
   'currency',
   'vat_included',
@@ -23,6 +27,11 @@ export interface PriceState {
   year1: Cents | null;
   renewal: Cents | null;
   transfer_in: Cents | null;
+  /**
+   * Country of a foreign market display (offer.foreign_market, owner decision 2026-11-19); absent
+   * for the German display. A switch of market starts a new segment of the history.
+   */
+  market?: string;
 }
 
 export interface HistoryEntry extends PriceState {
@@ -42,6 +51,7 @@ export interface PriceHistory {
 
 export function priceState(offer: Offer): PriceState {
   const p = offer.price;
+  const market = offerMarket(offer);
   return {
     currency: offer.currency,
     vat_included: offer.vat_included,
@@ -50,25 +60,34 @@ export function priceState(offer: Offer): PriceState {
     year1: p.year1,
     renewal: p.renewal,
     transfer_in: p.transfer_in ?? null,
+    ...(market === undefined ? {} : { market }),
   };
 }
 
+/** Same price state: every field of HISTORY_STATE_FIELDS and the (optional) market. */
 export function samePriceState(a: PriceState, b: PriceState): boolean {
-  return HISTORY_STATE_FIELDS.every((f) => a[f] === b[f]);
+  return HISTORY_STATE_FIELDS.every((f) => a[f] === b[f]) && a.market === b.market;
 }
 
-/** The amounts of two states are comparable: same currency, price unit and VAT mode. */
+/** The amounts of two states are comparable: same currency, price unit, VAT mode and market. */
 function comparable(a: PriceState, b: PriceState): boolean {
-  return a.currency === b.currency && a.unit === b.unit && a.vat_included === b.vat_included;
+  return (
+    a.currency === b.currency &&
+    a.unit === b.unit &&
+    a.vat_included === b.vat_included &&
+    a.market === b.market
+  );
 }
 
 /**
  * The history after this offer state. Unchanged price state: the same object, `changed` false (no
  * entry per run). A change: a new entry dated with evidence.fetched_at; a second change on the
- * same day replaces that day's entry (dates only: the day counts, not the time). Throws, and never
- * drops entries, when the currency, price unit or VAT mode changes (the old amounts would not be
- * comparable; a person decides, e.g. by deleting the file in a visible commit) or when fetched_at
- * is older than the last entry (the offer's evidence must move forward with its price).
+ * same day replaces that day's entry (dates only: the day counts, not the time). A market switch
+ * (German display <-> foreign market display, isMarketSwitch) appends the new state as the first
+ * entry of a new segment; the earlier entries stay. Throws, and never drops entries, on any other
+ * change of currency, price unit or VAT mode (the old amounts would not be comparable; a person
+ * decides, e.g. by deleting the file in a visible commit) or when fetched_at is older than the last
+ * entry (the offer's evidence must move forward with its price).
  */
 export function appendHistory(
   history: PriceHistory | undefined,
@@ -89,8 +108,9 @@ export function appendHistory(
   const last = history?.entries.at(-1);
   if (!history || !last) return { history: fresh(), changed: true };
   if (samePriceState(last, state)) return { history, changed: false };
-  if (!comparable(last, state)) {
-    const basis = (x: PriceState) => `${x.currency}/${x.unit}/vat_included ${x.vat_included}`;
+  if (!comparable(last, state) && !isMarketSwitch(last, state)) {
+    const basis = (x: PriceState) =>
+      `${x.currency}/${x.unit}/vat_included ${x.vat_included}${x.market ? `/market ${x.market}` : ''}`;
     throw new Error(
       `${offer.provider}/${offer.tld}: currency, price unit or VAT mode changed (${basis(last)} -> ${basis(state)}); ` +
         `the history is kept and not continued, its amounts would not be comparable. Check the offer; ` +

@@ -1,7 +1,7 @@
 // Shared scraper types. An adapter turns one provider's public price source into ScrapedOffers;
 // run.ts merges them into data/offers/<provider>/<tld>.json (manual fields such as contract and
 // features stay untouched) and applies the plausibility gate.
-import type { Evidence, Offer, OfferPrice, OfferPromo } from '@tldcost/core';
+import type { Evidence, ForeignMarket, Offer, OfferPrice, OfferPromo } from '@tldcost/core';
 import type { HttpClient } from './http.js';
 
 /**
@@ -15,6 +15,11 @@ export interface ScrapedOffer {
   vat_included: Offer['vat_included'];
   price: OfferPrice;
   promo?: OfferPromo | null;
+  /**
+   * Set when the page showed another market's prices (owner decision 2026-11-19). Scraped like the
+   * prices: an offer without it is the German display, and a stored foreign_market is dropped.
+   */
+  foreign_market?: ForeignMarket;
   /** Set when the price cannot be trusted as is: the offer is not written (gate, fail closed). */
   blocked?: string;
   /**

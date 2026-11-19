@@ -244,10 +244,17 @@ export function buildOpenApi(tlds: readonly string[]) {
               ],
             },
             vat_not_stated: { type: 'boolean' },
+            foreign_market: {
+              description:
+                'Country of a foreign market display (offer `foreign_market`): the provider showed ' +
+                "the fetch another market's prices, converted with `fx` and with the offer's VAT " +
+                'rate added. Not the price for customers in Germany. null: the German display.',
+              oneOf: [{ type: 'null' }, { type: 'string', pattern: '^[A-Z]{2}$' }],
+            },
             gross: ref('DerivedTcoMode'),
             net: ref('DerivedTcoMode'),
           },
-          required: ['currency', 'fx', 'vat_not_stated', 'gross', 'net'],
+          required: ['currency', 'fx', 'vat_not_stated', 'foreign_market', 'gross', 'net'],
           additionalProperties: false,
         },
         Derived: {

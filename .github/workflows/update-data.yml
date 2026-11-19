@@ -126,9 +126,14 @@ jobs:
         run: |
           git switch -c "$BRANCH"
           git add -- data
+          # market switches ("Markt DE -> US", Fremdmarkt) also go into the commit body, which a
+          # one-commit PR takes as its description
+          msg=(-m "data: update $DATE" -m "Automatic data update, workflow run $RUN_URL")
+          markets=$(jq -r '(.marketSwitches // [])[]' "$RUNNER_TEMP/assessment.json")
+          if [ -n "$markets" ]; then msg+=(-m "$markets"); fi
           git -c user.name=tldcost-bot \
             -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
-            commit -q -m "data: update $DATE" -m "Automatic data update, workflow run $RUN_URL"
+            commit -q "${msg[@]}"
           # same identity check as Validate runs on the PR later
           node scripts/check-commit-identity.mjs --range HEAD~1..HEAD
           auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 -w0)

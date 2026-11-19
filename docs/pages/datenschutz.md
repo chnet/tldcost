@@ -105,4 +105,4 @@ Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art. 77 DSG
 
 Wir passen diese Datenschutzerklärung an, wenn sich die Technik von tldcost oder die Rechtslage ändert.
 
-Stand: 14. November 2026
+Stand: 19. November 2026

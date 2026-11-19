@@ -27,7 +27,7 @@ Deutschland
 E-Mail: [hello@chnet.solutions](mailto:hello@chnet.solutions)
 Telefon: 030 2201269 80
 
-Hinweise zu falschen Daten bitte über den Link „Fehler melden“ in der Tabelle oder per E-Mail an [hello@chnet.solutions](mailto:hello@chnet.solutions). Sobald das Repository öffentlich ist, nehmen wir Hinweise auch als Issue auf GitHub entgegen; so ist jede Korrektur nachvollziehbar.
+Hinweise zu falschen Daten bitte über den Link „Fehler melden“ in der Tabelle oder per E-Mail an [hello@chnet.solutions](mailto:hello@chnet.solutions). Hinweise nehmen wir auch als Issue auf GitHub entgegen (github.com/chnet/tldcost); so ist jede Korrektur nachvollziehbar.
 
 ## Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
 

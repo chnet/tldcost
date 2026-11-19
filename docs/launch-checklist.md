@@ -2,7 +2,7 @@
 
 Items before and around the launch of tldcost.io (archive issue 13; risks in
 [`concepts/tldcost.md`](concepts/tldcost.md) § 6). Each done item names its evidence: a file, a test
-or a CI step. Status as of 2026-11-16.
+or a CI step. Status as of 2026-11-19.
 
 | Item | Status | Evidence |
 |---|---|---|

@@ -95,6 +95,14 @@ test('English portfolio calculator', async ({ page }) => {
   await expect(page.locator('tr.tc-mix th')).toContainText('Cheapest combination');
 });
 
+test('English footer: support link to GitHub Sponsors, a plain link', async ({ page }) => {
+  await page.goto('/en/');
+  await expect(page.locator('footer a', { hasText: 'Support' })).toHaveAttribute(
+    'href',
+    'https://github.com/sponsors/chnet',
+  );
+});
+
 test('404 is bilingual', async ({ page }) => {
   await page.goto('/404.html');
   await expect(page.locator('h1')).toHaveText('Seite nicht gefunden');

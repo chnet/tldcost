@@ -91,3 +91,71 @@ for (const theme of ['light', 'dark'] as const) {
     expect(bad).toEqual([]);
   });
 }
+
+// The history is its own chunk, loaded on opening (astro.config.mjs stubs Vite's preload helper,
+// which would also load the chunk's CSS): it arrives styled by the page's stylesheet.
+for (const vat of ['gross', 'net'] as const) {
+  test(`lazy history chunk (${vat}): loaded on opening, styled`, async ({ page }) => {
+    const loaded: string[] = [];
+    page.on('request', (r) => {
+      if (/\/_astro\/RowHistory\.[\w-]+\.js$/.test(r.url())) loaded.push(r.url());
+    });
+    await open(page, `/?tld=de&vat=${vat}`);
+    expect(loaded).toEqual([]);
+    const section = (await detailOf(page, 'alpha')).locator('section.tc-history');
+    await expect(section.locator('svg.tc-spark')).toBeVisible();
+    expect(loaded).toHaveLength(1);
+    const style = await section.evaluate((el) => {
+      const year1 = getComputedStyle(el.querySelector('svg.tc-spark .tc-spark-year1')!);
+      const key = getComputedStyle(el.querySelector('.tc-spark-key.tc-spark-year1')!);
+      const list = getComputedStyle(el.querySelector('ol.tc-history-list')!);
+      return {
+        fill: year1.fill,
+        dash: year1.strokeDasharray,
+        key: key.borderTopStyle,
+        listPad: list.paddingLeft,
+      };
+    });
+    expect(style).toEqual({ fill: 'none', dash: '5px, 3px', key: 'dashed', listPad: '12px' });
+    await expect(section).toContainText(vat === 'gross' ? 'brutto' : 'netto');
+  });
+}
+
+test('lazy history chunk: open, close, open again: requested once', async ({ page }) => {
+  const loaded: string[] = [];
+  page.on('request', (r) => {
+    if (/\/_astro\/RowHistory\.[\w-]+\.js$/.test(r.url())) loaded.push(r.url());
+  });
+  await open(page, '/?tld=de');
+  const toggle = page.locator('tr[data-provider-id="alpha"] .tc-detail-toggle');
+  const detail = await detailOf(page, 'alpha');
+  await expect(detail.locator('svg.tc-spark')).toBeVisible();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('section.tc-history svg.tc-spark')).toBeVisible();
+  expect(loaded).toHaveLength(1);
+});
+
+test('history chunk fails to load: a short note, the detail stays usable, no uncaught error', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript(() => {
+    window.addEventListener('unhandledrejection', (e) =>
+      document.documentElement.setAttribute('data-rejected', String(e.reason)),
+    );
+  });
+  await page.route(/\/_astro\/RowHistory\.[\w-]+\.js$/, (r) => r.abort());
+  await open(page, '/?tld=de');
+  const detail = await detailOf(page, 'alpha');
+  const section = detail.locator('section.tc-history');
+  await expect(section).toContainText('Der Preisverlauf konnte nicht geladen werden.');
+  await expect(section.locator('svg')).toHaveCount(0);
+  await expect(detail.getByRole('heading', { name: 'Vertrag', exact: true })).toBeVisible();
+  await expect(detail.getByRole('link', { name: 'Fehler melden' })).toBeVisible();
+  expect(errors).toEqual([]);
+  await expect(page.locator('html')).not.toHaveAttribute('data-rejected', /.*/);
+});

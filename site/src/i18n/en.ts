@@ -190,6 +190,7 @@ export const en: Messages = {
     historyCaption: (mode, capped) =>
       `${capped ? 'Last 12 changes' : 'Per data state'}, ${mode} in euros per year:`,
     historyUnknown: 'cannot be converted',
+    historyLoadError: 'The price history could not be loaded.',
     historyBreak: (date) =>
       `From ${date} a new segment: currency, VAT statement, unit or market changed, so the line is broken there.`,
     paidHeading: 'Paid features',

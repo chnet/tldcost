@@ -12,7 +12,9 @@
 //     and the flag licence is served;
 //   - no page needs an inline script or style (tests/check-csp.mjs; the CSP allows 'self' only);
 //   - the English version (Archiv-Issue 33): page pairs, hreflang, canonical, html lang, no German UI text on
-//     English pages (tests/check-i18n.mjs).
+//     English pages (tests/check-i18n.mjs);
+//   - the stubbed preload helper is in effect and no lazy chunk needs CSS a page does not link
+//     (tests/check-lazy-chunks.mjs).
 // Needs the built @tldcost/core (npm run build:core).
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
@@ -21,6 +23,7 @@ import { loadData } from '@tldcost/core/load';
 import { responseValidator, validateOpenApi } from './api-validator.mjs';
 import { cspFindings } from './check-csp.mjs';
 import { checkI18n } from './check-i18n.mjs';
+import { lazyChunkFindings } from './check-lazy-chunks.mjs';
 
 const SITE = 'https://tldcost.io';
 const args = process.argv.slice(2);
@@ -107,6 +110,7 @@ function check(distArg, dataArg) {
       fail(`${relative(dist, f)}: ${e} (blocked by the CSP, script-src/style-src 'self' only)`);
     }
   }
+  for (const e of lazyChunkFindings(dist)) fail(e);
   const robots = readFileSync(join(dist, 'robots.txt'), 'utf8');
   if (!robots.includes(`Sitemap: ${SITE}/sitemap.xml`)) fail('robots.txt: no Sitemap line');
 

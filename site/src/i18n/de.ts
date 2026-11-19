@@ -205,6 +205,7 @@ export const de = {
     historyCaption: (mode: string, capped: boolean) =>
       `${capped ? 'Letzte 12 Änderungen' : 'Je Datenstand'}, ${mode} in Euro pro Jahr:`,
     historyUnknown: 'nicht umrechenbar',
+    historyLoadError: 'Der Preisverlauf konnte nicht geladen werden.',
     historyBreak: (date: string) =>
       `Ab ${date} neuer Abschnitt: Währung, MwSt.-Angabe, Einheit oder Markt haben sich geändert, die Linie ist dort unterbrochen.`,
     paidHeading: 'Kostenpflichtige Leistungen',

@@ -1,10 +1,13 @@
 // RowDetail (design system): everything behind the numbers of one row. Raw prices in the
 // provider's own unit and VAT mode next to what the table shows, the promo conditions (quoted),
 // the contract terms with their source and the provider's terms notes, paid features (price, note,
-// quoted source; Archiv-Issue 124), the price history from 3 entries on (RowHistory; Archiv-Issue 51),
+// quoted source; Archiv-Issue 124), the price history from 3 entries on (RowHistory, its own chunk,
+// loaded when a row with a history is opened, so the table's start script does not carry it;
+// Archiv-Issue 51),
 // the evidence, and at the end the tc-source line: source link, fetch date,
 // "Fehler melden". Display only: nothing here feeds into sorting.
 import { Fragment } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 import { useLocale } from '../i18n/context';
 import type { Locale } from '../i18n/de';
 import { COLUMN_BY_ID } from '../lib/columns';
@@ -14,9 +17,10 @@ import type { SortKey } from '../lib/sort';
 import type { Vat } from '../lib/url-state';
 import { columnText, contractNote, formatPerMonth, formatValue, reportUrl } from '../lib/view';
 import NoteBody from './NoteBody';
-import RowHistory from './RowHistory';
 
 const EXTERNAL = 'noopener noreferrer nofollow';
+
+type HistoryView = typeof import('./RowHistory').default;
 
 const CONTRACT_COLUMNS: readonly string[] = [
   'min_term_months',
@@ -65,6 +69,17 @@ export default function RowDetail({
   const t = L.m.detail;
   const d = row.detail;
   const s = d.stated;
+  // the price history's chunk, fetched once a row with a history is opened (same origin); if
+  // that fails (offline, missing file) the section says so and the rest of the detail stays
+  const [History, setHistory] = useState<HistoryView | 'failed' | null>(null);
+  useEffect(() => {
+    if (d.history) {
+      void import('./RowHistory').then(
+        (m) => setHistory(() => m.default),
+        () => setHistory('failed'),
+      );
+    }
+  }, [d.history]);
   const name = meta?.name ?? row.providerId;
   const mode = vat === 'gross' ? L.m.common.gross : L.m.common.net;
   const regular = values['year1_regular'];
@@ -124,7 +139,13 @@ export default function RowDetail({
         </dl>
       </section>
 
-      {d.history && <RowHistory h={d.history} vat={vat} />}
+      {d.history && History === 'failed' && (
+        <section class="tc-history">
+          <h2>{t.historyHeading}</h2>
+          <p class="tc-unit">{t.historyLoadError}</p>
+        </section>
+      )}
+      {d.history && History && History !== 'failed' && <History h={d.history} vat={vat} />}
 
       <section>
         <h2>{t.contractHeading}</h2>

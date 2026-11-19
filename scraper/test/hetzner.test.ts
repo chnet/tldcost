@@ -65,6 +65,31 @@ describe('hetzner price table', () => {
     expect(rows.find((r) => r.tld === 'com')?.oneTime).toBeNull();
   });
 
+  it('reads the "none" cross in its current and its earlier markup', () => {
+    // since 2026-11 (the fixture); the earlier markup was the Font Awesome cross
+    expect(PAGE).toContain(
+      '<i class="ho-icon ho-icon-cross-s color-red" role="img" aria-label="Nicht enthalten"></i>',
+    );
+    const earlier = PAGE.replaceAll(
+      '<i class="ho-icon ho-icon-cross-s color-red" role="img" aria-label="Nicht enthalten"></i>',
+      '<i class="fa fa-times color-red" aria-checked="false"></i>',
+    );
+    expect(earlier).not.toContain('ho-icon-cross');
+    for (const page of [PAGE, earlier]) {
+      const rows = parseTable(page);
+      expect(rows.filter((r) => r.oneTime === null).map((r) => `${r.tld}/${r.kind}`)).toEqual([
+        'info/Registrierung',
+        'biz/Registrierung',
+        'eu/Registrierung',
+        'at/Registrierung',
+        'net/Registrierung',
+        'org/Registrierung',
+        'de/Transfer',
+        'com/Registrierung',
+      ]);
+    }
+  });
+
   it('fails closed when the page layout changes', () => {
     expect(() => parseTable('<html></html>')).toThrow(/expected one price table, found 0/);
     expect(() => parseTable(PAGE + PAGE)).toThrow(/found 2/);
@@ -90,10 +115,18 @@ describe('hetzner price table', () => {
     );
     expect(() => parseTable(emptyLabel)).toThrow(/unreadable price cells for \.at/);
     const noCross = PAGE.replace(
-      /(\.at-Registrierung[\s\S]*?)<i class="fa fa-times color-red" aria-checked="false"><\/i>/,
+      /(\.at-Registrierung[\s\S]*?)<i class="ho-icon ho-icon-cross-s color-red"[^>]*><\/i>/,
       '$1?',
     );
+    expect(noCross).not.toBe(PAGE);
     expect(() => parseTable(noCross)).toThrow(/unreadable price cells for \.at/);
+    // another icon in the one-time cell is not read as "no fee"
+    const otherIcon = PAGE.replace(
+      /(\.info-Registrierung[\s\S]*?)ho-icon-cross-s/,
+      '$1ho-icon-check-s',
+    );
+    expect(otherIcon).not.toBe(PAGE);
+    expect(() => parseTable(otherIcon)).toThrow(/unreadable price cells for \.info/);
   });
 });
 

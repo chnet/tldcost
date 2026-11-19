@@ -8,6 +8,9 @@
 // (transfer price, only .de). The prices are server-rendered as gross amounts for Germany in
 // `<span class="visually-hidden">3,90 €, inkl. 19 % MwSt.</span>` (the web component around them
 // only switches the display for other countries). Stored gross as displayed (vat_included true).
+// A one-time cell without a fee shows a red cross icon: `fa fa-times` until 2026-11, then
+// `ho-icon ho-icon-cross-s` with aria-label "Nicht enthalten". Both are accepted; any other
+// cell without a price label fails the row.
 //
 // The page shows one yearly amount per TLD in the column "jährlich" and no separate renewal price:
 // it is taken as both year1 and renewal (yearly billing), with confidence medium for that reason.
@@ -25,7 +28,7 @@ const LABEL = /^\.([a-z0-9-]+)-(Registrierung|Transfer)\b/;
 const HIDDEN = /<span class="visually-hidden">([^<]*)<\/span>/;
 const GROSS_PRICE =
   /^(\d{1,3}(?:\.\d{3})*|\d+),(\d{2}) €(?: einmalige Einrichtungsgebühr)?, inkl\. 19 % MwSt\.$/;
-const NO_FEE = /\bfa-times\b/;
+const NO_FEE = /<i\b[^>]*\bclass="[^"]*\b(?:fa-times|ho-icon-cross(?:-[a-z]+)?)\b/;
 
 /** Tags removed, entities and whitespace normalised. */
 const text = (html: string): string =>

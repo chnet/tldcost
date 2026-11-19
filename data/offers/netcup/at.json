@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-at",
-    "fetched_at": "2026-11-19T07:15:03Z",
+    "fetched_at": "2026-11-19T10:49:49Z",
     "method": "scrape",
-    "evidence_hash": "sha256:1b741af348e9531457a9bf5176e84ce9700af652e2b259406265bc033dbd6678",
+    "evidence_hash": "sha256:7706c67ffdaffd515c648d030c19a047ce77ce3a884537518678e2a6760147c5",
     "confidence": "high"
   },
   "provider_verified": false

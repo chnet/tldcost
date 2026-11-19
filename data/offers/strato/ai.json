@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/ai-domain/",
-    "fetched_at": "2026-11-19T07:15:44Z",
+    "fetched_at": "2026-11-19T10:50:32Z",
     "method": "scrape",
-    "evidence_hash": "sha256:2ae7f23df42e3e42aa5e4d122f6a36cbe7285e62a15b1a70d65a1ba3d51f939e",
+    "evidence_hash": "sha256:8ac8758e00c2061dcd3c63e3e2fc9f85bb2133c639ea97b6e667799651b84c75",
     "confidence": "high"
   },
   "provider_verified": false

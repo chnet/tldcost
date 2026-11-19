@@ -16,6 +16,21 @@
         "url": "https://www.one.com/de/domains/preise",
         "fetched_at": "2026-11-15T04:28:49Z"
       }
+    },
+    {
+      "date": "2026-11-19",
+      "currency": "USD",
+      "vat_included": false,
+      "unit": "year",
+      "setup": 0,
+      "year1": 1299,
+      "renewal": 2799,
+      "transfer_in": 1299,
+      "market": "US",
+      "source": {
+        "url": "https://www.one.com/de/domains/preise",
+        "fetched_at": "2026-11-19T10:49:59Z"
+      }
     }
   ]
 }

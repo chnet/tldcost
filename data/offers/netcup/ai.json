@@ -33,9 +33,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/domain-.ai",
-    "fetched_at": "2026-11-19T07:15:10Z",
+    "fetched_at": "2026-11-19T10:49:56Z",
     "method": "scrape",
-    "evidence_hash": "sha256:c7d56401438122bd8074bbdb4e3f4eb62ad7f711ea8f5855aaea6a60eb6bc5a6",
+    "evidence_hash": "sha256:177a9359313e808af9c67099d8aa5049d9b94733b0621fd8a04df08aaf3e38ed",
     "confidence": "high"
   },
   "provider_verified": false

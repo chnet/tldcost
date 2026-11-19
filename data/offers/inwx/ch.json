@@ -43,7 +43,7 @@
   "evidence": {
     "source_url": "https://www.inwx.de/de/domain/pricelist",
     "source_endpoint": "https://www.inwx.de/api/v1/domain/all-prices",
-    "fetched_at": "2026-11-19T07:14:51Z",
+    "fetched_at": "2026-11-19T10:49:36Z",
     "method": "api",
     "evidence_hash": "sha256:4c758136f55a230a57c3e5678b63be0a9b0e5e41665201d86f933800a7eb9c9a",
     "confidence": "high"

@@ -2,25 +2,30 @@
   "schema_version": 2,
   "provider": "one-com",
   "tld": "net",
-  "currency": "EUR",
-  "vat_included": true,
+  "currency": "USD",
+  "vat_included": false,
   "price": {
     "unit": "year",
     "setup": 0,
-    "year1": 1414,
-    "year1_regular": 2899,
-    "renewal": 2899,
-    "transfer_in": 1414
+    "year1": 1149,
+    "year1_regular": 2849,
+    "renewal": 2849,
+    "transfer_in": 1149
   },
   "promo": {
     "conditions": "Sonderangebote gelten nur für den ersten Vertragszeitraum.",
     "valid_until": null
   },
+  "foreign_market": {
+    "country": "US",
+    "currency": "USD",
+    "quote": "Domainpreise in USD: .net Gratis mit Hosting 11.49 28.49 Gratis mit Hosting 11.49 28.49 28.49 70"
+  },
   "evidence": {
     "source_url": "https://www.one.com/de/domains/preise",
-    "fetched_at": "2026-11-15T04:28:49Z",
+    "fetched_at": "2026-11-19T10:49:59Z",
     "method": "scrape",
-    "evidence_hash": "sha256:6817c19f72cf5b24299a818fc041431ada0937a694c7863bf373ad2467cf3c94",
+    "evidence_hash": "sha256:f070c92006d01fd99e546feced5712b6af33313418043e483206c9800532cb85",
     "confidence": "high"
   },
   "provider_verified": false

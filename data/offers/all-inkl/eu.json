@@ -21,9 +21,9 @@
   },
   "evidence": {
     "source_url": "https://all-inkl.com/domains/preise",
-    "fetched_at": "2026-11-19T07:14:37Z",
+    "fetched_at": "2026-11-19T10:49:18Z",
     "method": "scrape",
-    "evidence_hash": "sha256:27a1ba3088094853e4c8ccd02ecc29ae1cad41cac34419bc6c711a9e43ee482d",
+    "evidence_hash": "sha256:7475a37fad845aa2eeed3a80885c74d517dd3e33d15c0e93e7ddce5daa4fec18",
     "confidence": "medium"
   },
   "provider_verified": false

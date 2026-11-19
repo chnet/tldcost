@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/shop-domain/",
-    "fetched_at": "2026-11-19T07:15:35Z",
+    "fetched_at": "2026-11-19T10:50:23Z",
     "method": "scrape",
-    "evidence_hash": "sha256:133a943912e7a3967bae04cab637f933a222e1cb0447719555dc1f729c5a9382",
+    "evidence_hash": "sha256:78051a2c0e8ba3d250107515133744345be5d304d06e0548786d56d547cb8f2e",
     "confidence": "high"
   },
   "provider_verified": false

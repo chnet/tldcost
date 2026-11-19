@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/cloud-domain/",
-    "fetched_at": "2026-11-19T07:15:46Z",
+    "fetched_at": "2026-11-19T10:50:34Z",
     "method": "scrape",
-    "evidence_hash": "sha256:15cd73da7cdf2ec6815ccfc3883a1aba836a33c7acbdaae7f585ae704eee0efb",
+    "evidence_hash": "sha256:7b820a3f602fe3c55a62b6d88821b5c924dfeaa60bc97485420af308ba97a42e",
     "confidence": "high"
   },
   "provider_verified": false

@@ -7,7 +7,9 @@ import {
   checkHint,
   checkdomain,
   decode,
+  pageHints,
   parseEuro,
+  parseHint,
   parsePriceList,
   parseTldList,
 } from '../src/adapters/checkdomain.js';
@@ -20,6 +22,11 @@ const latin1 = (p: string) =>
 const LIST = latin1('checkdomain/preisliste.html');
 const DOMAINS = latin1('checkdomain/domains.html');
 const HTML = 'text/html; charset=ISO-8859-1';
+// TLD pages, trimmed to their footnote list: read when the hint of the domain data does not match
+const COM_PAGE = latin1('checkdomain/com-domain.html');
+const AT_PAGE = latin1('checkdomain/at-domain.html');
+const COM_URL = 'https://www.checkdomain.de/com-domain/';
+const AT_URL = 'https://www.checkdomain.de/at-domain/';
 
 /** One exact snippet replaced (fails the test if it is not there). */
 const edit = (page: string, from: string | RegExp, to: string) => {
@@ -27,14 +34,22 @@ const edit = (page: string, from: string | RegExp, to: string) => {
   return page.replace(from, to);
 };
 
-const run = (tlds: readonly string[] = MVP_TLDS, list = LIST, domains = DOMAINS) => {
+const run = (
+  tlds: readonly string[] = MVP_TLDS,
+  list = LIST,
+  domains = DOMAINS,
+  tldPages: Record<string, string> = { [COM_URL]: COM_PAGE, [AT_URL]: AT_PAGE },
+  requested: string[] = [],
+) => {
   const body = (s: string) => new Uint8Array(Buffer.from(s, 'latin1'));
   const pages: Record<string, Uint8Array> = {
     [CHECKDOMAIN_PRICE_LIST]: body(list),
     [CHECKDOMAIN_ENDPOINT]: body(domains),
+    ...Object.fromEntries(Object.entries(tldPages).map(([u, p]) => [u, body(p)])),
   };
   const fetch = (async (input: URL | string) => {
     const url = String(input);
+    requested.push(url);
     if (url === 'https://www.checkdomain.de/robots.txt') {
       return new Response(new TextEncoder().encode('User-agent: *\n'), { status: 200 });
     }
@@ -149,30 +164,68 @@ describe('checkdomain domain data', () => {
       /promo hint does not match/,
     );
   });
+
+  it('parses a hint: the TLD it names and both amounts', () => {
+    expect(
+      parseHint(
+        'Die .de-Domain kostet im ersten Jahr nur 0,49EUR/Monat, danach 2,99EUR/Monat.\r\nDas Angebot ist limitiert auf 1 Domain pro Kunde.',
+      ),
+    ).toEqual({
+      text: 'Die .de-Domain kostet im ersten Jahr nur 0,49EUR/Monat, danach 2,99EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde.',
+      tld: 'de',
+      promo: 49,
+      regular: 299,
+    });
+    expect(parseHint('The .art-domain costs in the first year only 0,07EUR/month.')).toBeNull();
+  });
+});
+
+describe('checkdomain TLD page', () => {
+  it('reads the promo hints of the footnote list, without the footnote label', () => {
+    expect(pageHints(COM_PAGE)).toEqual([
+      'Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,39EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde.',
+    ]);
+    // the provider's own page names .de in the .at footnote
+    expect(pageHints(AT_PAGE)).toEqual([
+      'Die .de-Domain kostet im ersten Jahr nur 0,49EUR/Monat, danach 2,99EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde.',
+    ]);
+    // only the footnote list counts
+    expect(pageHints(COM_PAGE.replace('data-app-main-footnotes-list', 'class="x"'))).toEqual([]);
+  });
 });
 
 describe('checkdomain adapter', () => {
-  it('writes the 12-month TLDs, skips .ai and fails inconsistent promo hints', async () => {
-    const result = await run();
+  it('writes the 12-month TLDs, skips .ai, checks mismatching promo hints on the TLD page', async () => {
+    const requested: string[] = [];
+    const result = await run(MVP_TLDS, LIST, DOMAINS, undefined, requested);
     expect(result.notOffered).toEqual([]);
     expect(result.skipped).toEqual([
       { tld: 'ai', reason: 'minimum term 24 months: payment per term not stated' },
     ]);
-    expect(result.failed).toEqual([
-      {
-        tld: 'com',
-        reason:
-          'promo hint does not match the price data: "Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,19EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."',
-      },
-      {
-        tld: 'at',
-        reason:
-          'promo hint does not match the price data: "Die .de-Domain kostet im ersten Jahr nur 0,49EUR/Monat, danach 2,99EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."',
-      },
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([
+      '.com: promo hint taken from https://www.checkdomain.de/com-domain/; the domain data states "Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,19EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."',
+      '.at: promo hint names another TLD, regular price without the promo: "Die .de-Domain kostet im ersten Jahr nur 0,49EUR/Monat, danach 2,99EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."',
     ]);
-    expect(result.offers.map((o) => o.tld)).toEqual(
-      MVP_TLDS.filter((t) => !['ai', 'com', 'at'].includes(t)),
-    );
+    // the TLD pages only for the two mismatching hints
+    expect(requested.filter((u) => u.endsWith('-domain/'))).toEqual([COM_URL, AT_URL]);
+    expect(result.offers.map((o) => o.tld)).toEqual(MVP_TLDS.filter((t) => t !== 'ai'));
+    // .com: the page footnote matches the price list (2,39), the domain data hint (2,19) does not
+    expect(result.offers.find((o) => o.tld === 'com')).toMatchObject({
+      price: { unit: 'month', setup: 0, year1: 7, year1_regular: 239, renewal: 239 },
+      promo: {
+        conditions:
+          'Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,39EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde.',
+        valid_until: null,
+      },
+      evidence: { source_url: COM_URL, confidence: 'high' },
+    });
+    // .at: the hint names .de in both sources, so no promo is stated for .at
+    expect(result.offers.find((o) => o.tld === 'at')).toMatchObject({
+      price: { unit: 'month', setup: 0, year1: 299, year1_regular: 299, renewal: 299 },
+      promo: null,
+      evidence: { source_url: AT_URL, confidence: 'medium' },
+    });
     expect(result.offers.find((o) => o.tld === 'de')).toEqual({
       tld: 'de',
       currency: 'EUR',
@@ -198,7 +251,7 @@ describe('checkdomain adapter', () => {
     expect(
       result.offers.filter((o) => o.promo).map((o) => o.tld),
       'TLDs with a promo',
-    ).toEqual(MVP_TLDS.filter((t) => [...PROMO, 'xyz', 'cloud'].includes(t)));
+    ).toEqual(MVP_TLDS.filter((t) => [...PROMO, 'com', 'xyz', 'cloud'].includes(t)));
     expect(
       Object.fromEntries(
         result.offers.map((o) => [o.tld, `${o.price.year1}/${o.price.renewal}/${o.price.setup}`]),
@@ -206,11 +259,13 @@ describe('checkdomain adapter', () => {
     ).toMatchInlineSnapshot(`
       {
         "app": "49/349/0",
+        "at": "299/299/0",
         "berlin": "639/639/0",
         "biz": "349/349/0",
         "ch": "49/299/0",
         "cloud": "49/399/0",
         "co": "449/449/0",
+        "com": "7/239/0",
         "de": "7/149/0",
         "dev": "349/349/0",
         "eu": "49/249/0",
@@ -272,5 +327,35 @@ describe('checkdomain adapter', () => {
     expect(onlyList.notOffered).toEqual(['zz']);
     // the English hint of .art is not the known German wording
     expect((await run(['art'])).failed[0]?.reason).toMatch(/^promo hint does not match/);
+  });
+  it('fails a mismatching promo hint when the TLD page does not resolve it', async () => {
+    const hint219 =
+      '"Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,19EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."';
+    // no TLD page: the domain data mismatch plus the page error
+    const missing = await run(['com'], LIST, DOMAINS, {});
+    expect(missing.failed).toHaveLength(1);
+    expect(missing.failed[0]?.reason).toMatch(/^promo hint does not match the price data: /);
+    expect(missing.failed[0]?.reason).toContain(`${hint219}; TLD page: `);
+    // the page footnote with other amounts, or without any hint
+    for (const page of [COM_PAGE.replace('2,39EUR', '2,49EUR'), '<p></p>']) {
+      const result = await run(['com'], LIST, DOMAINS, { [COM_URL]: page });
+      expect(result.failed).toEqual([
+        { tld: 'com', reason: `promo hint does not match the price data: ${hint219}` },
+      ]);
+      expect(result.warnings).toEqual([]);
+    }
+    // two different hints on the page: none is taken
+    const two = COM_PAGE.replace('</ol>', `<li>${pageHints(AT_PAGE)[0]}</li></ol>`);
+    expect((await run(['com'], LIST, DOMAINS, { [COM_URL]: two })).failed).toHaveLength(1);
+    // another TLD named, but with other amounts than this TLD's: fails
+    const atOther = AT_PAGE.replace('0,49EUR', '0,07EUR');
+    const domainsOther = edit(
+      DOMAINS,
+      '"Die .de-Domain kostet im ersten Jahr nur 0,49EUR',
+      '"Die .de-Domain kostet im ersten Jahr nur 0,07EUR',
+    );
+    const at = await run(['at'], LIST, domainsOther, { [AT_URL]: atOther });
+    expect(at.failed[0]?.reason).toMatch(/^promo hint does not match the price data/);
+    expect(at.offers).toEqual([]);
   });
 });

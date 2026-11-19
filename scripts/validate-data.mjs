@@ -124,8 +124,16 @@ export function offerPriceState(offer) {
  */
 export const FOREIGN_MARKET_CURRENCIES = ['USD'];
 
-/** From this day (evidence.fetched_at) a hand-entered multi-year offer needs evidence.quote (#28). */
-export const QUOTE_REQUIRED_FROM = '2026-11-20';
+/**
+ * Hand-entered multi-year offers entered before evidence.quote existed (#28), by
+ * `<provider>/<tld>` with their exact evidence.fetched_at. Their source is in
+ * docs/research/providers.md. The exception holds only for that fetched_at: a new manual check
+ * (another fetched_at) needs the quote. No other offer is exempt.
+ */
+export const QUOTE_EXEMPT = new Map([
+  ['cloudflare/ai', '2026-11-15T09:06:21Z'],
+  ['dynadot/ai', '2026-11-15T09:06:21Z'],
+]);
 
 /** Fields that must be equal within one segment of a history (one market). */
 const SEGMENT_FIELDS = ['currency', 'unit', 'vat_included', 'market'];
@@ -306,9 +314,8 @@ export function validateDir(dir, validators = makeValidators()) {
           );
         }
         // a hand-entered price with a multi-year term (e.g. .ai, 2 years): only with the verbatim
-        // source text, which shows whether the amount is per year or per term (#28). Required for
-        // entries read from QUOTE_REQUIRED_FROM on; older ones name their source in
-        // docs/research/providers.md and get the quote at their next manual check (30-day warning)
+        // source text, which shows whether the amount is per year or per term (#28). Only the
+        // offers in QUOTE_EXEMPT, with exactly their fetched_at, are exempt
         const quote = doc.evidence.quote;
         if (quote !== undefined && !quote.trim()) {
           findings.push(`${rel(file)}: evidence.quote is blank`);
@@ -319,7 +326,7 @@ export function validateDir(dir, validators = makeValidators()) {
           doc.evidence.method === 'manual' &&
           multiYear &&
           quote === undefined &&
-          doc.evidence.fetched_at.slice(0, 10) >= QUOTE_REQUIRED_FROM
+          QUOTE_EXEMPT.get(`${doc.provider}/${doc.tld}`) !== doc.evidence.fetched_at
         ) {
           findings.push(
             `${rel(file)}: a hand-entered offer with a multi-year term needs evidence.quote (verbatim source text: per year or per term)`,

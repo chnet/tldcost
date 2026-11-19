@@ -360,7 +360,7 @@
           "pattern": "^https://"
         },
         "quote": {
-          "description": "Verbatim text of the source that states the price, its currency, VAT statement and term, for a price entered by hand (method manual); a person copies it from the page at fetched_at. Required for a hand-entered offer with a multi-year term (term_years or renewal_term_years above 1) read on or after 2026-11-20, where it shows whether the amount is per year or per term (validate-data).",
+          "description": "Verbatim text of the source that states the price, its currency, VAT statement and term, for a price entered by hand (method manual); a person copies it from the page at fetched_at. Required for a hand-entered offer with a multi-year term (term_years or renewal_term_years above 1) (except two offers entered before this field, listed in validate-data), where it shows whether the amount is per year or per term (validate-data).",
           "type": "string",
           "minLength": 1,
           "maxLength": 500

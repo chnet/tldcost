@@ -305,9 +305,12 @@ describe('row detail', () => {
     expect(payload.providers['alpha']?.terms.url).toBeNull();
   });
 
-  it('"Fehler melden" (mail, the default while the repo is private): subject and row fields only', () => {
-    const href = reportUrl(row('bravo/de'), 'Bravo');
-    expect(href).toBe(reportUrl(row('bravo/de'), 'Bravo', 'mail'));
+  it('"Fehler melden" defaults to the GitHub issue form (REPORT_VIA)', () => {
+    expect(reportUrl(row('bravo/de'), 'Bravo')).toBe(reportUrl(row('bravo/de'), 'Bravo', 'github'));
+  });
+
+  it('"Fehler melden" (mail): subject and row fields only', () => {
+    const href = reportUrl(row('bravo/de'), 'Bravo', 'mail');
     const url = new URL(href);
     expect(url.protocol + url.pathname).toBe('mailto:hello@chnet.solutions');
     expect(href).not.toContain('+'); // RFC 6068: spaces as %20, never "+"

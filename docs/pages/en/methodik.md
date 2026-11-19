@@ -161,7 +161,7 @@ We include providers that
 Which providers are collected how, and why some have no offers, is shown under [Collection per provider](#collection-per-provider).
 Inclusion cannot be bought. If a provider asks us to, we remove its data without delay.
 The complete list is in [`data/providers/`](tldcost:repo/tree/main/data/providers).
-If a provider is missing, anyone can suggest it: [Suggest a provider](tldcost:report/anbieter).
+If a provider is missing, anyone can suggest it: [Suggest a provider](tldcost:report/anbieter?lang=en).
 
 ## The operator’s own offer
 
@@ -190,5 +190,5 @@ tldcost is operated by CHnet Solutions Plus UG. It also sells domains itself und
 
 ## Reporting and correcting errors
 
-Use “Report an error” in any table row, or directly: [Report an error](tldcost:report/preis). We only take over corrections with a public source, even if they come from the provider itself.
+Use “Report an error” in any table row, or directly: [Report an error](tldcost:report/preis?lang=en). We only take over corrections with a public source, even if they come from the provider itself.
 If a provider confirms its data and its affiliation has been verified, its row gets the badge “Confirmed by provider”.

@@ -1,40 +1,66 @@
-// Report routes in mail mode (REPORT_VIA 'mail', src/lib/report.mjs): every report or suggestion
-// link is a mailto with a subject, and no GitHub issue link is visible. The repository is public
-// since 19.11.2026 (REPO_PUBLIC); switching reports to GitHub issues is a separate decision.
+// Report routes (REPORT_VIA 'github', src/lib/report.mjs): every report or suggestion link opens a
+// GitHub issue form, and next to it the site says that issues are public (no personal data) and
+// names the e-mail route without a GitHub account, in the page language (REPORT_NOTES).
 // Impressum and Datenschutz are owner-approved texts and not checked here.
 import { expect, test, type Page } from '@playwright/test';
+import { REPORT_NOTES } from '../../src/lib/report.mjs';
 
-const subject = async (page: Page, selector: string) => {
-  const href = (await page.locator(selector).first().getAttribute('href')) ?? '';
-  const url = new URL(href);
-  expect(url.protocol + url.pathname).toBe('mailto:hello@chnet.solutions');
-  return url.searchParams.get('subject');
+const FORM = {
+  anbieter: 'https://github.com/chnet/tldcost/issues/new?template=anbieter-vorschlagen.yml',
+  preis: 'https://github.com/chnet/tldcost/issues/new?template=preis-falsch.yml',
 };
 
-for (const path of ['/', '/tld/de/']) {
-  test(`${path}: "Anbieter fehlt? Vorschlagen" is a mailto with subject`, async ({ page }) => {
+const href = async (page: Page, selector: string) =>
+  (await page.locator(selector).first().getAttribute('href')) ?? '';
+
+for (const [path, lang, question, link] of [
+  ['/', 'de', 'Anbieter fehlt?', 'Vorschlagen'],
+  ['/tld/de/', 'de', 'Anbieter fehlt?', 'Vorschlagen'],
+  ['/en/', 'en', 'Provider missing?', 'Suggest one'],
+] as const) {
+  test(`${path}: "${question}" opens the issue form, with the public-issue note`, async ({
+    page,
+  }) => {
     await page.goto(path);
     const p = page.locator('p.suggest-provider');
-    await expect(p).toContainText('Anbieter fehlt?');
-    await expect(p.getByRole('link', { name: 'Vorschlagen' })).toBeVisible();
-    expect(await subject(page, 'p.suggest-provider a')).toBe('tldcost: Anbieter vorschlagen');
+    await expect(p).toContainText(question);
+    await expect(p.getByRole('link', { name: link })).toHaveAttribute('href', FORM.anbieter);
+    await expect(p).toContainText(REPORT_NOTES[lang].privacy);
+    await expect(p).toContainText(REPORT_NOTES[lang].noGithub);
   });
 }
 
-test('/methodik/: suggest and report links are mailto links with subjects', async ({ page }) => {
-  await page.goto('/methodik/');
-  const main = page.locator('main');
-  expect(await subject(page, 'main a:text-is("Anbieter vorschlagen")')).toBe(
-    'tldcost: Anbieter vorschlagen',
-  );
-  expect(await subject(page, 'main a:text-is("Fehler melden")')).toBe('tldcost: Fehler melden');
-  await expect(main).not.toContainText('Ohne GitHub-Konto');
+for (const [path, lang, suggest, report, other] of [
+  ['/methodik/', 'de', 'Anbieter vorschlagen', 'Fehler melden', 'en'],
+  ['/en/methodik/', 'en', 'Suggest a provider', 'Report an error', 'de'],
+] as const) {
+  test(`${path}: suggest and report links open the issue forms, notes in the page language`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    const main = page.locator('main');
+    expect(await href(page, `main a:text-is("${suggest}")`)).toBe(FORM.anbieter);
+    expect(await href(page, `main a:text-is("${report}")`)).toBe(FORM.preis);
+    await expect(main).toContainText(REPORT_NOTES[lang].privacy);
+    await expect(main).toContainText(REPORT_NOTES[lang].noGithub);
+    await expect(main).not.toContainText(REPORT_NOTES[other].privacy);
+  });
+}
+
+test('/api/: the report link opens the correction form, with the public-issue note', async ({
+  page,
+}) => {
+  await page.goto('/api/');
+  const item = page.locator('main li', { has: page.locator(`a[href="${FORM.preis}"]`) });
+  await expect(item).toHaveCount(1);
+  await expect(item).toContainText(REPORT_NOTES.de.privacy);
+  await expect(item).toContainText(REPORT_NOTES.de.noGithub);
 });
 
 for (const path of ['/', '/tld/de/', '/methodik/', '/changelog/', '/lizenz/', '/api/']) {
-  test(`${path}: no GitHub issue link in mail mode`, async ({ page }) => {
+  test(`${path}: no mailto report link in GitHub mode`, async ({ page }) => {
     await page.goto(path);
-    await expect(page.locator('a[href*="/issues/new"]')).toHaveCount(0);
+    await expect(page.locator('main a[href^="mailto:"][href*="subject=tldcost"]')).toHaveCount(0);
   });
 }
 

@@ -2,6 +2,7 @@
 // (concept Finding 1; same check as operator-neutral.spec.ts).
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { REPORT_NOTES } from '../../src/lib/report.mjs';
 import { orderedRows } from '../../src/lib/view';
 import { FIXTURE_PAYLOAD, open, providerOrder } from './helpers';
 
@@ -25,13 +26,21 @@ test('expanding rows shows evidence, terms and the report link, order unchanged'
   );
   await expect(detail).toContainText('Domain-AGB Nr. 4 und 5');
   await expect(detail).toContainText('Anbieter-bestätigt');
-  // REPORT_VIA 'mail' (src/lib/report.mjs)
+  // REPORT_VIA 'github' (src/lib/report.mjs): the correction form, prefilled with the row only,
+  // next to it the public-issue note and the e-mail route
   const report = detail.locator('a', { hasText: 'Fehler melden' });
   const href = new URL((await report.getAttribute('href')) ?? '');
-  expect(href.protocol + href.pathname).toBe('mailto:hello@chnet.solutions');
-  expect(href.searchParams.get('subject')).toBe('tldcost: Fehler bei Bravo Registry .de');
-  expect(href.searchParams.get('body')).toMatch(/^Anbieter: bravo\r\nTLD: de\r\n/);
-  await expect(detail.locator('a[href*="issues/new"]')).toHaveCount(0);
+  expect(href.origin + href.pathname).toBe('https://github.com/chnet/tldcost/issues/new');
+  expect(Object.fromEntries(href.searchParams)).toEqual({
+    template: 'preis-falsch.yml',
+    title: '[Korrektur] Bravo Registry .de',
+    anbieter: 'bravo',
+    tld: 'de',
+  });
+  const source = detail.locator('.tc-source');
+  await expect(source).toContainText(REPORT_NOTES.de.privacy);
+  await expect(source).toContainText(REPORT_NOTES.de.noGithub);
+  await expect(detail.locator('a[href^="mailto:"]')).toHaveCount(0);
 
   // open every row: the order stays the sortRows() order
   const closed = page.locator('.tc-detail-toggle[aria-expanded="false"]');

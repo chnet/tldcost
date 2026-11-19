@@ -1,13 +1,14 @@
-// Where visitors report wrong data and suggest providers. The default is e-mail. The repository is
-// public since 19.11.2026; switching REPORT_VIA to 'github' is a separate decision: every report
-// link of the site (row detail, "Anbieter fehlt?", the `tldcost:report/...` links in docs/pages)
-// follows this one constant. Nothing about the visitor
-// is prefilled, only the row (provider, TLD) and the field names of the issue forms.
+// Where visitors report wrong data and suggest providers: the GitHub issue forms in
+// .github/ISSUE_TEMPLATE/ ('github', the default) or e-mail with the same fields ('mail'). Every
+// report link of the site (row detail, "Anbieter fehlt?", API page, the `tldcost:report/...` links
+// in docs/pages) follows this one constant. Next to each GitHub link the site shows REPORT_NOTES:
+// issues are public (no personal data), and e-mail works without a GitHub account. Nothing about
+// the visitor is prefilled, only the row (provider, TLD) and the field names of the issue forms.
 
 /** @typedef {'mail' | 'github'} ReportVia */
 
 /** @type {ReportVia} */
-export const REPORT_VIA = 'mail';
+export const REPORT_VIA = 'github';
 export const REPORT_EMAIL = 'hello@chnet.solutions';
 export const ISSUES_NEW = 'https://github.com/chnet/tldcost/issues/new';
 /**
@@ -36,8 +37,24 @@ export function repoLink(path = '', fallback = null, isPublic = REPO_PUBLIC) {
   return fallback;
 }
 
-/** Shown next to GitHub links, so reporting never needs a GitHub account. */
-export const NO_GITHUB_HINT = `Ohne GitHub-Konto: E-Mail an ${REPORT_EMAIL}.`;
+/**
+ * Shown next to every GitHub report link, per page language. privacy: issues are public, so no
+ * personal data goes in. noGithub: reporting never needs a GitHub account. The island and page
+ * texts (i18n detail.reportPrivacy / detail.noGithubHint) say the same (tests/unit/report.test.ts);
+ * the issue forms open with the same privacy note.
+ */
+export const REPORT_NOTES = {
+  de: {
+    privacy:
+      'Issues auf GitHub sind öffentlich: Bitte keine personenbezogenen Daten eintragen (Name, Adresse, Kundennummer, Rechnungen, Screenshots mit persönlichen Daten).',
+    noGithub: `Ohne GitHub-Konto: E-Mail an ${REPORT_EMAIL}.`,
+  },
+  en: {
+    privacy:
+      'Issues on GitHub are public: please do not enter personal data (name, address, customer number, invoices, screenshots with personal data).',
+    noGithub: `Without a GitHub account: email ${REPORT_EMAIL}.`,
+  },
+};
 
 /** RFC 6068 mailto: subject and body percent-encoded (no `+` for spaces), CRLF line breaks. */
 export function mailto(/** @type {string} */ subject, /** @type {string[]} */ lines) {

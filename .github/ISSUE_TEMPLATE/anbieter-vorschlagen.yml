@@ -1,5 +1,6 @@
-# Issue-Formular „Anbieter vorschlagen“. Die Website verlinkt es, sobald REPORT_VIA in
-# site/src/lib/report.mjs auf 'github' steht (bis dahin E-Mail mit denselben Feldern).
+# Issue-Formular „Anbieter vorschlagen“. Die Website verlinkt es („Anbieter fehlt?“, Methodik), solange
+# REPORT_VIA in site/src/lib/report.mjs auf 'github' steht; bei 'mail' eine E-Mail mit denselben Feldern.
+# Der Hinweis am Anfang (öffentlich, keine personenbezogenen Daten) entspricht REPORT_NOTES dort.
 # Die IDs nicht umbenennen, ohne suggestProviderUrl() in site/ anzupassen.
 
 name: Anbieter vorschlagen
@@ -7,6 +8,15 @@ description: Ein Domain-Anbieter fehlt in tldcost. English is welcome too.
 title: '[Anbieter] '
 labels: ['neuer-anbieter']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Issues sind öffentlich.** Bitte keine personenbezogenen Daten eintragen (Name, Adresse, Kundennummer,
+        > Rechnungen, Screenshots mit persönlichen Daten). Ohne GitHub-Konto: E-Mail an hello@chnet.solutions.
+        >
+        > **Issues are public.** Please do not enter personal data (name, address, customer number, invoices,
+        > screenshots with personal data). Without a GitHub account: email hello@chnet.solutions.
+
   - type: markdown
     attributes:
       value: |

@@ -14,7 +14,7 @@ import {
   schemaPath,
   SITE_ORIGIN,
 } from '../lib/api';
-import { correctionUrl, repoLink } from '../lib/report.mjs';
+import { REPORT_EMAIL, REPORT_VIA, correctionUrl, repoLink } from '../lib/report.mjs';
 import { siteData } from '../lib/site-data';
 import Layout from '../layouts/Layout.astro';
 
@@ -112,7 +112,13 @@ const licensePage = lang === 'en' ? '/en/lizenz/' : '/lizenz/';
       <li>{t.rules.noWarranty}</li>
       <li>{t.rules.notFound}</li>
       <li set:html={t.rules.v1} />
-      <li set:html={t.rules.report(attr(correctionUrl()))} />
+      <li>
+        <Fragment set:html={t.rules.report(attr(correctionUrl()))} />
+        {
+          REPORT_VIA === 'github' &&
+            ` ${L.m.detail.reportPrivacy} ${L.m.detail.noGithubHint(REPORT_EMAIL)}`
+        }
+      </li>
     </ul>
 
     <h2 id={t.license.id}>{t.license.h2}</h2>

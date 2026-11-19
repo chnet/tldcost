@@ -208,7 +208,7 @@ export const en: Messages = {
     priceSourceOf: (name) => `price page of ${name}`,
     fetchedOn: 'collected on',
     report: 'Report an error',
-    reportGithub: (hint) => `(public form on GitHub; ${hint})`,
+    reportGithub: (hint) => `(form on GitHub; ${hint})`,
     reportMail: (email) => `(email to ${email})`,
     noGithubHint: (email) => `Without a GitHub account: email ${email}.`,
     reportPrivacy:

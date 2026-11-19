@@ -223,7 +223,7 @@ export const de = {
     priceSourceOf: (name: string) => `Preisseite von ${name}`,
     fetchedOn: 'erhoben am',
     report: 'Fehler melden',
-    reportGithub: (hint: string) => `(öffentliches Formular auf GitHub; ${hint})`,
+    reportGithub: (hint: string) => `(Formular auf GitHub; ${hint})`,
     reportMail: (email: string) => `(E-Mail an ${email})`,
     noGithubHint: (email: string) => `Ohne GitHub-Konto: E-Mail an ${email}.`,
     reportPrivacy:

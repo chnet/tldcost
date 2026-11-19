@@ -47,17 +47,31 @@ for (const [path, lang, suggest, report, other] of [
   });
 }
 
-test('/api/: the report link opens the correction form, with the public-issue note', async ({
-  page,
-}) => {
-  await page.goto('/api/');
-  const item = page.locator('main li', { has: page.locator(`a[href="${FORM.preis}"]`) });
-  await expect(item).toHaveCount(1);
-  await expect(item).toContainText(REPORT_NOTES.de.privacy);
-  await expect(item).toContainText(REPORT_NOTES.de.noGithub);
-});
+for (const [path, lang, other] of [
+  ['/api/', 'de', 'en'],
+  ['/en/api/', 'en', 'de'],
+] as const) {
+  test(`${path}: the report link opens the correction form, notes in the page language`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    const item = page.locator('main li', { has: page.locator(`a[href="${FORM.preis}"]`) });
+    await expect(item).toHaveCount(1);
+    await expect(item).toContainText(REPORT_NOTES[lang].privacy);
+    await expect(item).toContainText(REPORT_NOTES[lang].noGithub);
+    await expect(item).not.toContainText(REPORT_NOTES[other].privacy);
+  });
+}
 
-for (const path of ['/', '/tld/de/', '/methodik/', '/changelog/', '/lizenz/', '/api/']) {
+for (const path of [
+  '/',
+  '/tld/de/',
+  '/methodik/',
+  '/changelog/',
+  '/lizenz/',
+  '/api/',
+  '/en/api/',
+]) {
   test(`${path}: no mailto report link in GitHub mode`, async ({ page }) => {
     await page.goto(path);
     await expect(page.locator('main a[href^="mailto:"][href*="subject=tldcost"]')).toHaveCount(0);

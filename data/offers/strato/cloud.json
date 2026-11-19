@@ -18,10 +18,7 @@
     "conditions": "Aktionspreis „12 Monate nur“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
     "valid_until": null
   },
-  "contract": {
-    "min_term_months": 12,
-    "billing_cycle": "yearly"
-  },
+  "contract": { "min_term_months": 12, "billing_cycle": "yearly" },
   "features": {
     "ssl_free": true,
     "forward_301": null,
@@ -48,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/cloud-domain/",
-    "fetched_at": "2026-11-15T05:38:38Z",
+    "fetched_at": "2026-11-19T07:15:46Z",
     "method": "scrape",
-    "evidence_hash": "sha256:9613cbcfeba7a8a303fd3fa3685bf7cfe83f2d6f4c747a934205f59aacf210a4",
+    "evidence_hash": "sha256:15cd73da7cdf2ec6815ccfc3883a1aba836a33c7acbdaae7f585ae704eee0efb",
     "confidence": "high"
   },
   "provider_verified": false

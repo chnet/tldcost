@@ -17,10 +17,7 @@
     "icann_fee_included": null
   },
   "promo": null,
-  "contract": {
-    "min_term_months": 24,
-    "billing_cycle": "multi-year"
-  },
+  "contract": { "min_term_months": 24, "billing_cycle": "multi-year" },
   "features": {
     "ssl_free": null,
     "forward_301": null,
@@ -36,9 +33,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/domain-.ai",
-    "fetched_at": "2026-11-13T06:23:25Z",
+    "fetched_at": "2026-11-19T07:15:10Z",
     "method": "scrape",
-    "evidence_hash": "sha256:fb16ba4f5fb818681a1fe794f27e6ee33e7e2a12e6f41a69bb011eba3ec0682a",
+    "evidence_hash": "sha256:c7d56401438122bd8074bbdb4e3f4eb62ad7f711ea8f5855aaea6a60eb6bc5a6",
     "confidence": "high"
   },
   "provider_verified": false

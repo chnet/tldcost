@@ -15,10 +15,7 @@
     "icann_fee_included": null
   },
   "promo": null,
-  "contract": {
-    "min_term_months": 12,
-    "billing_cycle": "yearly"
-  },
+  "contract": { "min_term_months": 12, "billing_cycle": "yearly" },
   "features": {
     "ssl_free": true,
     "forward_301": null,
@@ -45,7 +42,7 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/ch-domain/",
-    "fetched_at": "2026-11-19T06:12:15Z",
+    "fetched_at": "2026-11-19T07:15:38Z",
     "method": "scrape",
     "evidence_hash": "sha256:88b5277d1cd81b0f4d9334b00c479f0c16bb851de22ab1660d0a908af0862739",
     "confidence": "high"

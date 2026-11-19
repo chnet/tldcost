@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-cloud",
-    "fetched_at": "2026-11-13T06:23:27Z",
+    "fetched_at": "2026-11-19T07:15:12Z",
     "method": "scrape",
-    "evidence_hash": "sha256:3e99261d472292df01ba0312e29c2e9e574ab6d5cfca5ddeedc7176e0f59be9e",
+    "evidence_hash": "sha256:acfc45fc3c27676aed5903346a93e3e87e3b39b2565596446b43d8dc4a70bcca",
     "confidence": "high"
   },
   "provider_verified": false

@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-app",
-    "fetched_at": "2026-11-13T06:23:15Z",
+    "fetched_at": "2026-11-19T07:15:00Z",
     "method": "scrape",
-    "evidence_hash": "sha256:72ff81b332d52803020a60239766bb6534487d4615de1b210f06d42ae8c56cfd",
+    "evidence_hash": "sha256:4aee94ed78d0cb23954020c495d1f8dd789d2f35ce533685e3cfc791cd576e21",
     "confidence": "high"
   },
   "provider_verified": false

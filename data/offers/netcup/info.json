@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-info",
-    "fetched_at": "2026-11-13T06:23:17Z",
+    "fetched_at": "2026-11-19T07:15:02Z",
     "method": "scrape",
-    "evidence_hash": "sha256:4e74f41ab2495233b855ca56c2826385081ee091b9fda34262298d4fa82863c0",
+    "evidence_hash": "sha256:496158deb324e41e1032889948e3c935a278efb9426d3216a39b17f29ce41fd3",
     "confidence": "high"
   },
   "provider_verified": false

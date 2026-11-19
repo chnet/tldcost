@@ -31,9 +31,9 @@
   "evidence": {
     "source_url": "https://www.inwx.de/de/domain/pricelist",
     "source_endpoint": "https://www.inwx.de/api/v1/domain/all-prices",
-    "fetched_at": "2026-11-13T06:23:05Z",
+    "fetched_at": "2026-11-19T07:14:51Z",
     "method": "api",
-    "evidence_hash": "sha256:2eb2689cadfdac5015c85dcdebf50328ea888a1792b2c056066a27a6cc2f4303",
+    "evidence_hash": "sha256:4c758136f55a230a57c3e5678b63be0a9b0e5e41665201d86f933800a7eb9c9a",
     "confidence": "high"
   },
   "provider_verified": false

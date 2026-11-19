@@ -16,11 +16,7 @@
     "conditions": ".net-Aktion: 14 € (inkl. 19 % MwSt.) im ersten Jahr für Neu-Registrierungen von .net-Standard-Domains. Auch für Transfers gültig. Ab dem 2. Jahr 27 € (inkl. 19 % MwSt.) / Jahr. Vertragslaufzeit mind. 12 Monate. Aktion gilt nicht für Premium-Domains.",
     "valid_until": null
   },
-  "features": {
-    "ssl_free": "paid",
-    "dnssec": "paid",
-    "api": "paid"
-  },
+  "features": { "ssl_free": "paid", "dnssec": "paid", "api": "paid" },
   "feature_costs": {
     "api": {
       "source": {
@@ -50,9 +46,9 @@
   },
   "evidence": {
     "source_url": "https://www.united-domains.de/domain-registrieren/preisliste/",
-    "fetched_at": "2026-11-15T05:38:20Z",
+    "fetched_at": "2026-11-19T07:15:52Z",
     "method": "scrape",
-    "evidence_hash": "sha256:c0c3c7c83ce2bd7baaf59bc70656b66b91cfce5b79ccb87277cedbe83c99108e",
+    "evidence_hash": "sha256:0a419e60f0ab73b79caa3f9126ea043759701e94ae9f3a2d1ee3d5784004e087",
     "confidence": "high"
   },
   "provider_verified": false

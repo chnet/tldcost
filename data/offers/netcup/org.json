@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-org",
-    "fetched_at": "2026-11-13T06:23:10Z",
+    "fetched_at": "2026-11-19T07:14:56Z",
     "method": "scrape",
-    "evidence_hash": "sha256:6039240f357ad3e304f4ee802c0b8773efc3ed56dd66090c831cb238e9f27c73",
+    "evidence_hash": "sha256:8b8f25946bc96c24282f0848256df3fceaaa03a5cfa4d153084f211de543c40e",
     "confidence": "high"
   },
   "provider_verified": false

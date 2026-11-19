@@ -2,7 +2,7 @@
 title: Privacy policy
 slug: datenschutz
 lang: en
-source_sha256: 'c28590eab7261da286fb7f3f074f8b24f50e5170095d7e9ddb5b26dc665c034d'
+source_sha256: '5e03b29bc566ea3613d3b80624303d2390cc4b51feb1db1cfb5c7d9805061e67'
 ---
 
 <!--
@@ -21,7 +21,7 @@ this text was translated from.
 - No fonts, scripts or images from other servers.
 - No login, no contact form, no newsletter, no chatbot.
 - We do not keep access logs. Only our hosting provider processes the connection data that is technically needed to deliver the site.
-- Error reports and corrections reach us by email or, as soon as the repository is public, through GitHub.
+- Error reports and corrections reach us through GitHub or by email. The repository has been public since 19 Nov 2026.
 
 ## 1. Controller
 
@@ -73,7 +73,7 @@ The price data is also available as static files under `/api/v1/`. The interface
 
 ## 7. Reporting errors
 
-The “Report an error” link opens your email program with a message to us; section 8 applies to it. As soon as the repository chnet/tldcost is public, the link may lead to GitHub instead. There we take corrections and notes as issues and pull requests. For GitHub:
+The repository chnet/tldcost has been public since 19 Nov 2026. The “Report an error” link leads to a form on GitHub; without a GitHub account you can reach us by email, and section 8 applies to that. On GitHub we take corrections and notes as issues and pull requests. For GitHub:
 
 - The link passes only details of the table row (provider, TLD) to the email or to the form on GitHub, no data about you.
 - To contribute you need an account with GitHub (GitHub, Inc., USA). The [GitHub General Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) applies on GitHub.

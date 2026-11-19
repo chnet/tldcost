@@ -13,11 +13,17 @@
 //        value of a dependency that already exists in dependencies/devDependencies/
 //        optionalDependencies/overrides, and only to a plain version (no file:, git, URL or alias);
 //        every other field unchanged;
-//      - the root package-lock.json, only together with such a package.json change: every added
-//        or changed package entry has `resolved` exactly the registry tarball of the name in its
-//        path and its version (https://registry.npmjs.org/<name>/-/<base>-<version>.tgz), a sha512
-//        `integrity` and no alias; entries without `resolved` (links, bundled) only unchanged; the
-//        root and workspace entries change only like package.json; other top-level fields unchanged;
+//      - the root package-lock.json: every added or changed package entry has `resolved` exactly
+//        the registry tarball of the name in its path and its version
+//        (https://registry.npmjs.org/<name>/-/<base>-<version>.tgz), a sha512 `integrity` and no
+//        alias; entries without `resolved` (links, bundled) only unchanged; the root and workspace
+//        entries change only like package.json; other top-level fields unchanged. Without a
+//        package.json change in the same commit (a transitive update, owner decision 2026-11-19)
+//        the root entry, every workspace entry and every link entry must stay byte-identical;
+//      - the package.json and package-lock.json of a directory in STANDALONE_LOCK_DIRS (outside the
+//        workspaces, owner decision 2026-11-19): exactly those two paths, with the same checks as
+//        the root files; a lock change without a change to that directory's package.json only
+//        under the same byte-identical rule;
 //      - .github/workflows/*.yml: removed and added lines paired 1:1, each a `uses: owner/repo@<sha>`
 //        line that differs only in the 40-hex sha and its `# version` comment.
 //
@@ -52,6 +58,23 @@ const sameKeys = (a, b) =>
   Object.keys(a).length === Object.keys(b).length &&
   Object.keys(a).every((k) => Object.hasOwn(b, k));
 const sameJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Directories outside the npm workspaces with their own package.json and package-lock.json that the
+ * exception covers (owner decision 2026-11-19). Only these exact paths, no pattern.
+ */
+export const STANDALONE_LOCK_DIRS = ['tools/lhci'];
+
+/** Directory of a lockfile the exception covers: '' for the root lock, a standalone dir, else null. */
+export function lockDir(path) {
+  if (path === 'package-lock.json') return '';
+  return STANDALONE_LOCK_DIRS.find((d) => path === `${d}/package-lock.json`) ?? null;
+}
+
+/** Directory of a standalone package.json (STANDALONE_LOCK_DIRS), else null. */
+export function standaloneManifestDir(path) {
+  return STANDALONE_LOCK_DIRS.find((d) => path === `${d}/package.json`) ?? null;
+}
 
 /** Paths of package.json files Dependabot may change: root and workspace package.json. */
 export function manifestMatcher(workspaces) {
@@ -215,6 +238,31 @@ export function packageLockFinding(beforeText, afterText) {
   return '';
 }
 
+/**
+ * A lockfile change without a package.json change (a transitive update, owner decision 2026-11-19):
+ * the root entry (""), every workspace entry (a key without node_modules/) and every link entry
+ * must be byte-identical before and after, and none may be added or removed. Reason or ''.
+ */
+export function lockOnlyFinding(beforeText, afterText) {
+  let before, after;
+  try {
+    before = JSON.parse(beforeText);
+    after = JSON.parse(afterText);
+  } catch {
+    return 'package-lock.json is not valid JSON';
+  }
+  const b = isPlainObject(before?.packages) ? before.packages : {};
+  const a = isPlainObject(after?.packages) ? after.packages : {};
+  for (const key of new Set([...Object.keys(b), ...Object.keys(a)])) {
+    const direct = !key.includes('node_modules/') || b[key]?.link === true || a[key]?.link === true;
+    if (!direct) continue;
+    if (!Object.hasOwn(b, key) || !Object.hasOwn(a, key) || !sameJson(b[key], a[key])) {
+      return 'package-lock.json changed without a package.json change, and a root, workspace or link entry changed';
+    }
+  }
+  return '';
+}
+
 /** Hunks of a unified diff as {removed, added} line lists (content only, after each @@). */
 export function diffHunks(diff) {
   const hunks = [];
@@ -279,17 +327,29 @@ export function changeFindings(sha, run) {
   const out = [];
   const reason = (r) => out.push(`${id}: dependabot exemption: ${r}`);
   if (files.length === 0) reason('commit changes no file');
-  const manifestChanged = files.some((f) => f.st === 'M' && isManifest(f.path));
+  const modified = new Set(files.filter((f) => f.st === 'M').map((f) => f.path));
+  // the root lock pairs with any root or workspace package.json, a standalone lock with its own
+  const rootManifestChanged = [...modified].some(isManifest);
   for (const { st, path } of files) {
     if (st !== 'M') {
       reason(`only modified files allowed (status ${st})`);
     } else if (isManifest(path)) {
       const r = packageJsonFinding(show(`${sha}^`, path), show(sha, path));
       if (r) reason(r);
-    } else if (path === 'package-lock.json') {
-      if (!manifestChanged) reason('package-lock.json changed without a package.json change');
-      const r = packageLockFinding(show(`${sha}^`, path), show(sha, path));
-      if (r) reason(r);
+    } else if (standaloneManifestDir(path) !== null) {
+      const r = packageJsonFinding(show(`${sha}^`, path), show(sha, path));
+      if (r) reason(`${standaloneManifestDir(path)}/${r}`);
+    } else if (lockDir(path) !== null) {
+      const dir = lockDir(path);
+      const prefix = dir ? `${dir}/` : '';
+      const [before, after] = [show(`${sha}^`, path), show(sha, path)];
+      const manifestChanged = dir ? modified.has(`${dir}/package.json`) : rootManifestChanged;
+      if (!manifestChanged) {
+        const r = lockOnlyFinding(before, after);
+        if (r) reason(prefix + r);
+      }
+      const r = packageLockFinding(before, after);
+      if (r) reason(prefix + r);
     } else if (WORKFLOW.test(path)) {
       const diff = run([
         'diff-tree',

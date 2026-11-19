@@ -12,6 +12,7 @@ import {
   type CostedFeature,
   type FxRate,
   type Offer,
+  type PriceHistory,
   type PriceMode,
   type Provider,
 } from '@tldcost/core';
@@ -25,6 +26,7 @@ import type {
   RowDetail,
   SitePayload,
 } from './payload';
+import { rowHistory, type HistoryAmounts } from './price-history';
 import { compareIds, type SortKey } from './sort';
 
 /** TLD order of the concept (section 3.5); TLDs not listed follow alphabetically. */
@@ -253,6 +255,11 @@ export interface BuildOptions {
   today?: string;
   /** Language of the footnotes and country names (Archiv-Issue 33). Default: German. */
   locale?: SiteLocale;
+  /**
+   * Price histories by `<provider>/<tld>` (core loadHistories): rows with at least 3 entries get
+   * `detail.history` (Archiv-Issue 51). Without it no row has a history.
+   */
+  history?: ReadonlyMap<string, PriceHistory>;
 }
 
 export function buildPayload(data: TldcostData, options: BuildOptions = {}): SitePayload {
@@ -298,6 +305,30 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
     const key = `${offer.provider}/${offer.tld}`;
     const gross = modeValues(offer, provider, 'gross', fx);
     const net = modeValues(offer, provider, 'net', fx);
+    // price history (Archiv-Issue 51): each entry's prices through the same modeValues as the
+    // table, with the entry's currency, VAT mode and unit and the ECB rate of its fetch date
+    const entries = options.history?.get(key)?.entries;
+    const history =
+      entries &&
+      rowHistory(entries, (e, mode): HistoryAmounts => {
+        const at: Offer = {
+          ...offer,
+          currency: e.currency,
+          vat_included: e.vat_included,
+          price: {
+            ...offer.price,
+            unit: e.unit,
+            setup: e.setup,
+            year1: e.year1,
+            renewal: e.renewal,
+            transfer_in: e.transfer_in,
+          },
+        };
+        const atFx =
+          e.currency === 'EUR' ? undefined : fxRateFor(data.fx, e.currency, e.source.fetched_at);
+        const v = modeValues(at, provider, mode, atFx);
+        return { year1: v['year1'] as Cents | null, renewal: v['renewal'] as Cents | null };
+      });
     const cellNotes: PayloadRow['cellNotes'] = { gross: {}, net: {} };
     const promo = isPromo(offer);
     // an expired promo keeps its footnote (the stored year-1 price is still the promo price) but
@@ -450,6 +481,7 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
         contractSource,
         // only rows with a paid feature carry the key (payload size)
         ...(paid.length ? { paidFeatures: paid } : {}),
+        ...(history ? { history } : {}),
       },
     });
   }

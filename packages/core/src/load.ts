@@ -2,6 +2,7 @@
 // bundles never pull in node:fs. Parses only; schema validation is scripts/validate-data.mjs.
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import type { PriceHistory } from './history.js';
 import type { FxRates, Offer, Provider } from './types.js';
 
 export interface TldcostData {
@@ -78,4 +79,24 @@ export function loadData(dir: string): TldcostData {
   });
   fx.sort((a, b) => compareIds(a.date, b.date));
   return { providers: providers.sort(byId), offers: offers.sort(byProviderTld), fx };
+}
+
+/**
+ * Loads <dir>/history/<provider>/<tld>.json (schema/history.schema.json), keyed `<provider>/<tld>`.
+ * Provider and TLD must match the path (throws otherwise); a missing directory yields an empty map.
+ * Parses only; validate-data checks the entries against the offers.
+ */
+export function loadHistories(dir: string): Map<string, PriceHistory> {
+  const out = new Map<string, PriceHistory>();
+  for (const provider of subdirs(join(dir, 'history'))) {
+    for (const f of jsonFiles(join(dir, 'history', provider))) {
+      const file = join(dir, 'history', provider, f);
+      const h = readJson<PriceHistory>(file);
+      if (h.provider !== provider || h.tld !== basename(f, '.json')) {
+        throw new Error(`${file}: provider/tld '${h.provider}/${h.tld}' != path`);
+      }
+      out.set(`${provider}/${h.tld}`, h);
+    }
+  }
+  return out;
 }

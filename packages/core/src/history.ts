@@ -69,8 +69,11 @@ export function samePriceState(a: PriceState, b: PriceState): boolean {
   return HISTORY_STATE_FIELDS.every((f) => a[f] === b[f]) && a.market === b.market;
 }
 
-/** The amounts of two states are comparable: same currency, price unit, VAT mode and market. */
-function comparable(a: PriceState, b: PriceState): boolean {
+/**
+ * The amounts of two states are comparable: same currency, price unit, VAT mode and market. A
+ * history line connects only comparable entries (the site's price history, Archiv-Issue 51).
+ */
+export function comparable(a: PriceState, b: PriceState): boolean {
   return (
     a.currency === b.currency &&
     a.unit === b.unit &&

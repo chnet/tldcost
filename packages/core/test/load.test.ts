@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { compareIds, loadData } from '../src/load.js';
+import { compareIds, loadData, loadHistories } from '../src/load.js';
 import { offer } from './fixtures.js';
 
 function dataDir(files: Record<string, unknown>): string {
@@ -102,5 +102,38 @@ describe('loadData', () => {
   it('a file where a directory is expected is an error, not empty', () => {
     expect(() => loadData(dataDir({ providers: 'not a dir' }))).toThrow(/ENOTDIR/);
     expect(() => loadData(dataDir({ offers: 'not a dir' }))).toThrow(/ENOTDIR/);
+  });
+});
+
+describe('loadHistories', () => {
+  const history = (provider: string, tld: string) => ({
+    schema_version: 1,
+    provider,
+    tld,
+    entries: [],
+  });
+
+  it('missing directory: empty map', () => {
+    expect(loadHistories(dataDir({})).size).toBe(0);
+  });
+
+  it('keys <provider>/<tld>; ignores non-json', () => {
+    const dir = dataDir({
+      'history/a/de.json': history('a', 'de'),
+      'history/b/com.json': history('b', 'com'),
+      'history/b/notes.txt': 'x',
+    });
+    const all = loadHistories(dir);
+    expect([...all.keys()].sort()).toEqual(['a/de', 'b/com']);
+    expect(all.get('b/com')).toEqual(history('b', 'com'));
+  });
+
+  it('provider and TLD must match the path', () => {
+    expect(() => loadHistories(dataDir({ 'history/a/de.json': history('a', 'com') }))).toThrow(
+      /'a\/com' != path/,
+    );
+    expect(() => loadHistories(dataDir({ 'history/a/de.json': history('b', 'de') }))).toThrow(
+      /'b\/de' != path/,
+    );
   });
 });

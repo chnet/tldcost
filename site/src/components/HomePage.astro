@@ -3,7 +3,7 @@
 // section 3.4); the footnotes are built in the page language (Archiv-Issue 33).
 import { LOCALES, type Lang } from '../i18n';
 import { buildPayload } from '../lib/rows';
-import { siteData } from '../lib/site-data';
+import { siteData, siteHistory } from '../lib/site-data';
 import Layout from '../layouts/Layout.astro';
 import PriceTableDe from './PriceTableDe';
 import PriceTableEn from './PriceTableEn';
@@ -15,7 +15,7 @@ interface Props {
 const { lang } = Astro.props;
 const L = LOCALES[lang];
 const t = L.s.pages.index;
-const json = JSON.stringify(buildPayload(siteData(), { locale: L }));
+const json = JSON.stringify(buildPayload(siteData(), { locale: L, history: siteHistory() }));
 ---
 
 <Layout footnotes title={t.title} description={t.description} other={lang === 'de' ? '/en/' : '/'}>

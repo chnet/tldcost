@@ -79,6 +79,39 @@ export interface RowDetail {
   contractSource: Record<string, 'offer' | 'provider' | null>;
   /** Paid features with source and price, in column order; missing when there is none. */
   paidFeatures?: PaidFeature[];
+  /** Price history (data/history/, Archiv-Issue 51); missing below 3 entries (payload size). */
+  history?: RowHistory;
+}
+
+/** SVG path data of the sparkline in one VAT mode (price-history.ts, viewBox HISTORY_SVG). */
+export interface HistoryPath {
+  year1: string;
+  year1Dots: string;
+  renewal: string;
+  renewalDots: string;
+  /** Dashed vertical lines at the breaks between segments. */
+  breaks: string;
+}
+
+/** Year-1 and renewal amounts per entry in one VAT mode: EUR cents per year, null when unknown. */
+export interface HistorySeries {
+  year1: (Cents | null)[];
+  renewal: (Cents | null)[];
+  /** Missing in `net` when it equals the gross path (one VAT rate scales all amounts alike). */
+  path?: HistoryPath;
+}
+
+/** The price history of a row: entry dates (oldest first) and the amounts per VAT mode. */
+export interface RowHistory {
+  dates: string[];
+  /**
+   * Entries that start a new segment (another currency, VAT mode, unit or market than the entry
+   * before): not connected to the earlier ones. `market`: country of a foreign market display,
+   * null for the German display.
+   */
+  breaks: { index: number; currency: string; market: string | null }[];
+  gross: HistorySeries;
+  net: HistorySeries;
 }
 
 /** Badges shown next to the provider name. The operator badge lives in ProviderMeta. */

@@ -29,6 +29,7 @@ export const siteEn: SiteMessages = {
     data: 'Data',
     noTracking: 'No cookies, no tracking, no affiliate links',
     repoPending: 'The source code will be published soon.',
+    support: 'Support',
     switchLabel: 'Language',
     germanOnly: ' (German)',
     translationNote: {

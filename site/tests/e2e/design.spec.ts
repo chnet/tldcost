@@ -187,6 +187,11 @@ test.describe('header and footer', () => {
     // GitHub only once the repository is public (src/lib/report.mjs), otherwise the notice
     await expect(page.locator('footer a', { hasText: 'GitHub' })).toHaveCount(REPO_PUBLIC ? 1 : 0);
     if (!REPO_PUBLIC) await expect(page.locator('footer')).toContainText(REPO_PENDING);
+    // GitHub Sponsors: a plain link, nothing loaded from GitHub
+    await expect(page.locator('footer a', { hasText: 'Unterstützen' })).toHaveAttribute(
+      'href',
+      'https://github.com/sponsors/chnet',
+    );
     await page.goto('/tld/de/');
     await expect(page.locator('.tc-nav a[aria-current="page"]')).toHaveText('Vergleich');
   });

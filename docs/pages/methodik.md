@@ -14,6 +14,7 @@ Diese Seite erklärt, welche Daten tldcost erhebt, wie die Tabelle sortiert und 
 - Jede Spalte ist sortierbar. Die gewählte Sortierung steht in der URL und ist damit teilbar und reproduzierbar.
 - Es gibt **keinen Score, keine Empfehlung, keinen „Testsieger“ und keine Bewertungen**.
 - Kein Anbieter zahlt für Aufnahme, Platzierung oder Darstellung. Es gibt keine Affiliate-Links und kein Tracking.
+- Freiwillige Unterstützung über [GitHub Sponsors](https://github.com/sponsors/chnet) hat keinen Einfluss auf Aufnahme oder Reihenfolge.
 - :::nur-oeffentlich
   Jeder Wert hat eine öffentliche Quelle, einen Zeitstempel und einen Beleg. Alle Daten liegen offen im [GitHub-Repository](tldcost:repo/).
   :::

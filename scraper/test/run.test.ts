@@ -23,6 +23,8 @@ import {
   validateDir,
 } from '../../scripts/validate-data.mjs';
 import { ADAPTERS } from '../src/adapters/index.js';
+import { INWX_ENDPOINT, inwx } from '../src/adapters/inwx.js';
+import { PORKBUN_ENDPOINT, porkbun } from '../src/adapters/porkbun.js';
 import { ECB_DAILY } from '../src/ecb.js';
 import {
   checkDerivedListPrice,
@@ -1406,5 +1408,65 @@ describe('market switch (owner decision 2026-11-19, Fremdmarkt)', () => {
     expect(() =>
       appendHistory(deHistory, later(deOffer, { currency: 'USD', vat_included: false })),
     ).toThrow(/EUR\/year\/vat_included true -> USD\/year\/vat_included false\)/);
+  });
+});
+
+describe('.ai by hand (#28): the adapters keep skipping .ai, a stored manual offer stays', () => {
+  const manualAi = (provider: string, currency: string, vat_included: boolean | null): Offer => ({
+    schema_version: 2,
+    provider,
+    tld: 'ai',
+    currency,
+    vat_included,
+    price: {
+      unit: 'year',
+      setup: 0,
+      year1: 10000,
+      renewal: 10000,
+      term_years: 2,
+      renewal_term_years: 2,
+    },
+    evidence: {
+      source_url: `https://${provider}.example/ai`,
+      fetched_at: '2026-11-20T10:00:00Z',
+      method: 'manual',
+      quote: '.ai 2 Jahre 100,00',
+      confidence: 'high',
+    },
+    provider_verified: false,
+  });
+
+  it('INWX (JSON) and Porkbun skip .ai; the manual ai.json files are not touched', async () => {
+    provider('inwx');
+    provider('porkbun', 'US');
+    const files = {
+      inwx: manualAi('inwx', 'EUR', false),
+      porkbun: manualAi('porkbun', 'USD', null),
+    };
+    for (const o of Object.values(files)) writeOffer(o);
+    await syncHistory(dir);
+    const before = Object.keys(files).map((p) =>
+      readFileSync(join(dir, 'offers', p, 'ai.json'), 'utf8'),
+    );
+    const http = testHttp({
+      'https://www.inwx.de/robots.txt': { body: 'User-Agent: *\nDisallow:  \n' },
+      [INWX_ENDPOINT]: { body: fixture('inwx/all-prices.json') },
+      'https://api.porkbun.com/robots.txt': { status: 404 },
+      [PORKBUN_ENDPOINT]: { body: fixture('porkbun/pricing.json') },
+    }).http;
+    const report = await run(opts([inwx, porkbun], { http, tlds: ['ai', 'de'] }));
+    for (const p of report.providers) {
+      expect(
+        p.skipped.map((s) => s.tld),
+        p.id,
+      ).toEqual(['ai']);
+      expect(p.offers, p.id).toBe(1); // .de only
+    }
+    // nothing about .ai (Porkbun's .de is a sale without a stored promo here: reported, not ai)
+    expect(report.violations.filter((v) => v.tld === 'ai')).toEqual([]);
+    expect(report.written.some((f) => f.endsWith('ai.json'))).toBe(false);
+    expect(
+      Object.keys(files).map((p) => readFileSync(join(dir, 'offers', p, 'ai.json'), 'utf8')),
+    ).toEqual(before);
   });
 });

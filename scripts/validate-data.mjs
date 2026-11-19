@@ -124,6 +124,17 @@ export function offerPriceState(offer) {
  */
 export const FOREIGN_MARKET_CURRENCIES = ['USD'];
 
+/**
+ * Hand-entered multi-year offers entered before evidence.quote existed (#28), by
+ * `<provider>/<tld>` with their exact evidence.fetched_at. Their source is in
+ * docs/research/providers.md. The exception holds only for that fetched_at: a new manual check
+ * (another fetched_at) needs the quote. No other offer is exempt.
+ */
+export const QUOTE_EXEMPT = new Map([
+  ['cloudflare/ai', '2026-11-15T09:06:21Z'],
+  ['dynadot/ai', '2026-11-15T09:06:21Z'],
+]);
+
 /** Fields that must be equal within one segment of a history (one market). */
 const SEGMENT_FIELDS = ['currency', 'unit', 'vat_included', 'market'];
 
@@ -300,6 +311,25 @@ export function validateDir(dir, validators = makeValidators()) {
         ) {
           findings.push(
             `${rel(file)}: promo.max_per_customer needs max_per_customer_source (url or quote)`,
+          );
+        }
+        // a hand-entered price with a multi-year term (e.g. .ai, 2 years): only with the verbatim
+        // source text, which shows whether the amount is per year or per term (#28). Only the
+        // offers in QUOTE_EXEMPT, with exactly their fetched_at, are exempt
+        const quote = doc.evidence.quote;
+        if (quote !== undefined && !quote.trim()) {
+          findings.push(`${rel(file)}: evidence.quote is blank`);
+        }
+        const multiYear =
+          (doc.price.term_years ?? 1) > 1 || (doc.price.renewal_term_years ?? 1) > 1;
+        if (
+          doc.evidence.method === 'manual' &&
+          multiYear &&
+          quote === undefined &&
+          QUOTE_EXEMPT.get(`${doc.provider}/${doc.tld}`) !== doc.evidence.fetched_at
+        ) {
+          findings.push(
+            `${rel(file)}: a hand-entered offer with a multi-year term needs evidence.quote (verbatim source text: per year or per term)`,
           );
         }
         // another market's prices (owner decision 2026-11-19): in that market's currency, one of

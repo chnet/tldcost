@@ -4,13 +4,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import {
   makeValidators,
   offerPriceState,
   PAYABLE_FEATURES,
+  QUOTE_EXEMPT,
   validateDir,
 } from './validate-data.mjs';
 
@@ -290,6 +291,119 @@ test('provider vat_rate null only outside the EU; offers with stated VAT then ne
   }
 });
 
+test('evidence.quote: hand-entered offers with a multi-year term need it, never blank (#28)', () => {
+  const QUOTE = '.ai Registrierung 2 Jahre 100,00 € inkl. MwSt.';
+  let f;
+  const manual = (o, price = {}, evidence = {}) => {
+    Object.assign(o.price, price);
+    Object.assign(o.evidence, { method: 'manual', fetched_at: '2026-11-20T09:00:00Z' }, evidence);
+  };
+  // 2-year term, by hand, with the quote: valid
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => manual(o, { term_years: 2, renewal_term_years: 2 }, { quote: QUOTE })),
+      V,
+    ),
+    [],
+  );
+  // the same without the quote: rejected, also for a multi-year renewal term alone
+  for (const price of [{ term_years: 2 }, { renewal_term_years: 2 }]) {
+    const f = validateDir(
+      withOffer((o) => manual(o, price)),
+      V,
+    );
+    assert.ok(
+      f.some((x) => x.includes('a hand-entered offer with a multi-year term needs evidence.quote')),
+      `${JSON.stringify(price)}: ${f}`,
+    );
+  }
+  // 1-year terms by hand, or a scraped multi-year offer: no quote needed (as before)
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => manual(o)),
+      V,
+    ),
+    [],
+  );
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => {
+        Object.assign(o.price, { term_years: 2 });
+        o.evidence.method = 'scrape';
+      }),
+      V,
+    ),
+    [],
+  );
+  // a backdated entry gets no exception: only the listed offers are exempt
+  const exemptAt = '2026-11-15T09:06:21Z';
+  f = validateDir(
+    withOffer((o) => manual(o, { term_years: 2 }, { fetched_at: exemptAt })),
+    V,
+  );
+  assert.ok(
+    f.some((x) => x.includes('a hand-entered offer with a multi-year term needs evidence.quote')),
+    `backdated: ${f}`,
+  );
+  // the listed offers: exempt with exactly their fetched_at, not after a new check
+  const listed = (fetchedAt) => {
+    const provider = { ...read(PROVIDER), id: 'cloudflare' };
+    const offer = {
+      ...read(OFFER),
+      provider: 'cloudflare',
+      tld: 'ai',
+      price: { ...read(OFFER).price, term_years: 2 },
+      evidence: { ...read(OFFER).evidence, method: 'manual', fetched_at: fetchedAt },
+    };
+    return validateDir(
+      dataDir({ 'providers/cloudflare.json': provider, 'offers/cloudflare/ai.json': offer }),
+      V,
+    );
+  };
+  assert.equal(QUOTE_EXEMPT.get('cloudflare/ai'), exemptAt);
+  assert.deepEqual(listed(exemptAt), []);
+  f = listed('2026-12-01T10:00:00Z');
+  assert.ok(
+    f.some((x) => x.includes('a hand-entered offer with a multi-year term needs evidence.quote')),
+    `new check: ${f}`,
+  );
+  // blank or too long: rejected
+  f = validateDir(
+    withOffer((o) => manual(o, { term_years: 2 }, { quote: '   ' })),
+    V,
+  );
+  assert.ok(
+    f.some((x) => x.includes('evidence.quote is blank')),
+    `${f}`,
+  );
+  f = validateDir(
+    withOffer((o) => manual(o, {}, { quote: 'x'.repeat(501) })),
+    V,
+  );
+  assert.ok(
+    f.some((x) => /evidence\/quote.*500 characters/.test(x)),
+    `quote longer than 500 characters: ${f}`,
+  );
+});
+
+test('evidence.quote exceptions in data/: exactly the listed offers, each with its fetched_at (#28)', () => {
+  // every hand-entered multi-year offer without a quote in the real data must be in QUOTE_EXEMPT
+  // with its exact fetched_at, and every entry of QUOTE_EXEMPT must still be such an offer
+  const found = new Map();
+  const offersDir = join(ROOT, 'data/offers');
+  for (const p of readdirSync(offersDir)) {
+    for (const f of readdirSync(join(offersDir, p)).filter((n) => n.endsWith('.json'))) {
+      const o = JSON.parse(readFileSync(join(offersDir, p, f), 'utf8'));
+      const multiYear = (o.price.term_years ?? 1) > 1 || (o.price.renewal_term_years ?? 1) > 1;
+      if (o.evidence.method === 'manual' && multiYear && o.evidence.quote === undefined) {
+        found.set(`${o.provider}/${o.tld}`, o.evidence.fetched_at);
+      }
+    }
+  }
+  assert.deepEqual([...found].sort(), [...QUOTE_EXEMPT].sort());
+  assert.deepEqual([...QUOTE_EXEMPT.keys()].sort(), ['cloudflare/ai', 'dynadot/ai']);
+});
+
 test('foreign_market (owner decision 2026-11-19): currency matches, USD only, net prices', () => {
   const market = { country: 'US', currency: 'USD', quote: 'Domainpreise in USD .de 9,99 9,99' };
   const offer = (o) => ({ ...read(OFFER), foreign_market: market, ...o });
@@ -338,7 +452,11 @@ test('foreign_market (owner decision 2026-11-19): currency matches, USD only, ne
 test('multi-year terms: integer 1..10, monthly prices only with 1-year terms', () => {
   assert.deepEqual(
     validateDir(
-      withOffer((o) => Object.assign(o.price, { term_years: 2, renewal_term_years: 2 })),
+      withOffer((o) => {
+        Object.assign(o.price, { term_years: 2, renewal_term_years: 2 });
+        // the example is entered by hand: a multi-year term needs the verbatim quote (#28)
+        o.evidence.quote = '2 Jahre 10,00 € inkl. MwSt.';
+      }),
       V,
     ),
     [],

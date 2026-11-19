@@ -2,7 +2,7 @@
 // one entry per TLD with the monthly price, setup, contract period and the current promo), checked
 // against the public price list https://www.checkdomain.de/agb/preisliste/ („Preise und
 // Kündigungsfristen“). robots.txt has no Disallow; the AGB (PDF as of 23.10.2024) have no clause on
-// automated access (checked 2026-11-15). Both pages are ISO-8859-1.
+// automated access (checked 2026-11-15). Both pages are ISO-8859-1; the TLD pages (below) are UTF-8.
 //
 // Owner rule (Archiv-Issue 75): domains are sold on their own, each TLD as its own contract with its own minimum
 // term and notice period (price list); no base fee besides the price list. Hosting is optional
@@ -17,9 +17,12 @@
 // (seen for .com: domain data "danach 2,19", price list, domain price and page footnote 2,39). A
 // hint that names another TLD with exactly this TLD's amounts (seen for .at: „Die .de-Domain kostet
 // … 0,49 … 2,99“ in both sources) states no promo for this TLD: the regular price applies, with a
-// warning. Anything else fails the TLD. Every TLD must match the price list in
-// price, setup and minimum term, or it fails. TLDs with a minimum term other than 12 months (.ai: 24)
-// are skipped: the payment per term with a first-year promo inside it is not stated.
+// warning, but only when the TLD page has such a hint too (a page without one may be a new layout).
+// Anything else fails the TLD, naming what the page said. evidence_hash stays the hash of the domain
+// data (prices and promo amounts); a hint taken from the TLD page is named in the run warnings.
+// Every TLD must match the price list in price, setup and minimum term, or it fails. TLDs with a
+// minimum term other than 12 months (.ai: 24) are skipped: the payment per term with a first-year
+// promo inside it is not stated.
 import { evidenceHash } from '../evidence.js';
 import type { HttpResponse } from '../http.js';
 import { toCents } from '../money.js';
@@ -242,13 +245,19 @@ export const checkdomain: Adapter = {
           }
         }
         const other = [hint, ...onPage].map(parseHint);
-        if (other.every((h) => h && h.tld !== tld && h.promo === promo && h.regular === regular)) {
+        if (
+          onPage.length > 0 &&
+          other.every((h) => h && h.tld !== tld && h.promo === promo && h.regular === regular)
+        ) {
           result.warnings.push(
             `.${tld}: promo hint names another TLD, regular price without the promo: ${JSON.stringify(hint)}`,
           );
           return undefined;
         }
-        throw err;
+        const said = onPage.length
+          ? onPage.map((h) => JSON.stringify(h)).join(', ')
+          : 'no promo hint';
+        throw new Error(`${(err as Error).message}; TLD page: ${said}`, { cause: err });
       }
     };
 

@@ -211,6 +211,8 @@ export const en: Messages = {
     reportGithub: (hint) => `(public form on GitHub; ${hint})`,
     reportMail: (email) => `(email to ${email})`,
     noGithubHint: (email) => `Without a GitHub account: email ${email}.`,
+    reportPrivacy:
+      'Issues on GitHub are public: please do not enter personal data (name, address, customer number, invoices, screenshots with personal data).',
     methods: {
       api: 'from a price list or interface of the provider',
       scrape: 'read automatically from the price page',

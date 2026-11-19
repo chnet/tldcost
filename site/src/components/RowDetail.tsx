@@ -249,7 +249,7 @@ export default function RowDetail({
           {t.report}
         </a>{' '}
         {REPORT_VIA === 'github'
-          ? t.reportGithub(t.noGithubHint(REPORT_EMAIL))
+          ? `${t.reportGithub(t.noGithubHint(REPORT_EMAIL))} ${t.reportPrivacy}`
           : t.reportMail(REPORT_EMAIL)}
       </p>
     </div>

@@ -65,7 +65,7 @@ These items are part of the switch to a public repository and are done by the ow
 | Item | Status | Evidence |
 |---|---|---|
 | Repository links back on (`REPO_PUBLIC`) | done | [`site/src/lib/report.mjs`](../site/src/lib/report.mjs) (repository public since 19.11.2026); deploy after the change |
-| GitHub report links back on (`REPORT_VIA`) | open | [`site/src/lib/report.mjs`](../site/src/lib/report.mjs); stays `'mail'` until decided, deploy after the change |
+| GitHub report links back on (`REPORT_VIA`) | done | [`site/src/lib/report.mjs`](../site/src/lib/report.mjs) (`'github'`, owner decision 19.11.2026); next to every report link and at the top of each issue form: issues are public, no personal data; e-mail without a GitHub account. Deploy after the change |
 | Private vulnerability reporting enabled | open | [`SECURITY.md`](../SECURITY.md) names it as the preferred channel; e-mail until then |
 | Repository settings: secret scanning with push protection, Dependabot alerts, code scanning, read-only default `GITHUB_TOKEN`, approval for workflow runs of outside contributors, wiki off | open | Repository settings |
 | Commit identity allowlist names only the bots in use | done | [`config/chnet-commit-emails.txt`](../config/chnet-commit-emails.txt) (the only bot address is `github-actions[bot]`; the other entries are the project's noreply address, GitHub web merges and the co-author address) |

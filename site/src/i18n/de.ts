@@ -226,6 +226,8 @@ export const de = {
     reportGithub: (hint: string) => `(öffentliches Formular auf GitHub; ${hint})`,
     reportMail: (email: string) => `(E-Mail an ${email})`,
     noGithubHint: (email: string) => `Ohne GitHub-Konto: E-Mail an ${email}.`,
+    reportPrivacy:
+      'Issues auf GitHub sind öffentlich: Bitte keine personenbezogenen Daten eintragen (Name, Adresse, Kundennummer, Rechnungen, Screenshots mit persönlichen Daten).',
     methods: {
       api: 'aus einer Preisliste oder Schnittstelle des Anbieters',
       scrape: 'automatisch von der Preisseite gelesen',

@@ -18,12 +18,23 @@
 #
 # URL-encode the values. Do not rename the file, the ids or the title prefix without changing the
 # link in site/ (the site is German, so the ids and the "[Korrektur]" prefix stay German).
+# The note at the top (issues are public, no personal data) matches REPORT_NOTES in
+# site/src/lib/report.mjs.
 
 name: Price or detail wrong
 description: A value in the table is wrong. Corrections are accepted only with a public source. (Deutsch ist auch willkommen.)
 title: '[Korrektur] '
 labels: ['data']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Issues sind öffentlich.** Bitte keine personenbezogenen Daten eintragen (Name, Adresse, Kundennummer,
+        > Rechnungen, Screenshots mit persönlichen Daten). Ohne GitHub-Konto: E-Mail an hello@chnet.solutions.
+        >
+        > **Issues are public.** Please do not enter personal data (name, address, customer number, invoices,
+        > screenshots with personal data). Without a GitHub account: email hello@chnet.solutions.
+
   - type: markdown
     attributes:
       value: |
@@ -97,7 +108,7 @@ body:
     id: beleg
     attributes:
       label: Additional evidence (optional)
-      description: Archive link (e.g. web.archive.org) or a link to a screenshot.
+      description: Archive link (e.g. web.archive.org) or a link to a screenshot of the provider's page, without personal data.
     validations:
       required: false
 

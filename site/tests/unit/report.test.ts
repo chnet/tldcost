@@ -1,10 +1,14 @@
-// Report routes (src/lib/report.mjs): e-mail while the repository is private, GitHub issue forms
-// after the switch. Only the row (provider, TLD) and the form's field names are prefilled.
+// Report routes (src/lib/report.mjs): GitHub issue forms, e-mail with the same fields as the
+// alternative. Only the row (provider, TLD) and the form's field names are prefilled. Next to every
+// GitHub link: issues are public (no personal data), and the e-mail route (REPORT_NOTES).
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { DE, EN } from '../../src/i18n';
 import { reportLinksFor } from '../../src/lib/report-links.mjs';
 import {
-  NO_GITHUB_HINT,
   REPO_PUBLIC,
+  REPORT_EMAIL,
+  REPORT_NOTES,
   REPORT_VIA,
   correctionUrl,
   repoLink,
@@ -14,8 +18,36 @@ import {
 const params = (href: string) => new URL(href).searchParams;
 
 describe('report routes', () => {
-  it('defaults to e-mail while the repository is private', () => {
-    expect(REPORT_VIA).toBe('mail');
+  it('defaults to the GitHub issue forms (the repository is public)', () => {
+    expect(REPORT_VIA).toBe('github');
+  });
+
+  it('the island texts say the same as REPORT_NOTES, in both languages', () => {
+    expect(DE.m.detail.reportPrivacy).toBe(REPORT_NOTES.de.privacy);
+    expect(EN.m.detail.reportPrivacy).toBe(REPORT_NOTES.en.privacy);
+    expect(DE.m.detail.noGithubHint(REPORT_EMAIL)).toBe(REPORT_NOTES.de.noGithub);
+    expect(EN.m.detail.noGithubHint(REPORT_EMAIL)).toBe(REPORT_NOTES.en.noGithub);
+  });
+
+  it('every issue form opens with the public-issue note (German and English)', () => {
+    for (const form of ['preis-falsch.yml', 'anbieter-vorschlagen.yml']) {
+      const yml = readFileSync(
+        new URL(`../../../.github/ISSUE_TEMPLATE/${form}`, import.meta.url),
+        'utf8',
+      );
+      const body = yml.slice(yml.indexOf('\nbody:\n'));
+      const first = body.slice(0, body.indexOf('\n  - type:', 10)).replace(/\s*\n\s*>?\s*/g, ' ');
+      expect(first, form).toContain('Issues sind öffentlich.');
+      expect(first, form).toContain(
+        'Bitte keine personenbezogenen Daten eintragen (Name, Adresse, Kundennummer, Rechnungen, Screenshots mit persönlichen Daten).',
+      );
+      expect(first, form).toContain('Issues are public.');
+      expect(first, form).toContain(
+        'Please do not enter personal data (name, address, customer number, invoices, screenshots with personal data).',
+      );
+      expect(first, form).toContain(`E-Mail an ${REPORT_EMAIL}`);
+      expect(first, form).toContain(`email ${REPORT_EMAIL}`);
+    }
   });
 
   it('suggest a provider: mail with subject and the fields of the issue form', () => {
@@ -102,10 +134,22 @@ describe('report-links (docs/pages)', () => {
     expect(run('mail', 'tldcost:report/preis').url).toBe(correctionUrl(null, 'mail'));
   });
 
-  it('github: issue forms plus the e-mail route right after the link', () => {
+  it('github: issue forms plus the public-issue note and the e-mail route after the link', () => {
+    const { de, en } = REPORT_NOTES;
     expect(run('github', 'tldcost:report/preis')).toMatchObject({
       url: correctionUrl(null, 'github'),
-      after: [{ type: 'text', value: ` (${NO_GITHUB_HINT})` }],
+      after: [{ type: 'text', value: ` (${de.privacy} ${de.noGithub})` }],
+    });
+    expect(run('github', 'tldcost:report/anbieter?lang=en')).toMatchObject({
+      url: suggestProviderUrl('github'),
+      after: [{ type: 'text', value: ` (${en.privacy} ${en.noGithub})` }],
+    });
+  });
+
+  it('mail: ?lang=en resolves like the German placeholder, nothing added', () => {
+    expect(run('mail', 'tldcost:report/preis?lang=en')).toMatchObject({
+      url: correctionUrl(null, 'mail'),
+      after: [],
     });
   });
 

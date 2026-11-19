@@ -1,7 +1,7 @@
-// Where visitors report wrong data and suggest providers. While the repository is private, GitHub
-// issue links lead visitors to a 404, so the default is e-mail. Switch REPORT_VIA to 'github' when
-// the repository is public: every report link of the site (row detail, "Anbieter fehlt?", the
-// `tldcost:report/...` links in docs/pages) follows this one constant. Nothing about the visitor
+// Where visitors report wrong data and suggest providers. The default is e-mail. The repository is
+// public since 19.11.2026; switching REPORT_VIA to 'github' is a separate decision: every report
+// link of the site (row detail, "Anbieter fehlt?", the `tldcost:report/...` links in docs/pages)
+// follows this one constant. Nothing about the visitor
 // is prefilled, only the row (provider, TLD) and the field names of the issue forms.
 
 /** @typedef {'mail' | 'github'} ReportVia */
@@ -11,12 +11,12 @@ export const REPORT_VIA = 'mail';
 export const REPORT_EMAIL = 'hello@chnet.solutions';
 export const ISSUES_NEW = 'https://github.com/chnet/tldcost/issues/new';
 /**
- * Is github.com/chnet/tldcost public? While it is private, every link into it is a 404, so the
- * site renders repo links as plain text or as a site equivalent (repoLink). Set to true when the
- * repository is public; REPORT_VIA can then switch to 'github' too.
+ * Is github.com/chnet/tldcost public? Yes, since 19.11.2026: repo links go to GitHub. While it was
+ * private, every link into it was a 404, so the site rendered repo links as plain text or as a
+ * site equivalent (repoLink); setting this back to false restores that.
  * @type {boolean}
  */
-export const REPO_PUBLIC = false;
+export const REPO_PUBLIC = true;
 export const REPO_URL = 'https://github.com/chnet/tldcost';
 /** Neutral note where the site would otherwise link the source code. */
 export const REPO_PENDING = 'Der Quellcode wird in Kürze veröffentlicht.';

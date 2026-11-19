@@ -5,8 +5,8 @@ slug: changelog
 
 <!--
 Text für die Changelog-Seite. Manuell gepflegt wird der Abschnitt „Änderungen an der Methodik“.
-Die Datenänderungen stehen ab der Veröffentlichung in der Git-Historie von data/ (ältere Stände im privaten
-Vorgänger-Repository); eine generierte Liste auf der Seite gibt es
+Die Datenänderungen stehen seit der Veröffentlichung am 19.11.2026 in der Git-Historie von data/ (ältere Stände
+im privaten Vorgänger-Repository); eine generierte Liste auf der Seite gibt es
 noch nicht. Kommt sie, diesen Text anpassen.
 -->
 
@@ -15,8 +15,7 @@ noch nicht. Kommt sie, diesen Text anpassen.
 ## Datenänderungen
 
 :::nur-oeffentlich
-<!-- TODO C4: Datum der Veröffentlichung -->
-Ab der Veröffentlichung des Repositorys ist jede Änderung an den Daten von tldcost ein Commit im Ordner [`data/`](tldcost:repo/tree/main/data); die [Git-Historie von `data/`](tldcost:repo/commits/main/data) ist ab da die vollständige Preishistorie. Ältere Stände (seit 13.11.2026) liegen im privaten Vorgänger-Repository. Jeder Commit zeigt den alten und den neuen Wert, die Quelle und den Zeitpunkt.
+Seit der Veröffentlichung des Repositorys am 19.11.2026 ist jede Änderung an den Daten von tldcost ein Commit im Ordner [`data/`](tldcost:repo/tree/main/data); die [Git-Historie von `data/`](tldcost:repo/commits/main/data) ist seitdem die vollständige Preishistorie. Ältere Stände (seit 13.11.2026) liegen im privaten Vorgänger-Repository. Jeder Commit zeigt den alten und den neuen Wert, die Quelle und den Zeitpunkt.
 
 Nach Anbieter oder TLD filtern Sie über den Pfad in der Git-Historie, zum Beispiel:
 
@@ -26,9 +25,8 @@ Nach Anbieter oder TLD filtern Sie über den Pfad in der Git-Historie, zum Beisp
 :::
 
 :::nur-privat
-<!-- TODO C4: Datum der Veröffentlichung -->
 Jede Datenänderung wird versioniert. Den aktuellen Stand mit Datum und Quelle je Wert liefert [`/api/v1/all.json`](/api/v1/all.json).
-Ab der Veröffentlichung des Repositorys ist jede Änderung an den Daten ein Commit im öffentlichen Repository; die Git-Historie ist ab da die vollständige Preishistorie. Ältere Stände (seit 13.11.2026) liegen im privaten Vorgänger-Repository.
+Seit der Veröffentlichung des Repositorys am 19.11.2026 ist jede Änderung an den Daten ein Commit im öffentlichen Repository; die Git-Historie ist seitdem die vollständige Preishistorie. Ältere Stände (seit 13.11.2026) liegen im privaten Vorgänger-Repository.
 :::
 
 ## Arten von Änderungen
@@ -51,3 +49,4 @@ Ab der Veröffentlichung des Repositorys ist jede Änderung an den Daten ein Com
   - die offene Daten-Schnittstelle unter [`/api/v1/`](/api/) (statische JSON-Dateien mit OpenAPI-Beschreibung).
 - 15\. November 2026 — [Portfolio-Rechner](/portfolio/): Gesamtpreis je Anbieter für mehrere Endungen und Anzahlen über 1, 2, 3 oder 5 Jahre, neu registriert oder per Transfer. Neue Regel für den Transfer: Transfergebühr plus Verlängerungspreis ab dem ersten Jahr, außer der Anbieter gibt an, dass der Transfer ein Jahr Laufzeit einschließt (siehe [Methodik](/methodik/#portfolio-rechner)). Die Gesamtkosten der Tabelle ändern sich nicht.
 - 15\. November 2026 — Ja/Nein-Merkmale können jetzt „kostenpflichtig“ sein: Der Anbieter bietet die Leistung nur gegen Aufpreis an. Die Details der Zeile nennen Quelle und, falls angegeben, Preis; in die Gesamtkosten fließt der Aufpreis nicht ein. „ja“ heißt bei diesen Merkmalen: inklusive, ohne Aufpreis. Die Spalte „SSL kostenlos“ heißt jetzt „SSL-Zertifikat“. Schnittstelle: `features.*` können jetzt `"paid"` sein; `schema_version` 2 (siehe [Methodik](/methodik/)).
+- 19\. November 2026 — Repository veröffentlicht: Quellcode und Daten liegen offen im [GitHub-Repository](tldcost:repo/). Jede Datenänderung ist seitdem ein Commit in der [Git-Historie von `data/`](tldcost:repo/commits/main/data); ältere Stände liegen im privaten Vorgänger-Repository.

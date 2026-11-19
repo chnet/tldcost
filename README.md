@@ -5,7 +5,7 @@ A plain table in the style of instances.vantage.sh: pick a TLD, one provider per
 the real total cost over 2/3/5 years plus the contract terms.
 
 **Principles**
-- Open data: all prices are JSON files in `data/`, every value with source, timestamp and evidence hash. The Git history since publication is the audit trail; earlier changes are in the private predecessor repository (Archiv-Issues).
+- Open data: all prices are JSON files in `data/`, every value with source, timestamp and evidence hash. The Git history since publication on 19 November 2026 is the audit trail; earlier changes are in the private predecessor repository (Archiv-Issues).
 - No affiliate links, no tracking, no ratings, no "test winner".
 - Sorting is the user's choice and lives in the URL. Default: total cost over 3 years (see the methodology page).
 - Operator: CHnet Solutions Plus UG, which also sells domains itself under chnet.domains. That offer is listed as a normal row with a visible badge: same data collection, same rules.

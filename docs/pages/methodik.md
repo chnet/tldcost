@@ -123,8 +123,7 @@ Jeder Preis und jede Vertragsbedingung trägt:
 | `evidence_hash` | Prüfsumme der abgerufenen Seite oder Antwort |
 | `confidence` | `high`, `medium` oder `low`; Handeingaben ohne Beleg sind immer `low` |
 
-<!-- TODO C4: Datum der Veröffentlichung -->
-Ab der Veröffentlichung des Repositorys ist jede Änderung an den Daten ein Commit im öffentlichen Repository; die Git-Historie ist ab da die vollständige Preishistorie. Ältere Stände (seit 13.11.2026) liegen im privaten Vorgänger-Repository. Dazu führt `data/history/` je Angebot einen Preisverlauf mit einem Eintrag je Preisänderung (Datum und Quelle); er beginnt mit dem Datenstand vom November 2026, ältere Preise enthält er nicht.
+Seit der Veröffentlichung des Repositorys am 19.11.2026 ist jede Änderung an den Daten ein Commit im öffentlichen Repository; die Git-Historie ist seitdem die vollständige Preishistorie. Ältere Stände (seit 13.11.2026) liegen im privaten Vorgänger-Repository. Dazu führt `data/history/` je Angebot einen Preisverlauf mit einem Eintrag je Preisänderung (Datum und Quelle); er beginnt mit dem Datenstand vom November 2026, ältere Preise enthält er nicht.
 
 ## Erhebung und Aktualisierung
 

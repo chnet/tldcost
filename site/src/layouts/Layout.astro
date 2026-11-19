@@ -55,7 +55,8 @@ const langLinks = [
   { lang: 'de', label: 'DE', name: 'Deutsch', href: lang === 'de' ? (noindex ? '/' : path) : otherHref },
   { lang: 'en', label: 'EN', name: 'English', href: lang === 'en' ? (noindex ? '/en/' : path) : otherHref },
 ];
-// repo link only while github.com/chnet/tldcost is public (REPO_PUBLIC, src/lib/report.mjs)
+// repo link to github.com/chnet/tldcost (public since 19.11.2026); null if REPO_PUBLIC were false
+// (src/lib/report.mjs)
 const repoHref = repoLink();
 // text pages from docs/pages/ (German) and docs/pages/en/ (English translations)
 const pages = (await getCollection('pages')).map((p) => p.data);

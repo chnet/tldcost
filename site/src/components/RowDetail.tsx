@@ -69,14 +69,14 @@ export default function RowDetail({
   const t = L.m.detail;
   const d = row.detail;
   const s = d.stated;
-  // the price history's chunk, fetched once a row with a history is opened (same origin)
-  const [History, setHistory] = useState<HistoryView | null>(null);
+  // the price history's chunk, fetched once a row with a history is opened (same origin); if
+  // that fails (offline, missing file) the section says so and the rest of the detail stays
+  const [History, setHistory] = useState<HistoryView | 'failed' | null>(null);
   useEffect(() => {
-    // a failed chunk load leaves the section out; the rest of the detail stays
     if (d.history) {
       void import('./RowHistory').then(
         (m) => setHistory(() => m.default),
-        () => undefined,
+        () => setHistory('failed'),
       );
     }
   }, [d.history]);
@@ -139,7 +139,13 @@ export default function RowDetail({
         </dl>
       </section>
 
-      {d.history && History && <History h={d.history} vat={vat} />}
+      {d.history && History === 'failed' && (
+        <section class="tc-history">
+          <h2>{t.historyHeading}</h2>
+          <p class="tc-unit">{t.historyLoadError}</p>
+        </section>
+      )}
+      {d.history && History && History !== 'failed' && <History h={d.history} vat={vat} />}
 
       <section>
         <h2>{t.contractHeading}</h2>

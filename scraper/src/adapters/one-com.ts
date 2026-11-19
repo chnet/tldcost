@@ -14,6 +14,13 @@
 // names no end date for the offers (valid_until null) and no separate setup fee: "Die
 // Registrierungs- und Umzugsgebühren beinhalten die Jahresgebühr für das erste Vertragsjahr."
 // (column tooltip; setup 0; see docs/research/providers.md, one.com setup_fee).
+//
+// The page shows the prices for the visitor's country, detected on the server from the IP address
+// (the English page /en/domain/prices from a German address also says countryCode DE and "All
+// prices include 19% VAT"); there is no public country or VAT selection. The inline onecomConfig
+// must therefore say countryCode 'DE', showVAT 'true' and vatPercentage '19', besides the gross
+// note: any other country's display throws instead of being written, and the error names what the
+// page said, so a failed run shows the country the server detected.
 import { evidenceHash } from '../evidence.js';
 import { isoSeconds } from '../tlds.js';
 import { newResult, type Adapter } from '../types.js';
@@ -27,6 +34,8 @@ export const ONECOM_PRICE_LIST = 'https://www.one.com/de/domains/preise';
 const UNVERIFIED_TERM = new Set(['ai']);
 
 const GROSS_NOTE = 'Alle Preise inkl. 19% MwSt.';
+/** GROSS_NOTE with tolerant whitespace (line breaks in the markup, "19 %"). */
+const GROSS_NOTE_PATTERN = /Alle Preise inkl\.\s*19\s?%\s*MwSt\./;
 const FIRST_TERM_NOTE = 'Sonderangebote gelten nur für den ersten Vertragszeitraum.';
 
 /** "17,99" -> 1799, "4,-" -> 400, "2.791,09" -> 279109. */
@@ -43,6 +52,42 @@ const plain = (html: string) =>
     .replace(/&nbsp;|&#160;|\u00a0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+
+/** `onecomConfig.<key> = '<value>';` from the inline page config, or null. */
+const configValue = (html: string, key: string): string | null =>
+  new RegExp(`onecomConfig\\.${key} = (['"])([^'"\\n]*)\\1;`).exec(html)?.[2] ?? null;
+
+/**
+ * Throws unless the page is the German price display: inline onecomConfig with countryCode 'DE',
+ * showVAT 'true' and vatPercentage '19', and the note "Alle Preise inkl. 19% MwSt." under the table.
+ */
+export function checkGermanVat(html: string): void {
+  const display = {
+    countryCode: configValue(html, 'countryCode'),
+    showVAT: configValue(html, 'showVAT'),
+    vatPercentage: configValue(html, 'vatPercentage'),
+  };
+  const notice = /<p class="notices">([\s\S]*?)<\/p>/.exec(html);
+  const noticeText = notice ? plain(notice[1] as string).slice(0, 160) : null;
+  const said =
+    `countryCode ${JSON.stringify(display.countryCode)}, showVAT ${JSON.stringify(display.showVAT)}, ` +
+    `vatPercentage ${JSON.stringify(display.vatPercentage)}, notice ${JSON.stringify(noticeText)}`;
+  if (Object.values(display).some((v) => v === null)) {
+    throw new Error(
+      `price list without the onecomConfig country and VAT settings (${said}): layout changed`,
+    );
+  }
+  if (
+    display.countryCode !== 'DE' ||
+    display.showVAT !== 'true' ||
+    display.vatPercentage !== '19'
+  ) {
+    throw new Error(`not the German price display (${said}): country detection changed the prices`);
+  }
+  if (!GROSS_NOTE_PATTERN.test(plain(html))) {
+    throw new Error(`price list without "${GROSS_NOTE}" (${said}): VAT statement changed`);
+  }
+}
 
 export interface OneComCell {
   /** Price shown now (without hosting). */
@@ -74,9 +119,7 @@ export interface OneComRow {
 
 /** TLD (without dot) -> row. Throws when the page no longer looks like the price list. */
 export function parsePriceList(html: string): Map<string, OneComRow> {
-  if (!plain(html).includes(GROSS_NOTE)) {
-    throw new Error(`price list without "${GROSS_NOTE}": layout or VAT statement changed`);
-  }
+  checkGermanVat(html);
   const rows = new Map<string, OneComRow>();
   for (const m of html.matchAll(/<tr data-pub-price-row>([\s\S]*?)<\/tr>/g)) {
     const row = m[1] as string;

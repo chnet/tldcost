@@ -6,7 +6,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -32,7 +32,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -58,7 +58,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -84,7 +84,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -110,7 +110,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -136,7 +136,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -162,7 +162,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -188,7 +188,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -214,7 +214,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -240,7 +240,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -266,7 +266,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -292,7 +292,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -318,7 +318,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -344,7 +344,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -370,7 +370,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -393,7 +393,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",
@@ -416,7 +416,7 @@ exports[`one.com adapter > maps the public price list (gross, per year, first-ye
     "currency": "EUR",
     "evidence": {
       "confidence": "high",
-      "evidence_hash": "sha256:5babb40ca7ee5287f9afcd9d8ea85fdf216b505054a11f60eb36d6e0ab4520fd",
+      "evidence_hash": "sha256:96a6373f1c125d0f43f5f925140ebedfe83216c1b837f97f63bb66098cd67cee",
       "fetched_at": "2026-11-13T06:00:00Z",
       "method": "scrape",
       "source_url": "https://www.one.com/de/domains/preise",

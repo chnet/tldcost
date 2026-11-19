@@ -22,9 +22,11 @@ const latin1 = (p: string) =>
 const LIST = latin1('checkdomain/preisliste.html');
 const DOMAINS = latin1('checkdomain/domains.html');
 const HTML = 'text/html; charset=ISO-8859-1';
-// TLD pages, trimmed to their footnote list: read when the hint of the domain data does not match
-const COM_PAGE = latin1('checkdomain/com-domain.html');
-const AT_PAGE = latin1('checkdomain/at-domain.html');
+// TLD pages (served as UTF-8), trimmed to their footnote list: read when the hint of the domain
+// data does not match
+const utf8 = (p: string) => readFileSync(join(import.meta.dirname, 'fixtures', p), 'utf8');
+const COM_PAGE = utf8('checkdomain/com-domain.html');
+const AT_PAGE = utf8('checkdomain/at-domain.html');
 const COM_URL = 'https://www.checkdomain.de/com-domain/';
 const AT_URL = 'https://www.checkdomain.de/at-domain/';
 
@@ -41,11 +43,16 @@ const run = (
   tldPages: Record<string, string> = { [COM_URL]: COM_PAGE, [AT_URL]: AT_PAGE },
   requested: string[] = [],
 ) => {
-  const body = (s: string) => new Uint8Array(Buffer.from(s, 'latin1'));
-  const pages: Record<string, Uint8Array> = {
+  const body = (s: string, type = HTML) => ({
+    bytes: new Uint8Array(Buffer.from(s, type === HTML ? 'latin1' : 'utf8')),
+    type,
+  });
+  const pages: Record<string, { bytes: Uint8Array; type: string }> = {
     [CHECKDOMAIN_PRICE_LIST]: body(list),
     [CHECKDOMAIN_ENDPOINT]: body(domains),
-    ...Object.fromEntries(Object.entries(tldPages).map(([u, p]) => [u, body(p)])),
+    ...Object.fromEntries(
+      Object.entries(tldPages).map(([u, p]) => [u, body(p, 'text/html; charset=UTF-8')]),
+    ),
   };
   const fetch = (async (input: URL | string) => {
     const url = String(input);
@@ -55,7 +62,7 @@ const run = (
     }
     const page = pages[url];
     return page
-      ? new Response(page, { status: 200, headers: { 'content-type': HTML } })
+      ? new Response(page.bytes, { status: 200, headers: { 'content-type': page.type } })
       : new Response(new TextEncoder().encode('not found'), { status: 404 });
   }) as typeof globalThis.fetch;
   const { http } = testHttp({}, { fetch });
@@ -336,11 +343,20 @@ describe('checkdomain adapter', () => {
     expect(missing.failed).toHaveLength(1);
     expect(missing.failed[0]?.reason).toMatch(/^promo hint does not match the price data: /);
     expect(missing.failed[0]?.reason).toContain(`${hint219}; TLD page: `);
-    // the page footnote with other amounts, or without any hint
-    for (const page of [COM_PAGE.replace('2,39EUR', '2,49EUR'), '<p></p>']) {
-      const result = await run(['com'], LIST, DOMAINS, { [COM_URL]: page });
+    // the page footnote with other amounts, or without any hint: the reason names what it said
+    for (const [page, said] of [
+      [
+        COM_PAGE.replace('2,39EUR', '2,49EUR'),
+        '"Die .com-Domain kostet im ersten Jahr nur 0,07EUR/Monat, danach 2,49EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."',
+      ],
+      ['<p></p>', 'no promo hint'],
+    ]) {
+      const result = await run(['com'], LIST, DOMAINS, { [COM_URL]: page as string });
       expect(result.failed).toEqual([
-        { tld: 'com', reason: `promo hint does not match the price data: ${hint219}` },
+        {
+          tld: 'com',
+          reason: `promo hint does not match the price data: ${hint219}; TLD page: ${said}`,
+        },
       ]);
       expect(result.warnings).toEqual([]);
     }
@@ -357,5 +373,16 @@ describe('checkdomain adapter', () => {
     const at = await run(['at'], LIST, domainsOther, { [AT_URL]: atOther });
     expect(at.failed[0]?.reason).toMatch(/^promo hint does not match the price data/);
     expect(at.offers).toEqual([]);
+    // another TLD named with this TLD's amounts, but the TLD page has no hint (layout changed?):
+    // no regular-price fallback on the domain data alone
+    const noFootnotes = await run(['at'], LIST, DOMAINS, { [AT_URL]: '<p></p>' });
+    expect(noFootnotes.failed).toEqual([
+      {
+        tld: 'at',
+        reason:
+          'promo hint does not match the price data: "Die .de-Domain kostet im ersten Jahr nur 0,49EUR/Monat, danach 2,99EUR/Monat. Das Angebot ist limitiert auf 1 Domain pro Kunde."; TLD page: no promo hint',
+      },
+    ]);
+    expect(noFootnotes.offers).toEqual([]);
   });
 });

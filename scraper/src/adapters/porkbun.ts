@@ -14,8 +14,8 @@ export const PORKBUN_SOURCE_URL = 'https://porkbun.com/products/domains';
  * TLDs with a multi-year minimum registration where it is not verified whether the API price is
  * per year or per term. Left out until checked by hand (.ai: 2-year minimum at the registry).
  */
-// TODO (open issue): verify in the browser whether Porkbun's .ai registration (82.70) is per year or per
-// 2-year term (transfer 165.09), then map it with term_years and drop it from this set.
+// TODO (chnet/tldcost#28): verify in the browser whether Porkbun's .ai registration (82.70) is per
+// year or per 2-year term (transfer 165.09), then map it with term_years and drop it from this set.
 const UNVERIFIED_TERM = new Set(['ai']);
 
 interface PorkbunPrice {

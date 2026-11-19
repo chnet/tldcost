@@ -96,8 +96,9 @@ function fromJson(ctx: AdapterContext, res: HttpResponse, result: AdapterResult)
       result.notOffered.push(tld);
       continue;
     }
-    // TODO (open issue): verify in the browser whether INWX prices with createPeriod > 1 (.ai: 100 for 2
-    // years) are per year or per period, then map them with term_years instead of skipping.
+    // TODO (chnet/tldcost#28): verify in the browser whether INWX prices with createPeriod > 1
+    // (.ai: 100 for 2 years) are per year or per period, then map them with term_years instead of
+    // skipping.
     if (t.createPeriod !== 1 || t.renewalPeriod !== 1) {
       result.skipped.push({
         tld,

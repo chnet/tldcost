@@ -2,7 +2,7 @@
 title: Privacy policy
 slug: datenschutz
 lang: en
-source_sha256: '5e03b29bc566ea3613d3b80624303d2390cc4b51feb1db1cfb5c7d9805061e67'
+source_sha256: 'fc8a5b05b57f2ebb230b36d731c0d141cc1491bf4f7c4cd35ed14fc4ef323c79'
 ---
 
 <!--
@@ -75,7 +75,7 @@ The price data is also available as static files under `/api/v1/`. The interface
 
 The repository chnet/tldcost has been public since 19 Nov 2026. The “Report an error” link leads to a form on GitHub; without a GitHub account you can reach us by email, and section 8 applies to that. On GitHub we take corrections and notes as issues and pull requests. For GitHub:
 
-- The link passes only details of the table row (provider, TLD) to the email or to the form on GitHub, no data about you.
+- The link passes only details of the table row (provider, TLD) to the form on GitHub, no data about you.
 - To contribute you need an account with GitHub (GitHub, Inc., USA). The [GitHub General Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) applies on GitHub.
 - Issues and pull requests are **public** and show your GitHub name. Please do not enter personal data there that should not be public.
 - We process your details to check the report and to correct the data. Legal basis: Art. 6(1)(f) GDPR. Our legitimate interest is correct and traceable data.

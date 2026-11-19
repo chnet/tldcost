@@ -72,7 +72,7 @@ Die Preisdaten stehen auch als statische Dateien unter `/api/v1/` bereit. Die Sc
 
 Das Repository chnet/tldcost ist seit dem 19.11.2026 öffentlich. Der Link „Fehler melden“ führt zu einem Formular bei GitHub; ohne GitHub-Konto erreichen Sie uns per E-Mail, dafür gilt Abschnitt 8. Bei GitHub nehmen wir Korrekturen und Hinweise als Issues und Pull Requests entgegen. Für GitHub gilt:
 
-- Der Link überträgt nur Angaben zur Tabellenzeile (Anbieter, TLD) in die E-Mail bzw. an das Formular bei GitHub, keine Daten über Sie.
+- Der Link überträgt nur Angaben zur Tabellenzeile (Anbieter, TLD) an das Formular bei GitHub, keine Daten über Sie.
 - Für einen Beitrag brauchen Sie ein Konto bei GitHub (GitHub, Inc., USA). Bei GitHub gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement).
 - Issues und Pull Requests sind **öffentlich** und zeigen Ihren GitHub-Namen. Bitte geben Sie dort keine persönlichen Daten an, die nicht öffentlich sein sollen.
 - Wir verarbeiten Ihre Angaben, um den Hinweis zu prüfen und die Daten zu korrigieren. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse sind korrekte und nachvollziehbare Daten.

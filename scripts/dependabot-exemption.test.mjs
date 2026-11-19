@@ -1,7 +1,7 @@
 // dependabot-exemption.test.mjs — the narrow Dependabot exception of check-commit-identity.mjs
 // (owner decisions 2026-11-15 and 2026-11-19): passes only for Dependabot's own GitHub-signed
 // commits on its branch that only bump existing dependency versions (root, workspaces, the standalone
-// tools/lhci lock, transitive lock-only updates) or action pin shas; every refusal case fails. Real git
+// tools/lhci lock, lock-only resolution updates within the declared ranges) or action pin shas; every refusal case fails. Real git
 // in throw-away repos, the GitHub API is a loopback stub (TLDCOST_GITHUB_API), no network.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,6 +24,7 @@ import {
   lockOnlyFinding,
   manifestMatcher,
   packageJsonFinding,
+  packageKeyMatcher,
   packageLockFinding,
   pinOnlyDiff,
   standaloneManifestDir,
@@ -331,14 +332,6 @@ test('refused: package-lock.json resolved outside the npm registry, a moved link
         integrity: 'sha512-CCCC',
       },
     },
-    // a name segment starting with '.'
-    {
-      'node_modules/..': {
-        version: '1.0.0',
-        resolved: `${REG}/../-/..-1.0.0.tgz`,
-        integrity: 'sha512-CCCC',
-      },
-    },
     {
       'node_modules/react': {
         name: 'evil-pkg',
@@ -356,6 +349,21 @@ test('refused: package-lock.json resolved outside the npm registry, a moved link
       /without its own registry.npmjs.org tarball and sha512 integrity/,
     );
   }
+  // a name segment starting with '.': no package key (refused before the tarball check)
+  await refused(
+    {
+      'package.json': rootWith({ dependencies: { 'left-pad': '^1.3.0' } }),
+      'package-lock.json': lockWith({
+        ...bumpedLeftPad,
+        'node_modules/..': {
+          version: '1.0.0',
+          resolved: `${REG}/../-/..-1.0.0.tgz`,
+          integrity: 'sha512-CCCC',
+        },
+      }),
+    },
+    /an added or changed key that is not node_modules\/<name> at the root or in a workspace/,
+  );
   await refused(
     {
       'package.json': rootWith({ dependencies: { 'left-pad': '^1.3.0' } }),
@@ -524,7 +532,7 @@ test('refused: lockfile – sha1 on a new entry, a changed entry without resolve
   );
 });
 
-test('positive: lock-only (transitive) updates of the root lock and the tools/lhci lock pass', async () => {
+test('positive: lock-only resolution updates (direct and transitive) of the root lock and tools/lhci pass', async () => {
   const r = repo();
   // root lock alone: left-pad 1.0.0 -> 1.3.0 inside the unchanged range ^1.0.0
   r.commit({ 'package-lock.json': lockWith(bumpedLeftPad) });
@@ -541,10 +549,19 @@ test('positive: lock-only (transitive) updates of the root lock and the tools/lh
       }),
     }),
   });
+  // root lock alone: packages in workspace directories and nested node_modules
+  r.commit({
+    'package-lock.json': lockWith({
+      ...bumpedLeftPad,
+      'site/node_modules/a': reg('a', '1.0.0'),
+      'packages/core/node_modules/@s/p': reg('@s/p', '2.0.0'),
+      'node_modules/left-pad/node_modules/b': reg('b', '3.0.0'),
+    }),
+  });
   const res = await check(r);
   assert.equal(res.code, 0, res.out);
-  assert.match(res.out, /Dependabot exception: 3 commit\(s\)/);
-  assert.equal(res.seen.length, 3);
+  assert.match(res.out, /Dependabot exception: 4 commit\(s\)/);
+  assert.equal(res.seen.length, 4);
   assert.ok(!res.out.includes(TOKEN));
 });
 
@@ -633,6 +650,17 @@ test('refused: lock-only change of a root, workspace or link entry (no package.j
     },
     new RegExp(`tools/lhci/package-lock.json ${re.source}`),
   );
+  // a tools/lhci package.json change does not pair with the root lock
+  await refused(
+    {
+      'tools/lhci/package.json': json({ ...LHCI, devDependencies: { '@lhci/cli': '0.16.2' } }),
+      'package-lock.json': lockWith({
+        ...bumpedLeftPad,
+        '': { ...LOCK.packages[''], dependencies: { 'left-pad': '^1.3.0' } },
+      }),
+    },
+    re,
+  );
   // a root package.json change does not pair with the tools/lhci lock
   await refused(
     {
@@ -642,6 +670,36 @@ test('refused: lock-only change of a root, workspace or link entry (no package.j
       }),
     },
     re,
+  );
+});
+
+test('refused: package keys of another shape (with or without a package.json change)', async () => {
+  const shape =
+    /an added or changed key that is not node_modules\/<name> at the root or in a workspace/;
+  const bump = { 'package.json': rootWith({ dependencies: { 'left-pad': '^1.3.0' } }) };
+  for (const key of [
+    'xnode_modules/a',
+    'docs/node_modules/a',
+    'packages/core/x/node_modules/a',
+    'node_modules/a/b',
+    'node_modules/a/node_modules/',
+  ]) {
+    await refused({ ...bump, 'package-lock.json': lockWith({ [key]: reg('a', '1.0.0') }) }, shape);
+    await refused({ 'package-lock.json': lockWith({ [key]: reg('a', '1.0.0') }) }, shape);
+  }
+  // a standalone lock has no workspace directories
+  await refused(
+    { 'tools/lhci/package-lock.json': lhciLockWith({ 'site/node_modules/a': reg('a', '1.0.0') }) },
+    new RegExp(`tools/lhci/package-lock.json: ${shape.source}`),
+  );
+});
+
+test('refused: an own "__proto__" key in the lock, with a package.json change', async () => {
+  const bump = { 'package.json': rootWith({ dependencies: { 'left-pad': '^1.3.0' } }) };
+  const proto = JSON.parse('{"__proto__": {}}');
+  await refused(
+    { ...bump, 'package-lock.json': lockWith({ ...bumpedLeftPad, ...proto }) },
+    /a root or workspace entry was added/,
   );
 });
 
@@ -781,4 +839,42 @@ test('helpers: pin lines, pairing, diff parsing, manifests, versions, lock, API 
     /root, workspace or link entry changed/,
   );
   assert.match(lockOnlyFinding('not json', '{}'), /not valid JSON/);
+  // a non-package key counts as direct: it must stay byte-identical
+  assert.match(
+    lockOnlyFinding(json(LOCK), lockWith({ 'docs/node_modules/a': reg('a', '1.0.0') })),
+    /root, workspace or link entry changed/,
+  );
+  // package keys: root or a workspace directory, names per segment
+  const k = packageKeyMatcher(['packages/*', 'site']);
+  for (const key of [
+    'node_modules/a',
+    'node_modules/@s/p',
+    'node_modules/a/node_modules/@s/p',
+    'site/node_modules/a',
+    'packages/core/node_modules/a/node_modules/b',
+  ]) {
+    assert.ok(k(key), key);
+  }
+  for (const key of [
+    '',
+    'site',
+    'xnode_modules/a',
+    'docs/node_modules/a',
+    'packages/node_modules/a',
+    'packages/core/x/node_modules/a',
+    'node_modules/a/b',
+    'node_modules/../a',
+    'node_modules/a/node_modules/',
+    'node_modules/@s/p/q',
+  ]) {
+    assert.ok(!k(key), key);
+  }
+  assert.ok(!packageKeyMatcher()('site/node_modules/a'));
+  // __proto__: an own key is an added entry, not Object.prototype
+  const protoLock = json({
+    ...LOCK,
+    packages: { ...LOCK.packages, ...JSON.parse('{"__proto__": {}}') },
+  });
+  assert.ok(protoLock.includes('"__proto__"'));
+  assert.match(packageLockFinding(json(LOCK), protoLock), /a root or workspace entry was added/);
 });

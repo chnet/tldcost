@@ -19,7 +19,7 @@ export const ISSUES_NEW = 'https://github.com/chnet/tldcost/issues/new';
  */
 export const REPO_PUBLIC = true;
 export const REPO_URL = 'https://github.com/chnet/tldcost';
-/** GitHub Sponsors profile of the operator: voluntary donations, no influence on listing or ranking (Methodik). A plain link, nothing is loaded from GitHub. */
+/** GitHub Sponsors profile of the operator: voluntary support, no influence on listing or ranking (Methodik). A plain link, nothing is loaded from GitHub. */
 export const SPONSORS_URL = 'https://github.com/sponsors/chnet';
 /** Neutral note where the site would otherwise link the source code. */
 export const REPO_PENDING = 'Der Quellcode wird in Kürze veröffentlicht.';

@@ -29,7 +29,7 @@ export const siteDe = {
     data: 'Daten',
     noTracking: 'Keine Cookies, kein Tracking, keine Affiliate-Links',
     repoPending: 'Der Quellcode wird in Kürze veröffentlicht.',
-    /** Footer link to GitHub Sponsors (voluntary donations). */
+    /** Footer link to GitHub Sponsors (voluntary support). */
     support: 'Unterstützen',
     switchLabel: 'Sprache',
     /** Footer suffix of a page that exists only in German (never shown on German pages). */

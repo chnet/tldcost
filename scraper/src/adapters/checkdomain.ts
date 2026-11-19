@@ -19,9 +19,10 @@
 // … 0,49 … 2,99“ in both sources) states no promo for this TLD: the regular price applies, with a
 // warning, but only when the TLD page has such a hint too (a page without one may be a new layout).
 // Anything else fails the TLD, naming what the page said. evidence_hash stays the hash of the domain
-// data (prices and promo amounts); a hint taken from the TLD page is named in the run warnings. Every TLD must match the price list in
-// price, setup and minimum term, or it fails. TLDs with a minimum term other than 12 months (.ai: 24)
-// are skipped: the payment per term with a first-year promo inside it is not stated.
+// data (prices and promo amounts); a hint taken from the TLD page is named in the run warnings.
+// Every TLD must match the price list in price, setup and minimum term, or it fails. TLDs with a
+// minimum term other than 12 months (.ai: 24) are skipped: the payment per term with a first-year
+// promo inside it is not stated.
 import { evidenceHash } from '../evidence.js';
 import type { HttpResponse } from '../http.js';
 import { toCents } from '../money.js';

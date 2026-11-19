@@ -2,7 +2,11 @@
 // with a price card at the top: monthly price, "für 12 Monate" / "12 Monate nur" plus
 // "danach X € /Mon." for a first-year price, "Einrichtung: X €", and the order button
 // data-buy="STRATO_DOMAIN_<TLD>[_AKTION]_VLZ12" (VLZ12: 12-month contract term). The cards of other
-// TLDs on the same page are ignored. robots.txt only disallows /apps/ and /error/. The AGB (17.90)
+// TLDs on the same page are ignored. Since 2026-11-19 the cards of TLDs without a setup fee have no
+// "Einrichtung" line (.de: "danach 1 € /Mon." only); the setup fee is then taken from the row
+// "Einrichtungsgebühr | 0 €" of the product table on the same page (header "TLD | .de"), and the
+// run reports a warning that quotes it. With neither the card line nor the table row, or when
+// both are there and differ, the TLD fails. robots.txt only disallows /apps/ and /error/. The AGB (17.90)
 // say nothing about automated access to the website. Domains are sold stand-alone (bundling rule
 // Archiv-Issue 75 not affected): "Sobald sie im Warenkorb ist, können Sie die ausgewählte Domain kaufen.
 // Optional kombinieren Sie Ihre neue Domain auch mit einer der STRATO Website-Lösungen" (domain-kaufen).
@@ -51,6 +55,48 @@ export interface StratoCard {
   /** First-year term as shown ("für 12 Monate" / "12 Monate nur"); null without a "danach" price. */
   term: string | null;
   setup: number;
+  /** Where the setup fee was read: the card line or the product table row, with its text. */
+  setupSource: { from: 'card' | 'table'; text: string };
+}
+
+const TABLE_SETUP = 'Einrichtungsgebühr';
+
+/**
+ * The "Einrichtungsgebühr" row of the product table of `tld` (a table whose header is exactly
+ * "TLD" | ".<tld>"); null when the page has no such table. Throws when there are several such
+ * tables, or the row is missing, doubled or not "<amount> €".
+ */
+export function tableSetup(html: string, tld: string): { cents: number; text: string } | null {
+  const cellsOf = (row: string, tag: string) =>
+    [...row.matchAll(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)</${tag}>`, 'g'))].map((m) =>
+      plain(m[1] as string),
+    );
+  const tables = [...html.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)]
+    .map((m) => m[1] as string)
+    .filter((table) => {
+      const head = cellsOf(table, 'th');
+      return head.length === 2 && head[0] === 'TLD' && head[1] === `.${tld}`;
+    });
+  if (tables.length === 0) return null;
+  if (tables.length > 1) {
+    throw new Error(`expected 1 product table for .${tld}, found ${tables.length}`);
+  }
+  const rows = [...(tables[0] as string).matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)]
+    .map((m) => cellsOf(m[1] as string, 'td'))
+    .filter((cells) => cells[0] === TABLE_SETUP);
+  if (rows.length !== 1) {
+    throw new Error(
+      `expected 1 "${TABLE_SETUP}" row in the .${tld} product table, found ${rows.length}`,
+    );
+  }
+  const cells = rows[0] as string[];
+  const amount = cells.length === 2 ? /^(\S+) €$/.exec(cells[1] as string)?.[1] : undefined;
+  if (amount === undefined) {
+    throw new Error(
+      `"${TABLE_SETUP}" row ${JSON.stringify(cells.join(' | '))} is not "<amount> €"`,
+    );
+  }
+  return { cents: euroCents(amount), text: `${TABLE_SETUP} | ${cells[1]}` };
 }
 
 /** The price card of `tld` on its product page. Throws when the card is missing or not as expected. */
@@ -92,8 +138,26 @@ export function parseCard(html: string, tld: string): StratoCard {
   const disclaimer = plain(
     /<div class="pricecard__plandisclaimer">([\s\S]*?)<\/div>/.exec(body)?.[1] ?? '',
   );
-  const setup = /Einrichtung: (\S+) €/.exec(disclaimer)?.[1];
-  if (setup === undefined) throw new Error('setup fee missing');
+  const cardSetup = /Einrichtung: (\S+) €/.exec(disclaimer);
+  const table = tableSetup(html, tld);
+  let setup: number;
+  let setupSource: StratoCard['setupSource'];
+  if (cardSetup) {
+    setup = euroCents(cardSetup[1] as string);
+    setupSource = { from: 'card', text: cardSetup[0] };
+    if (table && table.cents !== setup) {
+      throw new Error(
+        `setup fee on the card ("${cardSetup[0]}") differs from the product table ("${table.text}")`,
+      );
+    }
+  } else if (table) {
+    setup = table.cents;
+    setupSource = { from: 'table', text: table.text };
+  } else {
+    throw new Error(
+      `setup fee missing: no "Einrichtung: X €" on the card and no .${tld} product table with "${TABLE_SETUP}"`,
+    );
+  }
   const afterText = /danach (\S+) € \/Mon\./.exec(disclaimer)?.[1];
   if ((term === undefined) !== (afterText === undefined)) {
     throw new Error(
@@ -103,7 +167,7 @@ export function parseCard(html: string, tld: string): StratoCard {
   if (term !== undefined && !FIRST_YEAR.has(term)) throw new Error(`unknown term "${term}"`);
   const after = afterText === undefined ? null : euroCents(afterText);
   if (after !== null && after < current) throw new Error('first-year price above the later price');
-  return { current, after, term: term ?? null, setup: euroCents(setup) };
+  return { current, after, term: term ?? null, setup, setupSource };
 }
 
 /** 333 -> "3,33", 200 -> "2", 1250 -> "12,50" (as the cards show it). */
@@ -173,6 +237,11 @@ export const strato: Adapter = {
         if (card.after !== null && card.after > card.current && !promoNote) {
           throw new Error(
             `first-year price without the note "${PROMO_NOTE}" on ${STRATO_OVERVIEW}`,
+          );
+        }
+        if (card.setupSource.from === 'table') {
+          result.warnings.push(
+            `.${tld}: setup fee from the product table, the price card has no "Einrichtung" line: ${JSON.stringify(card.setupSource.text)}`,
           );
         }
         result.offers.push(toOffer(tld, card, res.bytes, isoSeconds(ctx.now())));

@@ -6,6 +6,7 @@ import {
   strato,
   STRATO_OVERVIEW,
   stratoPage,
+  tableSetup,
 } from '../src/adapters/strato.js';
 import { ctxFor, fixture, testHttp, type Routes } from './helpers.js';
 
@@ -201,6 +202,93 @@ describe('STRATO adapter', () => {
       after: null,
       term: null,
       setup: 0,
+      setupSource: { from: 'card', text: 'Einrichtung: 0 €' },
     });
+  });
+});
+
+describe('STRATO setup fee: price card line or product table', () => {
+  // .de as served on 2026-11-19: the card has no "Einrichtung" line, the product table has
+  // "Einrichtungsgebühr | 0 €".
+  const DE = fixture('strato/de.html');
+  const TABLE = /<table\b[\s\S]*?<\/table>/.exec(DE)?.[0] ?? '';
+  const one = (body: string) => run({ [stratoPage('de')]: { body } }, ['de']);
+
+  it('takes the setup fee from the product table when the card has no line, with a warning', async () => {
+    expect(DE).not.toMatch(/Einrichtung:/);
+    expect(TABLE).toContain('Einrichtungsgebühr');
+    const result = await one(DE);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([
+      '.de: setup fee from the product table, the price card has no "Einrichtung" line: "Einrichtungsgebühr | 0 €"',
+    ]);
+    expect(result.offers[0]).toMatchObject({
+      tld: 'de',
+      price: { unit: 'month', setup: 0, year1: 5, year1_regular: null, renewal: 100 },
+      promo: { conditions: `Aktionspreis „für 12 Monate“ laut Preiskarte. ${PROMO_NOTE}` },
+    });
+    expect(parseCard(DE, 'de').setupSource).toEqual({
+      from: 'table',
+      text: 'Einrichtungsgebühr | 0 €',
+    });
+  });
+
+  it('takes any amount from the table row', () => {
+    const page =
+      card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br>' }) +
+      TABLE.replace('0 €', '2,50 €');
+    expect(parseCard(page, 'de')).toMatchObject({
+      setup: 250,
+      setupSource: { from: 'table', text: 'Einrichtungsgebühr | 2,50 €' },
+    });
+  });
+
+  it('prefers the card line when the table agrees, without a warning', async () => {
+    const result = await one(card() + TABLE);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    expect(result.offers[0]?.price.setup).toBe(0);
+    expect(parseCard(card() + TABLE, 'de').setupSource).toEqual({
+      from: 'card',
+      text: 'Einrichtung: 0 €',
+    });
+  });
+
+  it('fails when the card line and the table differ, or neither is there', async () => {
+    const noLine = card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br>' });
+    const cases: [string, string][] = [
+      [
+        card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br> Einrichtung: 2,50 €' }) +
+          TABLE,
+        'setup fee on the card ("Einrichtung: 2,50 €") differs from the product table ("Einrichtungsgebühr | 0 €")',
+      ],
+      [DE.replace(TABLE, ''), 'setup fee missing'],
+      [noLine, 'setup fee missing'],
+      // a table of another TLD is not the product table of .de
+      [noLine + TABLE.replace('>.de<', '>.com<'), 'setup fee missing'],
+      [
+        noLine + TABLE.replace('Einrichtungsgebühr', 'Einrichtung'),
+        'expected 1 "Einrichtungsgebühr" row in the .de product table, found 0',
+      ],
+      [noLine + TABLE.replace('0 €', 'kostenlos'), 'is not "<amount> €"'],
+      [
+        noLine + TABLE.replace('0 €', '0 €</td><td>einmalig'),
+        'row "Einrichtungsgebühr | 0 € | einmalig" is not',
+      ],
+      [noLine + TABLE + TABLE, 'expected 1 product table for .de, found 2'],
+      // a broken table fails the TLD even with a card line
+      [card() + TABLE.replace('Einrichtungsgebühr', 'Gebühr'), 'found 0'],
+    ];
+    for (const [page, reason] of cases) {
+      const result = await one(page);
+      expect(result.offers, reason).toEqual([]);
+      expect(result.warnings, reason).toEqual([]);
+      expect(result.failed[0]?.reason, reason).toContain(reason);
+    }
+  });
+
+  it('reads no product table on pages without one', () => {
+    expect(tableSetup(fixture('strato/ch.html'), 'ch')).toBeNull();
+    expect(tableSetup(DE, 'de')).toEqual({ cents: 0, text: 'Einrichtungsgebühr | 0 €' });
   });
 });

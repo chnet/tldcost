@@ -118,6 +118,12 @@ export function offerPriceState(offer) {
   };
 }
 
+/**
+ * Currencies of foreign market displays the data may record (owner decision 2026-11-19: USD only;
+ * packages/core FOREIGN_MARKET_CURRENCIES, kept equal by a test).
+ */
+export const FOREIGN_MARKET_CURRENCIES = ['USD'];
+
 /** Fields that must be equal within one segment of a history (one market). */
 const SEGMENT_FIELDS = ['currency', 'unit', 'vat_included', 'market'];
 
@@ -130,7 +136,10 @@ export function isMarketSwitch(a, b) {
   if (a.unit !== b.unit) return false;
   const german = (x) => x.market === undefined && x.currency === 'EUR' && x.vat_included === true;
   const foreign = (x) =>
-    x.market !== undefined && x.market !== 'DE' && x.currency === 'USD' && x.vat_included === false;
+    x.market !== undefined &&
+    x.market !== 'DE' &&
+    FOREIGN_MARKET_CURRENCIES.includes(x.currency) &&
+    x.vat_included === false;
   return (german(a) && foreign(b)) || (foreign(a) && german(b));
 }
 
@@ -289,8 +298,9 @@ export function validateDir(dir, validators = makeValidators()) {
             `${rel(file)}: promo.max_per_customer needs max_per_customer_source (url or quote)`,
           );
         }
-        // another market's prices (owner decision 2026-11-19): in that market's currency (never EUR,
-        // no decision for a foreign EUR display) and net, so the site converts and adds German VAT
+        // another market's prices (owner decision 2026-11-19): in that market's currency, one of
+        // FOREIGN_MARKET_CURRENCIES (no decision for EUR or others), and net, so the site converts and
+        // adds German VAT
         const market = doc.foreign_market;
         if (market) {
           if (market.currency !== doc.currency) {
@@ -298,8 +308,10 @@ export function validateDir(dir, validators = makeValidators()) {
               `${rel(file)}: foreign_market.currency ${market.currency} differs from currency ${doc.currency}`,
             );
           }
-          if (doc.currency === 'EUR') {
-            findings.push(`${rel(file)}: foreign_market needs a currency other than EUR`);
+          if (!FOREIGN_MARKET_CURRENCIES.includes(market.currency)) {
+            findings.push(
+              `${rel(file)}: foreign_market.currency ${market.currency} is not one of ${FOREIGN_MARKET_CURRENCIES.join(', ')}`,
+            );
           }
           if (doc.vat_included !== false) {
             findings.push(`${rel(file)}: foreign_market needs vat_included false (net prices)`);

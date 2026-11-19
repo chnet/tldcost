@@ -12,11 +12,13 @@ import {
   DEFAULT_PLAUSIBILITY_HIGH,
   DEFAULT_PLAUSIBILITY_LOW,
   DEFAULT_PLAUSIBILITY_MIN_OTHERS,
+  FOREIGN_MARKET_CURRENCIES,
   isMarketSwitch,
   marketBasis,
   marketSwitchLabel,
   plausibilityCheck,
   type FxRates,
+  type MarketBasis,
   type Offer,
   type OfferPromo,
   type PlausibilityHit,
@@ -361,7 +363,14 @@ export function gate(
   if (!switched) {
     if (existing.currency !== next.currency)
       reasons.push(`currency ${existing.currency} -> ${next.currency}`);
-    if (from.market !== to.market) reasons.push(`market ${marketSwitchLabel(from, to)}`);
+    // foreign_market added or removed without the switch EUR gross <-> foreign currency net
+    if (from.market !== to.market) {
+      const basis = (b: MarketBasis) =>
+        `${b.currency}/vat_included ${b.vat_included}${b.market ? `/foreign_market ${b.market}` : ''}`;
+      reasons.push(
+        `foreign_market changed without a market switch (${basis(from)} -> ${basis(to)}; only EUR gross <-> ${FOREIGN_MARKET_CURRENCIES.join('/')} net with foreign_market)`,
+      );
+    }
   }
   if (o.unit !== n.unit) reasons.push(`unit ${o.unit} -> ${n.unit}`);
   if (

@@ -249,7 +249,10 @@ export function buildOpenApi(tlds: readonly string[]) {
                 'Country of a foreign market display (offer `foreign_market`): the provider showed ' +
                 "the fetch another market's prices, converted with `fx` and with the offer's VAT " +
                 'rate added. Not the price for customers in Germany. null: the German display.',
-              oneOf: [{ type: 'null' }, { type: 'string', pattern: '^[A-Z]{2}$' }],
+              oneOf: [
+                { type: 'null' },
+                { type: 'string', pattern: '^[A-Z]{2}$', not: { const: 'DE' } },
+              ],
             },
             gross: ref('DerivedTcoMode'),
             net: ref('DerivedTcoMode'),

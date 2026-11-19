@@ -272,6 +272,10 @@ export const de = {
         // owner decision 2026-11-19 (Fremdmarkt), verbatim for country US
         `${country}-Preis, umgerechnet zum Kurs vom ${date}, zzgl. ${pct} % MwSt.; ` +
         'der Preis für Kunden in Deutschland kann abweichen.',
+      foreignMarketNet: (country: string, date: string) =>
+        // net mode; wording pending the owner's approval
+        `${country}-Preis, umgerechnet zum Kurs vom ${date}; ` +
+        'der Preis für Kunden in Deutschland kann abweichen.',
       vatNet: (pct: string) =>
         `Der Anbieter nennt Nettopreise. Brutto = netto zuzüglich ${pct} % Umsatzsteuer.`,
       vatGross: (pct: string) =>

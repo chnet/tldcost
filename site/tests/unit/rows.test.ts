@@ -48,7 +48,7 @@ describe('buildPayload', () => {
     expect(echo?.gross.sum_3y).toBe(echo?.net.sum_3y); // no VAT statement: same in both modes
   });
 
-  it('foreign market display (owner decision 2026-11-19): converted, VAT added, one market note', () => {
+  it('foreign market display (owner decision 2026-11-19): converted, VAT added, a market note per mode', () => {
     const provider = data.providers.find((p) => p.id === 'alpha')!;
     const base = data.offers.find((o) => o.provider === 'alpha' && o.tld === 'de')!;
     const offer = {
@@ -72,18 +72,32 @@ describe('buildPayload', () => {
     expect(row.gross.year1).toBe(1427);
     expect(row.net.year1).toBe(Math.round(1299 / 1.0834)); // 1199
     const id = 'market-US-USD-2026-11-11-1900';
-    expect(row.notes).toEqual([id]);
+    const netId = 'market-net-US-USD-2026-11-11';
+    // a cell note per VAT mode on the price cells, no row note
+    expect(row.notes).toEqual([]);
+    expect(row.cellNotes.gross.year1).toEqual([id]);
+    expect(row.cellNotes.gross.renewal).toEqual([id]);
+    expect(row.cellNotes.net.year1).toEqual([netId]);
+    expect(row.cellNotes.net.renewal).toEqual([netId]);
+    expect(JSON.stringify(row.cellNotes.gross)).not.toContain(netId);
+    expect(JSON.stringify(row.cellNotes.net)).not.toContain(id);
+    // gross: the owner's wording verbatim; net: without the VAT part
     expect(de.notes[id]).toBe(
       'US-Preis, umgerechnet zum Kurs vom 11.11.2026, zzgl. 19 % MwSt.; der Preis für Kunden in Deutschland kann abweichen.',
     );
-    // neither the generic FX note nor the net-price note: the market note covers both
+    expect(de.notes[netId]).toBe(
+      'US-Preis, umgerechnet zum Kurs vom 11.11.2026; der Preis für Kunden in Deutschland kann abweichen.',
+    );
+    // neither the generic FX note nor the net-price note: the market notes cover both
     expect(
       Object.keys(de.notes).filter((k) => k.startsWith('fx-') || k.startsWith('vat-')),
     ).toEqual([]);
-    expect(JSON.stringify(row.cellNotes)).not.toContain('vat-net');
     const en = build('en');
     expect(en.notes[id]).toBe(
       'US price, converted at the rate of 11 Nov 2026, plus 19% VAT; the price for customers in Germany may differ.',
+    );
+    expect(en.notes[netId]).toBe(
+      'US price, converted at the rate of 11 Nov 2026; the price for customers in Germany may differ.',
     );
     // the same offer without foreign_market keeps the generic notes
     const withoutMarket: Partial<typeof offer> = { ...offer };
@@ -96,7 +110,7 @@ describe('buildPayload', () => {
       offers: [offer],
       fx: [...data.fx, later],
     });
-    expect(fallback.rows[0]?.notes).toEqual([id]);
+    expect(fallback.rows[0]?.cellNotes.gross.year1).toEqual([id]);
     expect(fallback.notes[id]).toContain('vom 11.11.2026,');
     expect(fallback.notes[id]).not.toContain('12.11.2026');
     expect(fallback.rows[0]?.gross.year1).toBe(1427);

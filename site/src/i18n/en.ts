@@ -247,6 +247,9 @@ export const en: Messages = {
       foreignMarket: (country, date, pct) =>
         `${country} price, converted at the rate of ${date}, plus ${pct}% VAT; ` +
         'the price for customers in Germany may differ.',
+      foreignMarketNet: (country, date) =>
+        `${country} price, converted at the rate of ${date}; ` +
+        'the price for customers in Germany may differ.',
       vatNet: (pct) => `The provider states net prices. Gross = net plus ${pct}% VAT.`,
       vatGross: (pct) =>
         `The provider states gross prices. Net = gross without the included ${pct}% VAT.`,

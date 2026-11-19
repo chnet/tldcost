@@ -272,25 +272,23 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
 
     const rowNotes: string[] = [];
     let fx: FxRate | undefined;
-    // another market's prices (owner decision 2026-11-19): one note for conversion and VAT, in place
-    // of the generic FX note and the net-price note
+    // another market's prices (owner decision 2026-11-19): a note per VAT mode on the price cells
+    // (conversion, and in gross mode the added VAT), in place of the generic FX note and the
+    // net-price note
     const market = offerMarket(offer);
     const vatRate = offer.vat_rate ?? provider.vat_rate;
-    let marketNote = false;
+    let marketFx: FxRate | undefined;
     if (offer.currency !== 'EUR') {
       fx = fxRateFor(data.fx, offer.currency, offer.evidence.fetched_at);
-      marketNote = Boolean(market && fx && typeof vatRate === 'number');
-      const id = !fx
-        ? `fx-missing-${offer.currency}`
-        : marketNote
-          ? `market-${market}-${fx.currency}-${fx.date}-${vatRate}`
-          : `fx-${fx.currency}-${fx.date}`;
-      notes[id] = !fx
-        ? L.s.notes.fxMissing(offer.currency)
-        : marketNote
-          ? L.s.notes.foreignMarket(market as string, L.f.date(fx.date), pct(vatRate as number))
-          : L.s.notes.fx(fx.currency, L.f.date(fx.date), L.f.decimal(fx.perEur));
-      rowNotes.push(id);
+      if (market && fx && typeof vatRate === 'number') {
+        marketFx = fx;
+      } else {
+        const id = fx ? `fx-${fx.currency}-${fx.date}` : `fx-missing-${offer.currency}`;
+        notes[id] = fx
+          ? L.s.notes.fx(fx.currency, L.f.date(fx.date), L.f.decimal(fx.perEur))
+          : L.s.notes.fxMissing(offer.currency);
+        rowNotes.push(id);
+      }
     }
     if (offer.vat_included === null) {
       notes[NOTE_VAT_NOT_STATED] = L.s.notes.vatNotStated;
@@ -313,14 +311,26 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
         notes[notePromo(key)] = promoText(L, offer, promoExpired);
         for (const col of PROMO_COLUMNS) if (has(col)) addCellNote(target, col, notePromo(key));
       }
+      const rate = vatRate;
+      if (marketFx && typeof rate === 'number') {
+        const date = L.f.date(marketFx.date);
+        const id =
+          mode === 'gross'
+            ? `market-${market}-${marketFx.currency}-${marketFx.date}-${rate}`
+            : `market-net-${market}-${marketFx.currency}-${marketFx.date}`;
+        notes[id] =
+          mode === 'gross'
+            ? L.s.notes.foreignMarket(market as string, date, pct(rate))
+            : L.s.notes.foreignMarketNet(market as string, date);
+        for (const col of PRICE_COLUMNS) if (has(col)) addCellNote(target, col, id);
+      }
       // net prices of the provider, shown gross: VAT was added (only in gross mode; for another
       // market's prices the market note says so)
-      const rate = vatRate;
       if (
         mode === 'gross' &&
         offer.vat_included === false &&
         typeof rate === 'number' &&
-        !marketNote
+        !marketFx
       ) {
         const id = noteVatNet(rate);
         notes[id] = L.s.notes.vatNet(pct(rate));

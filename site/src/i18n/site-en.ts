@@ -45,6 +45,9 @@ export const siteEn: SiteMessages = {
     foreignMarket: (country, date, pct) =>
       `${country} price, converted at the rate of ${date}, plus ${pct}% VAT; ` +
       'the price for customers in Germany may differ.',
+    foreignMarketNet: (country, date) =>
+      `${country} price, converted at the rate of ${date}; ` +
+      'the price for customers in Germany may differ.',
     fxMissing: (currency) => `No ECB rate for ${currency}: amounts cannot be converted.`,
     vatNotStated:
       'The provider makes no statement on VAT. The price is taken as stated, gross and net ' +

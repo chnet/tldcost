@@ -8,10 +8,17 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendHistory, HISTORY_STATE_FIELDS, type FxRates, type Offer } from '@tldcost/core';
+import {
+  appendHistory,
+  FOREIGN_MARKET_CURRENCIES,
+  HISTORY_STATE_FIELDS,
+  type FxRates,
+  type Offer,
+} from '@tldcost/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 // @ts-expect-error plain .mjs without types
 import {
+  FOREIGN_MARKET_CURRENCIES as VALIDATE_MARKET_CURRENCIES,
   HISTORY_STATE_FIELDS as VALIDATE_STATE_FIELDS,
   validateDir,
 } from '../../scripts/validate-data.mjs';
@@ -639,6 +646,8 @@ describe('run', () => {
     );
     expect([...HISTORY_STATE_FIELDS]).toEqual(required);
     expect([...VALIDATE_STATE_FIELDS]).toEqual(required);
+    // and the currencies of a foreign market display (owner decision 2026-11-19)
+    expect([...VALIDATE_MARKET_CURRENCIES]).toEqual([...FOREIGN_MARKET_CURRENCIES]);
   });
 
   it('dry run writes nothing but reports everything', async () => {
@@ -1233,7 +1242,7 @@ describe('market switch (owner decision 2026-11-19, Fremdmarkt)', () => {
     // unit change on a switch
     expect(gate(deOffer, mergeOffer('reg', deOffer, us({ unit: 'month' })))).toEqual([
       'currency EUR -> USD',
-      'market DE -> US',
+      'foreign_market changed without a market switch (EUR/vat_included true -> USD/vat_included false/foreign_market US; only EUR gross <-> USD net with foreign_market)',
       'unit year -> month',
       'vat_included changed',
     ]);
@@ -1250,14 +1259,20 @@ describe('market switch (owner decision 2026-11-19, Fremdmarkt)', () => {
       currency: 'EUR',
       foreign_market: { ...US, currency: 'EUR' },
     });
-    expect(gate(deOffer, eurNet)).toEqual(['market DE -> US', 'vat_included changed']);
+    expect(gate(deOffer, eurNet)).toEqual([
+      'foreign_market changed without a market switch (EUR/vat_included true -> EUR/vat_included false/foreign_market US; only EUR gross <-> USD net with foreign_market)',
+      'vat_included changed',
+    ]);
     // > 30 % within the same market still blocks
     expect(gate(usOffer, mergeOffer('reg', usOffer, us({ renewal: 1400 })))).toEqual([
       'renewal 1000 -> 1400 (40 %)',
     ]);
     // USD net without foreign_market -> USD net with it: a market change that is no switch
     const plainUsd = mergeOffer('reg', undefined, us({}, null));
-    expect(gate(plainUsd, mergeOffer('reg', plainUsd, us()))).toEqual(['market DE -> US']);
+    // the real reason, not "DE -> US": the stored offer was not the German display
+    expect(gate(plainUsd, mergeOffer('reg', plainUsd, us()))).toEqual([
+      'foreign_market changed without a market switch (USD/vat_included false -> USD/vat_included false/foreign_market US; only EUR gross <-> USD net with foreign_market)',
+    ]);
   });
 
   it('a run writes the switch, starts a history segment and reports "Markt DE -> US"', async () => {

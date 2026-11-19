@@ -44,6 +44,10 @@ export const siteDe = {
       // owner decision 2026-11-19 (Fremdmarkt), verbatim for country US
       `${country}-Preis, umgerechnet zum Kurs vom ${date}, zzgl. ${pct} % MwSt.; ` +
       'der Preis für Kunden in Deutschland kann abweichen.',
+    foreignMarketNet: (country: string, date: string) =>
+      // net mode; wording pending the owner's approval
+      `${country}-Preis, umgerechnet zum Kurs vom ${date}; ` +
+      'der Preis für Kunden in Deutschland kann abweichen.',
     fxMissing: (currency: string) =>
       `Kein EZB-Kurs für ${currency} vorhanden: Beträge nicht umrechenbar.`,
     vatNotStated:

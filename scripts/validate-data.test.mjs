@@ -290,7 +290,7 @@ test('provider vat_rate null only outside the EU; offers with stated VAT then ne
   }
 });
 
-test('foreign_market (owner decision 2026-11-19): currency matches, not EUR, net prices', () => {
+test('foreign_market (owner decision 2026-11-19): currency matches, USD only, net prices', () => {
   const market = { country: 'US', currency: 'USD', quote: 'Domainpreise in USD .de 9,99 9,99' };
   const offer = (o) => ({ ...read(OFFER), foreign_market: market, ...o });
   const check = (o) => validateDir(dataDir({ [PROVIDER]: read(PROVIDER), [OFFER]: offer(o) }), V);
@@ -306,7 +306,17 @@ test('foreign_market (owner decision 2026-11-19): currency matches, not EUR, net
     foreign_market: { ...market, currency: 'EUR' },
   });
   assert.ok(
-    f.some((x) => x.includes('foreign_market needs a currency other than EUR')),
+    f.some((x) => x.includes('foreign_market.currency EUR is not one of USD')),
+    `${f}`,
+  );
+  // GBP: no decision, fails even when it matches the offer
+  f = check({
+    currency: 'GBP',
+    vat_included: false,
+    foreign_market: { ...market, currency: 'GBP' },
+  });
+  assert.ok(
+    f.some((x) => x.includes('foreign_market.currency GBP is not one of USD')),
     `${f}`,
   );
   f = check({ currency: 'USD', vat_included: true });

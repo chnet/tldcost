@@ -37,7 +37,7 @@
     "source_url": "https://delta.example/preise",
     "fetched_at": "2026-11-12T08:00:00Z",
     "method": "manual",
-    "quote": ".io: 29,00 € für die ersten 2 Jahre, danach 36,00 € pro Jahr (inkl. MwSt.)",
+    "quote": "Synthetic test quote: .io: 29,00 € für die ersten 2 Jahre, danach 36,00 € pro Jahr (inkl. MwSt.)",
     "confidence": "low"
   },
   "provider_verified": false

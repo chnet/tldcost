@@ -13,11 +13,19 @@
 //        value of a dependency that already exists in dependencies/devDependencies/
 //        optionalDependencies/overrides, and only to a plain version (no file:, git, URL or alias);
 //        every other field unchanged;
-//      - the root package-lock.json, only together with such a package.json change: every added
-//        or changed package entry has `resolved` exactly the registry tarball of the name in its
-//        path and its version (https://registry.npmjs.org/<name>/-/<base>-<version>.tgz), a sha512
-//        `integrity` and no alias; entries without `resolved` (links, bundled) only unchanged; the
-//        root and workspace entries change only like package.json; other top-level fields unchanged;
+//      - the root package-lock.json: every added or changed package entry has a key of the shape
+//        node_modules/<name>(/node_modules/<name>)* at the root or in a workspace directory,
+//        `resolved` exactly the registry tarball of the name in its key and its version
+//        (https://registry.npmjs.org/<name>/-/<base>-<version>.tgz), a sha512 `integrity` and no
+//        alias; entries without `resolved` (links, bundled) only unchanged; the root and workspace
+//        entries change only like package.json; other top-level fields unchanged. Without a
+//        package.json change in the same commit (lock-only resolution updates within the declared
+//        ranges, direct and transitive; owner decision 2026-11-19) the root entry, every workspace
+//        entry and every link entry must stay byte-identical;
+//      - the package.json and package-lock.json of a directory in STANDALONE_LOCK_DIRS (outside the
+//        workspaces, owner decision 2026-11-19): exactly those two paths, with the same checks as
+//        the root files; a lock change without a change to that directory's package.json only
+//        under the same byte-identical rule;
 //      - .github/workflows/*.yml: removed and added lines paired 1:1, each a `uses: owner/repo@<sha>`
 //        line that differs only in the 40-hex sha and its `# version` comment.
 //
@@ -53,18 +61,37 @@ const sameKeys = (a, b) =>
   Object.keys(a).every((k) => Object.hasOwn(b, k));
 const sameJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+/**
+ * Directories outside the npm workspaces with their own package.json and package-lock.json that the
+ * exception covers (owner decision 2026-11-19). Only these exact paths, no pattern.
+ */
+export const STANDALONE_LOCK_DIRS = ['tools/lhci'];
+
+/** Directory of a lockfile the exception covers: '' for the root lock, a standalone dir, else null. */
+export function lockDir(path) {
+  if (path === 'package-lock.json') return '';
+  return STANDALONE_LOCK_DIRS.find((d) => path === `${d}/package-lock.json`) ?? null;
+}
+
+/** Directory of a standalone package.json (STANDALONE_LOCK_DIRS), else null. */
+export function standaloneManifestDir(path) {
+  return STANDALONE_LOCK_DIRS.find((d) => path === `${d}/package.json`) ?? null;
+}
+
+/** Regex source of a workspace directory: npm workspace entries are a directory or use `*` segments. */
+const workspaceDirSource = (w) =>
+  w
+    .replace(/\/+$/, '')
+    .split('/')
+    .map((part) => (part === '*' ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    .join('/');
+
 /** Paths of package.json files Dependabot may change: root and workspace package.json. */
 export function manifestMatcher(workspaces) {
-  const res = [/^package\.json$/];
-  for (const w of workspaces) {
-    // npm workspace entries: a directory or a single `*` segment (packages/*)
-    const dir = w
-      .replace(/\/+$/, '')
-      .split('/')
-      .map((part) => (part === '*' ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-      .join('/');
-    res.push(new RegExp(`^${dir}/package\\.json$`));
-  }
+  const res = [
+    /^package\.json$/,
+    ...workspaces.map((w) => new RegExp(`^${workspaceDirSource(w)}/package\\.json$`)),
+  ];
   return (path) => res.some((re) => re.test(path));
 }
 
@@ -149,6 +176,29 @@ export const LOCK_VERSION =
   /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 /** npm package name: optional scope; segments never start with '.' or '_'. */
 export const PACKAGE_NAME = /^(?:@[a-z0-9~-][a-z0-9._~-]*\/)?[a-z0-9~-][a-z0-9._~-]*$/;
+/**
+ * Package keys of a lockfile: node_modules/<name>(/node_modules/<name>)*, at the lock's root or in a
+ * workspace directory of the given workspace patterns (none for a standalone lock); every <name> a
+ * PACKAGE_NAME. Any other key with node_modules/ (xnode_modules/a, docs/node_modules/a) is not one.
+ */
+export function packageKeyMatcher(workspaces = []) {
+  const dirs = workspaces.map((w) => new RegExp(`^${workspaceDirSource(w)}/$`));
+  const NM = 'node_modules/';
+  return (key) => {
+    const at = key.indexOf(NM);
+    if (at < 0) return false;
+    const dir = key.slice(0, at);
+    if (dir !== '' && !dirs.some((re) => re.test(dir))) return false;
+    return key
+      .slice(at + NM.length)
+      .split(`/${NM}`)
+      .every((name) => PACKAGE_NAME.test(name));
+  };
+}
+
+/** Own property only (a JSON key "__proto__" must not read Object.prototype). */
+const own = (o, k) => (Object.hasOwn(o, k) ? o[k] : undefined);
+
 /** true if the URL is already in normal form (no '..', '.', '%2e' tricks that resolve elsewhere). */
 const normalUrl = (u) => {
   try {
@@ -159,11 +209,12 @@ const normalUrl = (u) => {
 };
 
 /**
- * package-lock.json: every resolved URL is exactly the registry tarball of the entry's own name and
- * version (a foreign tarball under a known name would be installed in its place); workspace links
- * unchanged.
+ * package-lock.json: every added or changed package has a package key (packageKeyMatcher) and its
+ * resolved URL is exactly the registry tarball of the entry's own name and version (a foreign
+ * tarball under a known name would be installed in its place); workspace links unchanged.
+ * `workspaces`: the workspace patterns of the PARENT's root package.json (none for a standalone lock).
  */
-export function packageLockFinding(beforeText, afterText) {
+export function packageLockFinding(beforeText, afterText, workspaces = []) {
   let before, after;
   try {
     before = JSON.parse(beforeText);
@@ -181,9 +232,10 @@ export function packageLockFinding(beforeText, afterText) {
   }
   if (!isPlainObject(after.packages)) return 'package-lock.json has no packages map';
   const beforePkgs = isPlainObject(before.packages) ? before.packages : {};
+  const isPackageKey = packageKeyMatcher(workspaces);
   for (const [key, entry] of Object.entries(after.packages)) {
     if (!isPlainObject(entry)) return 'package-lock.json: an entry is not an object';
-    const prev = beforePkgs[key];
+    const prev = own(beforePkgs, key);
     // unchanged entries are not judged again (old ones may still carry e.g. a sha1 integrity)
     if (prev !== undefined && sameJson(entry, prev)) continue;
     if (entry.link === true || prev?.link === true) {
@@ -195,6 +247,9 @@ export function packageLockFinding(beforeText, afterText) {
       const r = manifestObjectFinding(prev, entry, 'package-lock.json root/workspace entry');
       if (r) return r;
       continue;
+    }
+    if (!isPackageKey(key)) {
+      return 'package-lock.json: an added or changed key that is not node_modules/<name> at the root or in a workspace';
     }
     // an added or changed package: its own registry tarball, sha512 integrity, no alias
     const name = lockName(key);
@@ -210,6 +265,34 @@ export function packageLockFinding(beforeText, afterText) {
       normalUrl(entry.resolved);
     if (!ok) {
       return 'package-lock.json: an added or changed package without its own registry.npmjs.org tarball and sha512 integrity';
+    }
+  }
+  return '';
+}
+
+/**
+ * A lockfile change without a package.json change (lock-only resolution updates within the declared
+ * ranges, direct and transitive; owner decision 2026-11-19): the root entry (""), every workspace
+ * entry, every link entry and every other key that is not a package key (packageKeyMatcher) must be
+ * byte-identical before and after, and none may be added or removed. The declared ranges stay as
+ * they are; npm ci refuses a lock outside them. Reason or ''.
+ */
+export function lockOnlyFinding(beforeText, afterText, workspaces = []) {
+  let before, after;
+  try {
+    before = JSON.parse(beforeText);
+    after = JSON.parse(afterText);
+  } catch {
+    return 'package-lock.json is not valid JSON';
+  }
+  const b = isPlainObject(before?.packages) ? before.packages : {};
+  const a = isPlainObject(after?.packages) ? after.packages : {};
+  const isPackageKey = packageKeyMatcher(workspaces);
+  for (const key of new Set([...Object.keys(b), ...Object.keys(a)])) {
+    const direct = !isPackageKey(key) || own(b, key)?.link === true || own(a, key)?.link === true;
+    if (!direct) continue;
+    if (!Object.hasOwn(b, key) || !Object.hasOwn(a, key) || !sameJson(b[key], a[key])) {
+      return 'package-lock.json changed without a package.json change, and a root, workspace or link entry changed';
     }
   }
   return '';
@@ -267,7 +350,8 @@ export function changeFindings(sha, run) {
     }
   };
   // workspaces of the PARENT: a commit cannot widen its own exception
-  const isManifest = manifestMatcher(workspacesOf(show(`${sha}^`, 'package.json')));
+  const workspaces = workspacesOf(show(`${sha}^`, 'package.json'));
+  const isManifest = manifestMatcher(workspaces);
   const status = run(['diff-tree', '--no-commit-id', '-r', '--no-renames', '--name-status', sha]);
   const files = status
     .split('\n')
@@ -279,17 +363,31 @@ export function changeFindings(sha, run) {
   const out = [];
   const reason = (r) => out.push(`${id}: dependabot exemption: ${r}`);
   if (files.length === 0) reason('commit changes no file');
-  const manifestChanged = files.some((f) => f.st === 'M' && isManifest(f.path));
+  const modified = new Set(files.filter((f) => f.st === 'M').map((f) => f.path));
+  // the root lock pairs with any root or workspace package.json, a standalone lock with its own
+  const rootManifestChanged = [...modified].some(isManifest);
   for (const { st, path } of files) {
     if (st !== 'M') {
       reason(`only modified files allowed (status ${st})`);
     } else if (isManifest(path)) {
       const r = packageJsonFinding(show(`${sha}^`, path), show(sha, path));
       if (r) reason(r);
-    } else if (path === 'package-lock.json') {
-      if (!manifestChanged) reason('package-lock.json changed without a package.json change');
-      const r = packageLockFinding(show(`${sha}^`, path), show(sha, path));
-      if (r) reason(r);
+    } else if (standaloneManifestDir(path) !== null) {
+      const r = packageJsonFinding(show(`${sha}^`, path), show(sha, path));
+      if (r) reason(`${standaloneManifestDir(path)}/${r}`);
+    } else if (lockDir(path) !== null) {
+      const dir = lockDir(path);
+      const prefix = dir ? `${dir}/` : '';
+      const [before, after] = [show(`${sha}^`, path), show(sha, path)];
+      const manifestChanged = dir ? modified.has(`${dir}/package.json`) : rootManifestChanged;
+      // a standalone lock has no workspaces
+      const ws = dir ? [] : workspaces;
+      if (!manifestChanged) {
+        const r = lockOnlyFinding(before, after, ws);
+        if (r) reason(prefix + r);
+      }
+      const r = packageLockFinding(before, after, ws);
+      if (r) reason(prefix + r);
     } else if (WORKFLOW.test(path)) {
       const diff = run([
         'diff-tree',

@@ -14,7 +14,7 @@
 import { getCollection } from 'astro:content';
 import { PAGE_SLUGS } from '../content.config';
 import { LOCALES, langOf, pathIn } from '../i18n';
-import { repoLink } from '../lib/report.mjs';
+import { SPONSORS_URL, repoLink } from '../lib/report.mjs';
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/global.css';
@@ -224,6 +224,9 @@ const themes = [
               </li>
             )
           }
+          <li>
+            <a href={SPONSORS_URL}>{t.support}</a>
+          </li>
         </ul>
       </nav>
       <p>

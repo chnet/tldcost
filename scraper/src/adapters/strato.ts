@@ -18,8 +18,10 @@
 // different entries for one order code, entry prices that differ from the card) fails every TLD
 // with a list entry, also those whose fee comes from the card or the table (fail closed): a layout
 // change of the list stops practically all STRATO TLDs until the adapter is adapted. A card line
-// with "Einrichtung" in another form than "Einrichtung: X €" fails the TLD too. robots.txt only disallows /apps/ and /error/. The AGB (17.90)
-// say nothing about automated access to the website. Domains are sold stand-alone (bundling rule
+// with "Einrichtung" in another form than "Einrichtung: X €" fails the TLD too. A setup fee from
+// the table or the list is stored with its source (price.setup_source: page URL and the quoted
+// row or entry text). robots.txt only disallows /apps/ and /error/. The AGB (17.90) say nothing
+// about automated access to the website. Domains are sold stand-alone (bundling rule
 // Archiv-Issue 75 not affected): "Sobald sie im Warenkorb ist, können Sie die ausgewählte Domain kaufen.
 // Optional kombinieren Sie Ihre neue Domain auch mit einer der STRATO Website-Lösungen" (domain-kaufen).
 //
@@ -282,6 +284,15 @@ export function toOffer(
     price: {
       unit: 'month',
       setup: card.setup,
+      // the card line is on the page of evidence.source_url; table and list get their own source
+      ...(card.setupSource.from === 'card'
+        ? {}
+        : {
+            setup_source: {
+              url: card.setupSource.from === 'table' ? stratoPage(tld) : STRATO_DOMAIN_LIST,
+              quote: card.setupSource.text,
+            },
+          }),
       year1: card.current,
       // only without a promo is the card price the regular first-year price
       year1_regular: sale ? null : regular,

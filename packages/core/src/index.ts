@@ -27,6 +27,7 @@ export type {
   ProviderTermsNotes,
   StatementSource,
   TransferTermSource,
+  SetupSource,
 } from './types.js';
 export { PAYABLE_FEATURES } from './types.js';
 export { appendHistory, HISTORY_STATE_FIELDS, priceState, samePriceState } from './history.js';

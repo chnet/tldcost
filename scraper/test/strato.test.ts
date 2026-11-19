@@ -107,6 +107,8 @@ describe('STRATO adapter', () => {
       },
     });
     expect(io?.evidence.evidence_hash).toMatch(/^sha256:[0-9a-f]{64}$/);
+    // the card line is on the page itself: no separate source
+    for (const o of result.offers) expect(o.price, o.tld).not.toHaveProperty('setup_source');
     // one price only: no promo
     expect(result.offers[1]).toMatchObject({
       price: { setup: 0, year1: 390, year1_regular: 390, renewal: 390 },
@@ -247,7 +249,14 @@ describe('STRATO setup fee: price card line or product table', () => {
     ]);
     expect(result.offers[0]).toMatchObject({
       tld: 'de',
-      price: { unit: 'month', setup: 0, year1: 5, year1_regular: null, renewal: 100 },
+      price: {
+        unit: 'month',
+        setup: 0,
+        setup_source: { url: stratoPage('de'), quote: 'Einrichtungsgebühr | 0 €' },
+        year1: 5,
+        year1_regular: null,
+        renewal: 100,
+      },
       promo: { conditions: `Aktionspreis „für 12 Monate“ laut Preiskarte. ${PROMO_NOTE}` },
     });
     expect(parseCard(DE, 'de').setupSource).toEqual({
@@ -372,7 +381,16 @@ describe('STRATO setup fee from the domain list', () => {
     ]);
     expect(result.offers[0]).toMatchObject({
       tld: 'net',
-      price: { setup: 0, year1: 90, year1_regular: null, renewal: 150 },
+      price: {
+        setup: 0,
+        setup_source: {
+          url: STRATO_DOMAIN_LIST,
+          quote: '.net für 12 Monate 0,90 €/Mon., danach 1,50 €/Mon., Einrichtung: 0 €',
+        },
+        year1: 90,
+        year1_regular: null,
+        renewal: 150,
+      },
     });
     expect(parseCard(NET, 'net', { html: LIST })).toMatchObject({
       setupSource: { from: 'list' },

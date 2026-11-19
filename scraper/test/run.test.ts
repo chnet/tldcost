@@ -221,6 +221,31 @@ describe('mergeOffer', () => {
   });
 });
 
+describe('mergeOffer: price.setup_source belongs to the run', () => {
+  const source = { url: 'https://registrar.example/domains/', quote: 'Einrichtung: 0 €' };
+  const withSource = (setup_source: typeof source) => {
+    const s = scraped('de');
+    return { ...s, price: { ...s.price, setup_source } };
+  };
+
+  it('stores the source the adapter sets, and replaces a stored one', () => {
+    expect(mergeOffer('reg', undefined, withSource(source)).price.setup_source).toEqual(source);
+    const stored = mergeOffer('reg', undefined, withSource(source));
+    const other = {
+      url: 'https://registrar.example/de-domain/',
+      quote: 'Einrichtungsgebühr | 0 €',
+    };
+    expect(mergeOffer('reg', stored, withSource(other)).price.setup_source).toEqual(other);
+  });
+
+  it('removes a stored source when the run takes the fee from the price itself', () => {
+    const stored = mergeOffer('reg', undefined, withSource(source));
+    const merged = mergeOffer('reg', stored, scraped('de'));
+    expect(merged.price).not.toHaveProperty('setup_source');
+    expect(compareOffer(stored, merged).fields.map((f) => f.path)).toEqual(['price.setup_source']);
+  });
+});
+
 describe('mergeOffer: unknown fields and promos', () => {
   const stored: Offer = {
     ...mergeOffer('reg', undefined, scraped('de', { year1: 500 })),

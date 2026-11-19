@@ -430,7 +430,7 @@
   margin: 0;
   padding-left: var(--space-4);
 }
-.tc-history-break {
+.tc-history-note {
   display: block;
   color: var(--ink-muted);
   font-size: 12px;

@@ -18,6 +18,12 @@ export const MAX_HISTORY_POINTS = 12;
 export interface HistoryAmounts {
   year1: Cents | null;
   renewal: Cents | null;
+  /**
+   * Another market's prices (entry.market): the table's market footnote for this entry and mode
+   * (conversion date, in gross mode the added VAT), so a converted value never reads as a German
+   * price. null otherwise.
+   */
+  note?: string | null;
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -114,10 +120,13 @@ export function rowHistory(
     );
   const series = (mode: PriceMode): HistorySeries => {
     const amounts = entries.map((e) => amountsOf(e, mode));
+    const notes = amounts.map((a) => a.note ?? null);
     return {
       year1: amounts.map((a) => a.year1),
       renewal: amounts.map((a) => a.renewal),
       path: historyPath(dates, amounts, breakAt),
+      // only rows with a foreign market entry carry the notes (payload size)
+      ...(notes.some((n) => n !== null) ? { notes } : {}),
     };
   };
   const gross = series('gross');
@@ -126,16 +135,11 @@ export function rowHistory(
   const samePath = JSON.stringify(net.path) === JSON.stringify(gross.path);
   return {
     dates,
-    breaks: breakAt.map((i) => {
-      const e = entries[i] as HistoryEntry;
-      return {
-        index: i,
-        currency: e.currency,
-        market: e.market ?? null,
-      };
-    }),
+    breaks: breakAt,
     gross,
-    net: samePath ? { year1: net.year1, renewal: net.renewal } : net,
+    net: samePath
+      ? { year1: net.year1, renewal: net.renewal, ...(net.notes ? { notes: net.notes } : {}) }
+      : net,
     ...(all.length > entries.length ? { capped: true as const } : {}),
   };
 }

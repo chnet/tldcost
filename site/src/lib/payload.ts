@@ -99,17 +99,22 @@ export interface HistorySeries {
   renewal: (Cents | null)[];
   /** Missing in `net` when it equals the gross path (one VAT rate scales all amounts alike). */
   path?: HistoryPath;
+  /**
+   * Per entry: the market footnote of an entry with another market's prices (as in the table),
+   * else null. Missing when no entry has one.
+   */
+  notes?: (string | null)[];
 }
 
 /** The price history of a row: entry dates (oldest first, at most 12) and the amounts per VAT mode. */
 export interface RowHistory {
   dates: string[];
   /**
-   * Entries that start a new segment (another currency, VAT mode, unit or market than the entry
-   * before): not connected to the earlier ones. `market`: country of a foreign market display,
-   * null for the German display.
+   * Indices of the entries that start a new segment (another currency, VAT mode, unit or market
+   * than the entry before): not connected to the earlier ones. A foreign market entry names its
+   * market in `notes`.
    */
-  breaks: { index: number; currency: string; market: string | null }[];
+  breaks: number[];
   gross: HistorySeries;
   net: HistorySeries;
   /** Set when older entries were left out: only the newest MAX_HISTORY_POINTS are shown. */

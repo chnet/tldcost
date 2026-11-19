@@ -52,6 +52,13 @@ test('English page: heading, caption and dates in English', async ({ page }) => 
   await expect(section.getByRole('heading', { name: 'Price history', exact: true })).toBeVisible();
   await expect(section).toContainText('Per data state, gross in euros per year:');
   await expect(section.locator('ol.tc-history-list > li').first()).toContainText('1 Nov 2026');
+
+  await open(page, '/en/?tld=de&vat=net');
+  const net = (await detailOf(page, 'alpha')).locator('section.tc-history');
+  await expect(net).toContainText('Per data state, net in euros per year:');
+  await expect(net.locator('ol.tc-history-list > li').last()).toHaveText(
+    /^12 Nov 2026: Year 1 €0\.83, Renewal €5\.04$/,
+  );
 });
 
 for (const theme of ['light', 'dark'] as const) {

@@ -205,9 +205,8 @@ export const de = {
     historyCaption: (mode: string, capped: boolean) =>
       `${capped ? 'Letzte 12 Änderungen' : 'Je Datenstand'}, ${mode} in Euro pro Jahr:`,
     historyUnknown: 'nicht umrechenbar',
-    historyBreak: (date: string, currency: string, market: string | null) =>
-      `Ab ${date} neuer Abschnitt (${currency}${market ? `, Preise des Marktes ${market}` : ''}): ` +
-      'Währung, MwSt.-Angabe, Einheit oder Markt haben sich geändert, die Linie ist dort unterbrochen.',
+    historyBreak: (date: string) =>
+      `Ab ${date} neuer Abschnitt: Währung, MwSt.-Angabe, Einheit oder Markt haben sich geändert, die Linie ist dort unterbrochen.`,
     paidHeading: 'Kostenpflichtige Leistungen',
     paidUnit: { year: '/Jahr', month: '/Monat', once: ' einmalig' },
     paidSource: 'Quelle',

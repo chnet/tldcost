@@ -244,6 +244,37 @@ describe('mergeOffer: price.setup_source belongs to the run', () => {
     expect(merged.price).not.toHaveProperty('setup_source');
     expect(compareOffer(stored, merged).fields.map((f) => f.path)).toEqual(['price.setup_source']);
   });
+
+  // the source is no price: adding or removing it never stops a run (gate, 30 % rule, unknown
+  // fees) and writes no history entry
+  it('passes the gate when the source is added or removed, without a history entry', async () => {
+    const plain = mergeOffer('reg', undefined, scraped('de'));
+    const sourced = mergeOffer('reg', plain, withSource(source));
+    expect(gate(plain, sourced)).toEqual([]);
+    expect(gate(sourced, mergeOffer('reg', sourced, scraped('de')))).toEqual([]);
+
+    provider('reg');
+    writeOffer(plain);
+    await syncHistory(dir);
+    const history = readFileSync(historyFile(dir, 'reg', 'de'), 'utf8');
+    const at = (fetched_at: string, s: ScrapedOffer): ScrapedOffer => ({
+      ...s,
+      evidence: { ...s.evidence, fetched_at },
+    });
+    for (const s of [
+      at('2026-11-20T06:00:00Z', withSource(source)),
+      at('2026-11-27T06:00:00Z', scraped('de')),
+    ]) {
+      const report = await run(opts([adapter('reg', { offers: [s] })]));
+      expect(report.violations).toEqual([]);
+      expect(exitCode(report)).toBe(0);
+      expect(report.changes.map((c) => [c.kind, c.fields.map((f) => f.path)])).toEqual([
+        ['changed', ['price.setup_source']],
+      ]);
+      expect(readFileSync(historyFile(dir, 'reg', 'de'), 'utf8')).toBe(history);
+    }
+    expect(readOffer('reg', 'de').price).not.toHaveProperty('setup_source');
+  });
 });
 
 describe('mergeOffer: unknown fields and promos', () => {

@@ -60,7 +60,30 @@ export default defineConfig({
   // Archiv-Issue 125). The rule follows the import graph, so new shared modules need no list entry. The
   // catalogues (i18n/de, i18n/en) stay apart: each page loads only its language.
   vite: {
+    plugins: [
+      // Vite inserts its preload helper (about 900 B gzip, own chunk on the start path) for every
+      // dynamic import of a client build, also with modulePreload: false. The site's one dynamic
+      // import (the row detail's price history) has no dependencies to preload and no CSS, so the
+      // helper only has to call the import. If Vite renames the module id, this no longer applies
+      // and the Lighthouse script budget fails (CI), which points here.
+      {
+        name: 'tldcost:minimal-preload-helper',
+        enforce: 'pre',
+        resolveId(id) {
+          return id === '\0vite/preload-helper.js' ? id : null;
+        },
+        load(id) {
+          return id === '\0vite/preload-helper.js'
+            ? 'export const __vitePreload = (load) => load();'
+            : null;
+        },
+      },
+    ],
     build: {
+      // No module preloading: the pages have no <link rel="modulepreload"> (the islands load their
+      // entries directly), and the one dynamic import has no dependencies to preload (see the
+      // plugin above).
+      modulePreload: false,
       rollupOptions: {
         output: {
           manualChunks(id, { getModuleInfo }) {

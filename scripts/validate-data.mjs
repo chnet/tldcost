@@ -263,6 +263,10 @@ export function validateDir(dir, validators = makeValidators()) {
           findings.push(`${rel(file)}: provider/tld != path`);
         }
         validOffers.set(`${p}/${basename(f, '.json')}`, { doc, file });
+        // a source for the setup fee belongs to a stated setup amount
+        if (doc.price.setup_source && typeof doc.price.setup !== 'number') {
+          findings.push(`${rel(file)}: price.setup_source without a setup amount`);
+        }
         // methodik: a transfer includes a term only when the provider says so, with the source
         const tSource = doc.price.transfer_includes_term_source;
         if (

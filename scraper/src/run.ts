@@ -261,6 +261,8 @@ export function mergeOffer(provider: string, existing: Offer | undefined, s: Scr
     evidence: { ...s.evidence },
     provider_verified: existing?.provider_verified ?? false,
   };
+  // the setup fee's source belongs to this run's price: none from the adapter, none stored
+  if (s.price.setup_source === undefined) delete offer.price.setup_source;
   // 1 is the schema default: kept out of the files, as in hand-made offers
   if (offer.price.term_years === 1) delete offer.price.term_years;
   if (offer.price.renewal_term_years === 1) delete offer.price.renewal_term_years;

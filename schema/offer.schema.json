@@ -58,6 +58,24 @@
           "description": "Payment for the first term: actual price incl. a public promo (with stated period or conditions), never a coupon code.",
           "$ref": "#/$defs/amount"
         },
+        "setup_source": {
+          "description": "Where the setup fee is stated when that is not the price itself on evidence.source_url (e.g. a table further down the page or another page of the provider): the page URL and the verbatim quote. Set by the adapter; a run that takes the fee from the price itself removes it. Only with a setup amount (validate-data).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "quote"],
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 500
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        },
         "year1_regular": {
           "description": "List price of year 1 without promo.",
           "$ref": "#/$defs/amount"

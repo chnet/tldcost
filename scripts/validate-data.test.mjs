@@ -521,6 +521,39 @@ test('transfer_includes_term: boolean or null; true needs a source (url or quote
   }
 });
 
+test('price.setup_source: url and verbatim quote, only with a setup amount', () => {
+  const source = { url: 'https://registrar.example/domains/', quote: 'Einrichtung: 0 €' };
+  assert.deepEqual(
+    validateDir(
+      withOffer((o) => (o.price.setup_source = source)),
+      V,
+    ),
+    [],
+  );
+
+  const noAmount = validateDir(
+    withOffer((o) => {
+      o.price.setup = null;
+      o.price.setup_source = source;
+    }),
+    V,
+  );
+  assert.equal(noAmount.length, 1, noAmount.join('\n'));
+  assert.match(noAmount[0], /price\.setup_source without a setup amount/);
+
+  const bad = [
+    (o) => (o.price.setup_source = { url: source.url }),
+    (o) => (o.price.setup_source = { quote: source.quote }),
+    (o) => (o.price.setup_source = { ...source, quote: '' }),
+    (o) => (o.price.setup_source = { ...source, url: 'not a url' }),
+    (o) => (o.price.setup_source = { ...source, lang: 'de' }),
+    (o) => (o.price.setup_source = null),
+  ];
+  for (const mutate of bad) {
+    assert.ok(validateDir(withOffer(mutate), V).length > 0, mutate.toString());
+  }
+});
+
 test('promo.max_per_customer (integer >= 1 or null, a number needs a source) and limit_scope', () => {
   const promo = (extra) => (o) => (o.promo = { conditions: 'Nur einmal pro Kunde.', ...extra });
   const ok = [

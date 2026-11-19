@@ -17,6 +17,12 @@ export interface OfferPrice {
   /** Billing unit of the recurring amounts; `month` amounts are multiplied by 12. */
   unit: PriceUnit;
   setup: Cents | null;
+  /**
+   * Where the setup fee is stated when that is not the price itself on evidence.source_url (e.g.
+   * a table further down or another page of the provider): page URL and verbatim quote. Set by
+   * the adapter; a run that takes the fee from the price itself removes it.
+   */
+  setup_source?: SetupSource;
   /** Payment for the first term: actual price incl. a public promo, never a coupon code. */
   year1: Cents | null;
   /** List price of year 1 without promo. */
@@ -49,6 +55,12 @@ export interface StatementSource {
 }
 
 export type TransferTermSource = StatementSource;
+
+/** Source of the setup fee: page URL and verbatim quote, both required. */
+export interface SetupSource {
+  url: string;
+  quote: string;
+}
 
 export interface OfferPromo {
   conditions?: string | null;

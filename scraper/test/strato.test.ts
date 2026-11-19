@@ -4,8 +4,11 @@ import {
   parseCard,
   PROMO_NOTE,
   strato,
+  STRATO_DOMAIN_LIST,
   STRATO_OVERVIEW,
   stratoPage,
+  listEntry,
+  tableSetup,
 } from '../src/adapters/strato.js';
 import { ctxFor, fixture, testHttp, type Routes } from './helpers.js';
 
@@ -15,11 +18,23 @@ const ROBOTS = {
   },
 };
 const OVERVIEW = fixture('strato/domain-kosten.html');
+// the domain list of 2026-11-19, trimmed to the entries of .de, .net, .io and .biz (all terms and
+// sections, among them the 1-month entries and the "Zusatz-Domains" entries)
+const LIST = fixture('strato/domains.html');
 const pages = (...tlds: string[]) =>
   Object.fromEntries(tlds.map((t) => [stratoPage(t), { body: fixture(`strato/${t}.html`) }]));
 const run = (routes: Routes, tlds: readonly string[], overview = OVERVIEW) =>
   strato.fetch(
-    ctxFor(testHttp({ ...ROBOTS, [STRATO_OVERVIEW]: { body: overview }, ...routes }).http, tlds),
+    ctxFor(
+      testHttp({
+        ...ROBOTS,
+        [STRATO_OVERVIEW]: { body: overview },
+        // no list entries: the tests of the domain list pass the list fixture themselves
+        [STRATO_DOMAIN_LIST]: { body: '<p></p>' },
+        ...routes,
+      }).http,
+      tlds,
+    ),
   );
 
 /** A product page with one price card (parts as given) and the VAT note. */
@@ -201,6 +216,267 @@ describe('STRATO adapter', () => {
       after: null,
       term: null,
       setup: 0,
+      setupSource: { from: 'card', text: 'Einrichtung: 0 €' },
+      listCheck: 'not fetched',
     });
+  });
+});
+
+describe('STRATO setup fee: price card line or product table', () => {
+  // .de as served on 2026-11-19: the card has no "Einrichtung" line, the product table has
+  // "Einrichtungsgebühr | 0 €".
+  const DE = fixture('strato/de.html');
+  const TABLE = /<table\b[\s\S]*?<\/table>/.exec(DE)?.[0] ?? '';
+  const one = (body: string) => run({ [stratoPage('de')]: { body } }, ['de']);
+
+  it('takes the setup fee from the product table when the card has no line, with a warning', async () => {
+    expect(DE).not.toMatch(/Einrichtung:/);
+    expect(TABLE).toContain('Einrichtungsgebühr');
+    const result = await one(DE);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([
+      '.de: setup fee from the product table, the price card has no "Einrichtung" line: "Einrichtungsgebühr | 0 €"',
+    ]);
+    expect(result.offers[0]).toMatchObject({
+      tld: 'de',
+      price: { unit: 'month', setup: 0, year1: 5, year1_regular: null, renewal: 100 },
+      promo: { conditions: `Aktionspreis „für 12 Monate“ laut Preiskarte. ${PROMO_NOTE}` },
+    });
+    expect(parseCard(DE, 'de').setupSource).toEqual({
+      from: 'table',
+      text: 'Einrichtungsgebühr | 0 €',
+    });
+  });
+
+  it('reads the table under the header "Domainendung" too (.com, 2026-11-19)', async () => {
+    const com = fixture('strato/com.html');
+    expect(com).not.toMatch(/Einrichtung:/);
+    expect(com).toContain('>Domainendung</th>');
+    const result = await run({ [stratoPage('com')]: { body: com } }, ['com']);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([
+      '.com: setup fee from the product table, the price card has no "Einrichtung" line: "Einrichtungsgebühr | 0 €"',
+    ]);
+    expect(result.offers[0]).toMatchObject({
+      tld: 'com',
+      price: { unit: 'month', setup: 0, year1: 60, year1_regular: null, renewal: 180 },
+    });
+  });
+
+  it('takes any amount from the table row', () => {
+    const page =
+      card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br>' }) +
+      TABLE.replace('0 €', '2,50 €');
+    expect(parseCard(page, 'de')).toMatchObject({
+      setup: 250,
+      setupSource: { from: 'table', text: 'Einrichtungsgebühr | 2,50 €' },
+    });
+  });
+
+  it('prefers the card line when the table agrees, without a warning', async () => {
+    const result = await one(card() + TABLE);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    expect(result.offers[0]?.price.setup).toBe(0);
+    expect(parseCard(card() + TABLE, 'de').setupSource).toEqual({
+      from: 'card',
+      text: 'Einrichtung: 0 €',
+    });
+  });
+
+  it('fails when the card line and the table differ, or neither is there', async () => {
+    const noLine = card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br>' });
+    const cases: [string, string][] = [
+      [
+        card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br> Einrichtung: 2,50 €' }) +
+          TABLE,
+        'setup fees differ: card "Einrichtung: 2,50 €", table "Einrichtungsgebühr | 0 €"',
+      ],
+      [DE.replace(TABLE, ''), 'setup fee missing'],
+      [noLine, 'setup fee missing'],
+      // only the header labels "TLD" and "Domainendung" mark a product table
+      [noLine + TABLE.replace('>TLD<', '>Endung<'), 'setup fee missing'],
+      // a table of another TLD is not the product table of .de
+      [noLine + TABLE.replace('>.de<', '>.com<'), 'setup fee missing'],
+      [
+        noLine + TABLE.replace('Einrichtungsgebühr', 'Einrichtung'),
+        'expected 1 "Einrichtungsgebühr" row in the .de product table, found 0',
+      ],
+      [noLine + TABLE.replace('0 €', 'kostenlos'), 'is not "<amount> €"'],
+      [
+        noLine + TABLE.replace('0 €', '0 €</td><td>einmalig'),
+        'row "Einrichtungsgebühr | 0 € | einmalig" is not',
+      ],
+      [noLine + TABLE + TABLE, 'expected 1 product table for .de, found 2'],
+      // a broken table fails the TLD even with a card line
+      [card() + TABLE.replace('Einrichtungsgebühr', 'Gebühr'), 'found 0'],
+    ];
+    for (const [page, reason] of cases) {
+      const result = await one(page);
+      expect(result.offers, reason).toEqual([]);
+      expect(result.warnings, reason).toEqual([]);
+      expect(result.failed[0]?.reason, reason).toContain(reason);
+    }
+  });
+
+  it('reads no product table on pages without one', () => {
+    expect(tableSetup(fixture('strato/ch.html'), 'ch')).toBeNull();
+    expect(tableSetup(DE, 'de')).toEqual({ cents: 0, text: 'Einrichtungsgebühr | 0 €' });
+  });
+});
+
+describe('STRATO setup fee from the domain list', () => {
+  /** The entries of the list fixture, in page order. */
+  const BOXES = LIST.split(/(?=<div\b[^>]*\bdata-domain-infoBox\b)/);
+  const NET_CODE = 'data-buy="STRATO_DOMAIN_NET_AKTION_VLZ12"';
+  // the entries break the line inside "Einrichtung: 0 €"
+  const SETUP_0 = /Einrichtung:\s+0\s+€/;
+  const BIZ_CODE = 'data-buy="STRATO_DOMAIN_BIZ_AKTION_VLZ12"';
+  const list = (edit: (box: string) => string | null) =>
+    BOXES.map(edit)
+      .filter((b) => b !== null)
+      .join('');
+  /** A product page as on 2026-11-19 for .net/.biz: card without "Einrichtung" line, no table. */
+  const page = (tld: string, price: string, after: string, setupLine = '') =>
+    card({
+      tld,
+      price: `<data value="${price.replace(',', '.')}"><strong>${price}&nbsp;€</strong></data>`,
+      term: 'für 12 Monate',
+      disclaimer: `danach ${after} € /Mon.<br>${setupLine}`,
+    });
+  const NET = page('net', '0,90', '1,50');
+  const BIZ = page('biz', '1,40', '2,50');
+  const one = (tld: string, body: string, listBody: string | null = LIST) =>
+    run(
+      {
+        [stratoPage(tld)]: { body },
+        [STRATO_DOMAIN_LIST]: listBody === null ? { status: 503, body: '' } : { body: listBody },
+      },
+      [tld],
+    );
+
+  it('takes the setup fee from the one 12-month entry with the order code (listed twice)', async () => {
+    expect(BOXES.filter((b) => b.includes(NET_CODE) && b.includes('"12"'))).toHaveLength(2);
+    const result = await one('net', NET);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([
+      `.net: setup fee from ${STRATO_DOMAIN_LIST}, the price card has no "Einrichtung" line and the page no product table: ".net für 12 Monate 0,90 €/Mon., danach 1,50 €/Mon., Einrichtung: 0 €"`,
+    ]);
+    expect(result.offers[0]).toMatchObject({
+      tld: 'net',
+      price: { setup: 0, year1: 90, year1_regular: null, renewal: 150 },
+    });
+    expect(parseCard(NET, 'net', { html: LIST })).toMatchObject({
+      setupSource: { from: 'list' },
+      listCheck: 'source',
+    });
+  });
+
+  it('fails without the entry, on different duplicates and on price differences', async () => {
+    const cases: [string, string, string][] = [
+      // no hit
+      ['net', list((b) => (b.includes(NET_CODE) ? null : b)), 'setup fee missing'],
+      // two 12-month entries with the same code but different text
+      [
+        'net',
+        list((b) =>
+          b === BOXES.find((x) => x.includes(NET_CODE))
+            ? b.replace(SETUP_0, 'Einrichtung: 5 €')
+            : b,
+        ),
+        '2 different 12-month entries for STRATO_DOMAIN_NET_AKTION_VLZ12',
+      ],
+      // the entry's prices differ from the card
+      [
+        'net',
+        LIST.replace(/(danach[\s\S]*?<strong>\s*)1,50(\s)/g, '$11,60$2'),
+        'differ from the price card',
+      ],
+      // Zusatz-Domains trap: 12 months, "Einrichtung: 2,50 €", but no order code
+      ['biz', list((b) => (b.includes(BIZ_CODE) ? null : b)), 'setup fee missing'],
+      // 1-month trap: the order code alone is not enough, the term must be 12 months
+      [
+        'biz',
+        list((b) =>
+          b.includes(BIZ_CODE) ? null : b.replace('data-buy="STRATO_DOMAIN_BIZ_VLZ1"', BIZ_CODE),
+        ),
+        'setup fee missing',
+      ],
+      // text not in the expected form
+      ['net', LIST.replace(new RegExp(SETUP_0, 'g'), 'Einrichtung: gratis'), 'unexpected entry'],
+    ];
+    for (const [tld, listBody, reason] of cases) {
+      const result = await one(tld, tld === 'net' ? NET : BIZ, listBody);
+      expect(result.offers, reason).toEqual([]);
+      expect(result.failed[0]?.reason, reason).toContain(reason);
+    }
+  });
+
+  it('fails when the card line or the table states another setup fee than the list', async () => {
+    const result = await one('net', page('net', '0,90', '1,50', ' Einrichtung: 2,50 €'));
+    expect(result.failed[0]?.reason).toBe(
+      'setup fees differ: card "Einrichtung: 2,50 €", list ".net für 12 Monate 0,90 €/Mon., danach 1,50 €/Mon., Einrichtung: 0 €"',
+    );
+    const conflict = await one(
+      'de',
+      fixture('strato/de.html'),
+      list((b) =>
+        b.includes('data-buy="STRATO_DOMAIN_DE_AKTION_VLZ12"')
+          ? b.replace(SETUP_0, 'Einrichtung: 2,50 €')
+          : b,
+      ),
+    );
+    expect(conflict.failed[0]?.reason).toContain(
+      'setup fees differ: table "Einrichtungsgebühr | 0 €", list',
+    );
+  });
+
+  it('cross-checks card and table TLDs: ok, or no entry', () => {
+    expect(parseCard(fixture('strato/de.html'), 'de', { html: LIST })).toMatchObject({
+      setup: 0,
+      setupSource: { from: 'table' },
+      listCheck: 'ok',
+    });
+    expect(parseCard(fixture('strato/io.html'), 'io', { html: LIST }).listCheck).toBe('ok');
+    expect(parseCard(fixture('strato/com.html'), 'com', { html: LIST }).listCheck).toBe('no entry');
+    // an entry with one price (no "danach"): here the 1-month .biz entry, relabelled as 12 months
+    const vlz1 = BOXES.find((x) => x.includes('data-buy="STRATO_DOMAIN_BIZ_VLZ1"')) ?? '';
+    expect(
+      listEntry(
+        vlz1.replace('data-contract-duration="1"', 'data-contract-duration="12"'),
+        'biz',
+        'STRATO_DOMAIN_BIZ_VLZ1',
+      ),
+    ).toEqual({
+      current: 270,
+      after: null,
+      setup: 1000,
+      text: '.biz 2,70 €/Mon., Einrichtung: 10 €',
+    });
+    expect(listEntry(LIST, 'biz', 'STRATO_DOMAIN_BIZ_AKTION_VLZ12')).toEqual({
+      current: 140,
+      after: 250,
+      setup: 0,
+      text: '.biz für 12 Monate 1,40 €/Mon., danach 2,50 €/Mon., Einrichtung: 0 €',
+    });
+  });
+
+  it('without the list only the TLDs that need it fail, with a warning', async () => {
+    const result = await run(
+      {
+        [stratoPage('net')]: { body: NET },
+        [stratoPage('de')]: { body: fixture('strato/de.html') },
+        [STRATO_DOMAIN_LIST]: { status: 503, body: '' },
+      },
+      ['net', 'de'],
+    );
+    expect(result.offers.map((o) => o.tld)).toEqual(['de']);
+    expect(result.failed[0]?.reason).toMatch(/^setup fee missing: .*not fetched: .*503/);
+    expect(result.warnings[0]).toMatch(
+      /^overview not fetched: .*503.*\(https:\/\/www\.strato\.de\/domains\/\)$/,
+    );
+    expect(parseCard(fixture('strato/de.html'), 'de', { error: 'HTTP 503' }).listCheck).toBe(
+      'not fetched',
+    );
   });
 });

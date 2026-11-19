@@ -2,7 +2,7 @@
 
 Items before and around the launch of tldcost.io (archive issue 13; risks in
 [`concepts/tldcost.md`](concepts/tldcost.md) § 6). Each done item names its evidence: a file, a test
-or a CI step. Status as of 2026-11-16.
+or a CI step. Status as of 2026-11-19.
 
 | Item | Status | Evidence |
 |---|---|---|
@@ -66,7 +66,7 @@ These items are part of the switch to a public repository and are done by the ow
 |---|---|---|
 | Repository links back on (`REPO_PUBLIC`) | done | [`site/src/lib/report.mjs`](../site/src/lib/report.mjs) (repository public since 19.11.2026); deploy after the change |
 | GitHub report links back on (`REPORT_VIA`) | done | [`site/src/lib/report.mjs`](../site/src/lib/report.mjs) (`'github'`, owner decision 19.11.2026); next to every report link and at the top of each issue form: issues are public, no personal data; e-mail without a GitHub account. Deploy after the change |
-| Private vulnerability reporting enabled | open | [`SECURITY.md`](../SECURITY.md) names it as the preferred channel; e-mail until then |
-| Repository settings: secret scanning with push protection, Dependabot alerts, code scanning, read-only default `GITHUB_TOKEN`, approval for workflow runs of outside contributors, wiki off | open | Repository settings |
+| Private vulnerability reporting enabled | done | Enabled, read via the GitHub API on 19.11.2026 (`private-vulnerability-reporting`: enabled); [`SECURITY.md`](../SECURITY.md) names it as the preferred channel |
+| Repository settings: secret scanning with push protection, Dependabot alerts, code scanning, read-only default `GITHUB_TOKEN`, approval for workflow runs of outside contributors, wiki off | done | Read via the GitHub API on 19.11.2026: secret scanning and push protection enabled; Dependabot alerts enabled; code scanning with CodeQL by [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) (pull requests, pushes to `main`, weekly); default `GITHUB_TOKEN` read-only, workflows may not approve pull requests; approval required for workflow runs of all outside contributors; wiki off |
 | Commit identity allowlist names only the bots in use | done | [`config/chnet-commit-emails.txt`](../config/chnet-commit-emails.txt) (the only bot address is `github-actions[bot]`; the other entries are the project's noreply address, GitHub web merges and the co-author address) |
 | Scraper User-Agent points to the Methodik page | done | Default `tldcost-bot/<version> (+https://tldcost.io/methodik/)` in [`scraper/src/cli.ts`](../scraper/src/cli.ts) |

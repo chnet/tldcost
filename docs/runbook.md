@@ -67,6 +67,8 @@ npx cdk deploy tldcost-cert -c account=<account> --profile <profile>
 
 CloudFormation creates the certificate and **waits** until ACM has validated it. The terminal stays open during this time. Run 3b and 3c in parallel in a second terminal.
 
+With alternate domains in `infra/cdk.json` (today `tldcost.de` and `www.tldcost.de`), a fresh deploy of `tldcost-cert` (for example after an account move) also creates certificate generation 2 and waits until it is ISSUED as well. The validation CNAMEs of the alternate domains must then be in their zone too. The values depend on the account: after an account move, read them for generation 1 in 3b and for generation 2 in step 4 of [Alternate domain tldcost.de](#alternate-domain-tldcostde-bluegreen-certificate), and add the new ones.
+
 **3b. Read the validation CNAMEs from `describe-certificate`**
 
 Take the certificate ARN from the stack, not from `list-certificates`: there can be several certificates for `tldcost.io` there (e.g. leftovers of an earlier attempt, or for an alternate domain). This already works while the stack is still `CREATE_IN_PROGRESS`. If the result is empty or `None`, the certificate has not been created yet: wait briefly and repeat.

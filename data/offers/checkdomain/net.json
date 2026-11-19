@@ -25,9 +25,9 @@
   "evidence": {
     "source_url": "https://www.checkdomain.de/net-domain/",
     "source_endpoint": "https://www.checkdomain.de/domains/",
-    "fetched_at": "2026-11-19T07:14:42Z",
+    "fetched_at": "2026-11-19T10:49:27Z",
     "method": "scrape",
-    "evidence_hash": "sha256:901e4b3410439a2758088a2b9f1e4493fd47c0a4405912620775b708b40fd773",
+    "evidence_hash": "sha256:e3357d617a696ad025b78a08c1cf584e55ffa0f797eaa25500bd5d92096e18c7",
     "confidence": "high"
   },
   "provider_verified": false

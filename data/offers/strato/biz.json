@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/biz-domain/",
-    "fetched_at": "2026-11-19T07:15:45Z",
+    "fetched_at": "2026-11-19T10:50:33Z",
     "method": "scrape",
-    "evidence_hash": "sha256:978c5c229c40d947f6cd9d71c18717b64bb7f86c1fe5131f88f142e6d8167cfc",
+    "evidence_hash": "sha256:4dab428ffe03b8e80cdae41bad4fae8b1eb01c60a35d81eb4b540599e63dffae",
     "confidence": "high"
   },
   "provider_verified": false

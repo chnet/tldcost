@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/co-domain/",
-    "fetched_at": "2026-11-19T07:15:40Z",
+    "fetched_at": "2026-11-19T10:50:28Z",
     "method": "scrape",
-    "evidence_hash": "sha256:f4eaafb37fb383ed9de79440f516ee11a24bf696c9969131d76276a951746ca3",
+    "evidence_hash": "sha256:b43f96f92063e562a57060ccd7505afa3b10a9bb8fc02c2bc905019b919901d5",
     "confidence": "high"
   },
   "provider_verified": false

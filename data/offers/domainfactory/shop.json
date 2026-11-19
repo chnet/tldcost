@@ -7,20 +7,17 @@
   "price": {
     "unit": "month",
     "setup": 0,
-    "year1": 9,
+    "year1": 429,
     "year1_regular": 429,
     "renewal": 429,
     "icann_fee_included": true
   },
-  "promo": {
-    "conditions": "Preis für die Registrierung pro Monat für die ersten 12 Monate wie angegeben. Ab dem 13. Monat fällt der dann reguläre Domainpreis an. Abrechnungszeitraum 12 Monate. Das Angebot gilt nur einmal pro Kunde und für Neuregistrierungen.",
-    "valid_until": null
-  },
+  "promo": null,
   "evidence": {
     "source_url": "https://www.df.eu/de/domains/",
-    "fetched_at": "2026-11-19T07:14:48Z",
+    "fetched_at": "2026-11-19T10:49:33Z",
     "method": "scrape",
-    "evidence_hash": "sha256:690a071ceb1e6f4e93798a370a964d2b58c4b86c402c4aae316eac6954d35934",
+    "evidence_hash": "sha256:ef31e869a9a7897e8b4e32128ea5422b95ca3b0234fb59719232ec57eca914b9",
     "confidence": "high"
   },
   "provider_verified": false

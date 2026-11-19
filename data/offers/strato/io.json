@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/io-domain/",
-    "fetched_at": "2026-11-19T07:15:32Z",
+    "fetched_at": "2026-11-19T10:50:20Z",
     "method": "scrape",
-    "evidence_hash": "sha256:2bd0c2cd4b737ef80b245d7388bd0a0ef96e0b9f5e956407e87c1d62eb568ab1",
+    "evidence_hash": "sha256:00168a1fbd97d7bd20436d1633003c564a4efc71474381f1dd033f47ecbf8ef0",
     "confidence": "high"
   },
   "provider_verified": false

@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-berlin",
-    "fetched_at": "2026-11-19T07:15:08Z",
+    "fetched_at": "2026-11-19T10:49:53Z",
     "method": "scrape",
-    "evidence_hash": "sha256:6de72b62b78d3cbd5f5aaa50d7f047509b6ee4dbb772328d2d96d95dd5c44d7c",
+    "evidence_hash": "sha256:d220f7813a3c8b4b0a3466456a1bf4429bc0eb04d347817cd591f56f88f48ebb",
     "confidence": "high"
   },
   "provider_verified": false

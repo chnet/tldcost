@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/dev-domain/",
-    "fetched_at": "2026-11-19T07:15:33Z",
+    "fetched_at": "2026-11-19T10:50:21Z",
     "method": "scrape",
-    "evidence_hash": "sha256:17ad79ba450b93451cadec22ce4eeaa47f6b072476c324fe44cb794fa6bdcd5b",
+    "evidence_hash": "sha256:5fb3ac4c2cd76b9330baec87d150cc18dfd2403bac1d8871712f0775e97f5c89",
     "confidence": "high"
   },
   "provider_verified": false

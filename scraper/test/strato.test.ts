@@ -233,6 +233,21 @@ describe('STRATO setup fee: price card line or product table', () => {
     });
   });
 
+  it('reads the table under the header "Domainendung" too (.com, 2026-11-19)', async () => {
+    const com = fixture('strato/com.html');
+    expect(com).not.toMatch(/Einrichtung:/);
+    expect(com).toContain('>Domainendung</th>');
+    const result = await run({ [stratoPage('com')]: { body: com } }, ['com']);
+    expect(result.failed).toEqual([]);
+    expect(result.warnings).toEqual([
+      '.com: setup fee from the product table, the price card has no "Einrichtung" line: "Einrichtungsgebühr | 0 €"',
+    ]);
+    expect(result.offers[0]).toMatchObject({
+      tld: 'com',
+      price: { unit: 'month', setup: 0, year1: 60, year1_regular: null, renewal: 180 },
+    });
+  });
+
   it('takes any amount from the table row', () => {
     const page =
       card({ term: 'für 12 Monate', disclaimer: 'danach 1 € /Mon.<br>' }) +
@@ -264,6 +279,8 @@ describe('STRATO setup fee: price card line or product table', () => {
       ],
       [DE.replace(TABLE, ''), 'setup fee missing'],
       [noLine, 'setup fee missing'],
+      // only the header labels "TLD" and "Domainendung" mark a product table
+      [noLine + TABLE.replace('>TLD<', '>Endung<'), 'setup fee missing'],
       // a table of another TLD is not the product table of .de
       [noLine + TABLE.replace('>.de<', '>.com<'), 'setup fee missing'],
       [

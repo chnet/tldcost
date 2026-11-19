@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Trims a saved STRATO page (200-300 kB) to a test fixture: every price card (from its header to the
-// order button, bytes unchanged), the product tables (header "TLD", bytes unchanged), the
+// order button, bytes unchanged), the product tables (header "TLD" or "Domainendung", bytes unchanged), the
 // "Preise inkl. MwSt." notes and the FAQ paragraph on the Aktionspreis (price overview
 // https://www.strato.de/domains/domain-kosten/ only). The optional fetch date goes into the header.
 // Usage: node scripts/trim-strato-fixture.mjs <saved page> <out file> <source url> [fetch date]
@@ -17,7 +17,7 @@ const cards = [
 ].map((m) => m[0]);
 const tables = [...html.matchAll(/<table\b[^>]*>[\s\S]*?<\/table>/g)]
   .map((m) => m[0])
-  .filter((t) => /<th\b[^>]*>\s*TLD\s*<\/th>/.test(t));
+  .filter((t) => /<th\b[^>]*>\s*(?:TLD|Domainendung)\s*<\/th>/.test(t));
 const notes = [...html.matchAll(/<div class="text-end">\s*Preise inkl\. MwSt\.\s*<\/div>/g)].map(
   (m) => m[0],
 );

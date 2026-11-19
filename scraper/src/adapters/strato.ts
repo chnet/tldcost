@@ -4,7 +4,8 @@
 // data-buy="STRATO_DOMAIN_<TLD>[_AKTION]_VLZ12" (VLZ12: 12-month contract term). The cards of other
 // TLDs on the same page are ignored. Since 2026-11-19 the cards of TLDs without a setup fee have no
 // "Einrichtung" line (.de: "danach 1 € /Mon." only); the setup fee is then taken from the row
-// "Einrichtungsgebühr | 0 €" of the product table on the same page (header "TLD | .de"), and the
+// "Einrichtungsgebühr | 0 €" of the product table on the same page (header "TLD | .de" or
+// "Domainendung | .com", both seen on 2026-11-19), and the
 // run reports a warning that quotes it. With neither the card line nor the table row, or when
 // both are there and differ, the TLD fails. robots.txt only disallows /apps/ and /error/. The AGB (17.90)
 // say nothing about automated access to the website. Domains are sold stand-alone (bundling rule
@@ -60,10 +61,11 @@ export interface StratoCard {
 }
 
 const TABLE_SETUP = 'Einrichtungsgebühr';
+const TABLE_HEADS = new Set(['TLD', 'Domainendung']);
 
 /**
- * The "Einrichtungsgebühr" row of the product table of `tld` (a table whose header is exactly
- * "TLD" | ".<tld>"); null when the page has no such table. Throws when there are several such
+ * The "Einrichtungsgebühr" row of the product table of `tld` (a table whose header is exactly two
+ * cells, "TLD" or "Domainendung", then ".<tld>"); null when the page has no such table. Throws when there are several such
  * tables, or the row is missing, doubled or not "<amount> €".
  */
 export function tableSetup(html: string, tld: string): { cents: number; text: string } | null {
@@ -75,7 +77,7 @@ export function tableSetup(html: string, tld: string): { cents: number; text: st
     .map((m) => m[1] as string)
     .filter((table) => {
       const head = cellsOf(table, 'th');
-      return head.length === 2 && head[0] === 'TLD' && head[1] === `.${tld}`;
+      return head.length === 2 && TABLE_HEADS.has(head[0] as string) && head[1] === `.${tld}`;
     });
   if (tables.length === 0) return null;
   if (tables.length > 1) {

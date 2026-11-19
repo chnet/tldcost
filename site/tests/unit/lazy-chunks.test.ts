@@ -78,6 +78,22 @@ describe('lazyChunkFindings', () => {
     ]);
   });
 
+  it('a dependency list in another form: fails closed instead of finding nothing', () => {
+    const other = {
+      // dynamic import, the list written differently (no m.f=[...])
+      dynamic:
+        'const deps=["_astro/History.d4.js","_astro/History.g7.css"];e(()=>import(`./History.d4.js`),deps);',
+      // __vite__mapDeps without a readable list
+      mapDeps:
+        'const __vite__mapDeps=(i)=>i.map((i)=>LIST[i]);e(()=>load("History"),__vite__mapDeps([0]));',
+    };
+    for (const [kind, source] of Object.entries(other)) {
+      expect(lazyChunkFindings(build({ '_astro/Table.a1.js': source })), kind).toEqual([
+        '_astro/Table.a1.js: cannot parse mapDeps: Vite codegen changed? (dynamic import without a readable dependency list)',
+      ]);
+    }
+  });
+
   it('no _astro directory: nothing to check', () => {
     expect(lazyChunkFindings(dist({ 'index.html': '<p>x</p>' }))).toEqual([]);
   });

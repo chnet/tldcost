@@ -121,6 +121,23 @@ for (const vat of ['gross', 'net'] as const) {
   });
 }
 
+test('lazy history chunk: open, close, open again: requested once', async ({ page }) => {
+  const loaded: string[] = [];
+  page.on('request', (r) => {
+    if (/\/_astro\/RowHistory\.[\w-]+\.js$/.test(r.url())) loaded.push(r.url());
+  });
+  await open(page, '/?tld=de');
+  const toggle = page.locator('tr[data-provider-id="alpha"] .tc-detail-toggle');
+  const detail = await detailOf(page, 'alpha');
+  await expect(detail.locator('svg.tc-spark')).toBeVisible();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('section.tc-history svg.tc-spark')).toBeVisible();
+  expect(loaded).toHaveLength(1);
+});
+
 test('history chunk fails to load: a short note, the detail stays usable, no uncaught error', async ({
   page,
 }) => {

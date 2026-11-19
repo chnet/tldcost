@@ -11,6 +11,11 @@
     "year1_regular": 386,
     "renewal": 386,
     "transfer_in": 386,
+    "transfer_includes_term": true,
+    "transfer_includes_term_source": {
+      "url": "https://www.dynadot.com/domain/de",
+      "quote": "Renewal upon transfer: 1 Year"
+    },
     "transfer_out": null,
     "icann_fee_included": null
   },

@@ -941,7 +941,7 @@ Price data (Archiv-Issue 77): manuell im Browser geprüft, 2026-11-15, kein gesp
 - `setup: 0`: provider statement on the [price list](https://www.dynadot.com/domain/prices): „Our domain pricing has no hidden fees and no upselling at checkout.“ (retrieved 2026-11-12).
 - .co: year 1 15,50 $ without an „On Sale“ label (no struck-through price), renewal 31,20 $.
 - .ai: prices per year, the page says registration and renewal for at least 2 years. So `year1` and `renewal` are 171,20 $ each with `term_years: 2` / `renewal_term_years: 2`; transfer 171,20 $.
-- Transfer includes a term (`transfer_includes_term`), as the owner checked it: yes for .com .net .org .info .biz .io .co .me .online .shop .xyz .cloud .berlin (source: the price list); no for .at and .ch („Renewal Upon Transfer: None“). Not stated for .de, .eu, .ai, .app, .dev; the TLD pages probably show „Renewal Upon Transfer“, to be checked at the next Archiv-Issue 77 check.
+- Transfer includes a term (`transfer_includes_term`), as the owner checked it: yes for .com .net .org .info .biz .io .co .me .online .shop .xyz .cloud .berlin (source: the price list); no for .at and .ch („Renewal Upon Transfer: None“). Yes for .de: the [.de page](https://www.dynadot.com/domain/de) shows „Renewal upon transfer: 1 Year“ (retrieved 2026-11-19 as `tldcost-bot`, one static request). Not stated for .eu, .ai, .app, .dev; the TLD pages probably show „Renewal Upon Transfer“, to be checked at the next Archiv-Issue 77 check.
 - .berlin: „Restriction: Connection to Berlin.“
 
 ## Porkbun (`porkbun`)

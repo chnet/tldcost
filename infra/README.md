@@ -9,7 +9,7 @@ Bootstrap: both regions, version 32 (2026-11-13). Procedure and order of the go-
 
 | Stack | Region | Content |
 |---|---|---|
-| `tldcost-cert` | `us-east-1` (fixed, CloudFront accepts only certificates from us-east-1) | **only** the ACM certificate `tldcost.io` + `www.tldcost.io`, DNS validation without a hosted zone. Output `CertificateArn` |
+| `tldcost-cert` | `us-east-1` (fixed, CloudFront accepts only certificates from us-east-1) | **only** ACM certificates, DNS validation without a hosted zone. Generation 1 `Certificate`: `tldcost.io` + `www.tldcost.io`, output `CertificateArn`. Generation 2 `CertificateWithAlternates`, only when `alternateDomainNames` is set: apex, www and the alternate domains, output `CertificateWithAlternatesArn` (see [Alternate domains](#alternate-domains-bluegreen-certificate)) |
 | `tldcost` | `siteRegion`, default **`eu-west-1`** (EU/Ireland) | S3 bucket, CloudFront, CloudFront Function, two response headers policies (site, API), GitHub deploy role. Imports the certificate via `-c certificateArn=…` |
 
 The stacks are coupled only via the `certificateArn` parameter. There are no SSM cross-region references and no custom resources. Without `certificateArn`, only `tldcost-cert` is synthesized (first deploy step).
@@ -39,7 +39,7 @@ Defaults are in `cdk.json` or, for keys missing there, in `lib/config.ts`; overr
 | `siteRegion` | `eu-west-1` | Region of the site stack. `eu-central-1` or `us-east-1` are also possible |
 | `certificateArn` | — | ARN of the **ISSUED** certificate from `tldcost-cert`. It is validated: format `arn:aws:acm:us-east-1:<account>:certificate/<uuid>`, and the account must match `account` (if set) |
 | `domainName` | `tldcost.io` | Canonical domain. `www.<domain>` is always added and redirects |
-| `alternateDomainNames` | `[]` | Additional domains (e.g. `tldcost.de` later), redirect to the apex domain. **Empty = inactive.** After a change, both stacks must be redeployed (certificate SAN and aliases) |
+| `alternateDomainNames` | `[]`; `cdk.json`: `tldcost.de`, `www.tldcost.de` | Additional domains that redirect to the apex domain (aliases of the distribution, redirect list of the function, SANs of certificate generation 2). **Empty = inactive.** A change needs the blue/green certificate order in [Alternate domains](#alternate-domains-bluegreen-certificate) |
 | `githubOidcSubject` | `repo:chnet@16511920/tldcost@1459607746:environment:production` | Exact `sub` claim. Only the immutable form `owner@id/repo@id` with environment is allowed |
 | `githubJobWorkflowRef` | `chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main` | Exact `job_workflow_ref` claim. Only `@refs/heads/main` is allowed |
 | `createGithubOidcProvider` | `false` | `true`: the site stack creates the GitHub OIDC provider itself (`AWS::IAM::OIDCProvider`, without Lambda, `DeletionPolicy: Retain`). Only for an account **without** a provider and without an organization SCP that forbids creating it (move to a different AWS account). `-c …=true\|false` or boolean in `cdk.json` |
@@ -158,9 +158,29 @@ The zone `tldcost.io` is a **Route 53 hosted zone in a separate domains account*
 | after the deploy of `tldcost` | `tldcost.io` A + AAAA, **ALIAS** | Output `DistributionDomainName`, alias zone `Z2FDTNDATAQYW2` (CloudFront) |
 | after the deploy of `tldcost` | `www.tldcost.io` A + AAAA, ALIAS | same as above |
 
+The zone `tldcost.de` lives in the same domains account and is maintained the same way. It exists before the registration, because the .de registry checks the name servers first:
+
+| When | Record | Value |
+|---|---|---|
+| with the zone | `tldcost.de` CAA | `0 issue "amazon.com"` and `0 issuewild "amazon.com"` (as for `tldcost.io`) |
+| after the deploy of `tldcost-cert` with generation 2 has started | 2 × CNAME `_<hash>.tldcost.de.`, `_<hash>.www.tldcost.de.` | from `aws acm describe-certificate` of generation 2. The CNAMEs of `tldcost.io` and `www.tldcost.io` are the same for both generations |
+| after the deploy of `tldcost` with generation 2 | `tldcost.de` and `www.tldcost.de` A + AAAA, ALIAS | Output `DistributionDomainName`, alias zone `Z2FDTNDATAQYW2` |
+
 Because the zone is in Route 53, an ALIAS to CloudFront is valid at the apex as well. The validation CNAMEs stay in place permanently, so that ACM can renew the certificate automatically.
 
 Commands and order: [`docs/runbook.md`](../docs/runbook.md).
+
+## Alternate domains (blue/green certificate)
+
+The distribution can use only one certificate. A certificate whose names change is replaced by CloudFormation, and the old one cannot be deleted during the cleanup while CloudFront still uses it. Therefore generation 1 (`tldcost.io`, `www.tldcost.io`) is pinned and never changes, and generation 2 with all names is created next to it:
+
+1. `alternateDomainNames` in `cdk.json`, merged by PR.
+2. Deploy `tldcost-cert`: adds generation 2 and waits until it is ISSUED (validation CNAMEs of the new domains, see [DNS](#dns)). Generation 1 stays as it is.
+3. Deploy `tldcost` with `-c certificateArn=<CertificateWithAlternatesArn>`: the distribution gets the new aliases and generation 2.
+4. Alias records of the new domains.
+5. Later, by a separate change: remove generation 1 once no distribution uses it. A later change of `alternateDomainNames` then replaces the only certificate and needs the same blue/green order again.
+
+Rollback until step 5: deploy `tldcost` with the generation 1 ARN and `-c 'alternateDomainNames=[]'`. Between steps 1 and 3, deploy `tldcost` only as step 3: with the generation 1 ARN the new aliases are not covered and CloudFormation rolls the update back.
 
 ## Rollback
 

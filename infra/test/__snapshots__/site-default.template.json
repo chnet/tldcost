@@ -2,7 +2,7 @@
   "Description": "tldcost static site: S3 (versioned) + CloudFront (OAC) + GitHub OIDC deploy role",
   "Outputs": {
     "DistributionDomainName": {
-      "Description": "Alias target (A/AAAA ALIAS, zone Z2FDTNDATAQYW2) for tldcost.io, www.tldcost.io",
+      "Description": "Alias target (A/AAAA ALIAS, zone Z2FDTNDATAQYW2) for tldcost.io, www.tldcost.io, tldcost.de, www.tldcost.de",
       "Value": {
         "Fn::GetAtt": [
           "Distribution830FAC52",
@@ -254,7 +254,7 @@
       "Type": "AWS::CloudFront::Function",
       "Properties": {
         "AutoPublish": true,
-        "FunctionCode": "// CloudFront Function (cloudfront-js-2.0), viewer-request.\n// 1. Secondary hosts (www., alternate domains): 301 to https://<canonical host><path>, path already\n//    normalized to a trailing slash (one hop instead of two).\n// 2. Directory URLs without trailing slash (/x, last segment has no dot): 301 to /x/ (Astro trailingSlash 'always').\n// 3. Directory URLs with trailing slash (/x/): rewrite to /x/index.html (served from S3, no redirect).\n// Placeholders for the canonical host and the redirect host list are substituted at synth time (lib/site-stack.ts).\n\nvar CANONICAL_HOST = \"tldcost.io\";\nvar REDIRECT_HOSTS = [\"www.tldcost.io\"];\n\nfunction buildQueryString(qs) {\n  var parts = [];\n  for (var key in qs) {\n    var entry = qs[key];\n    if (entry.multiValue) {\n      for (var i = 0; i < entry.multiValue.length; i++) {\n        parts.push(key + '=' + entry.multiValue[i].value);\n      }\n    } else {\n      parts.push(entry.value === '' ? key : key + '=' + entry.value);\n    }\n  }\n  return parts.length ? '?' + parts.join('&') : '';\n}\n\nfunction redirect(location) {\n  return {\n    statusCode: 301,\n    statusDescription: 'Moved Permanently',\n    headers: {\n      location: { value: location },\n      'cache-control': { value: 'max-age=3600' },\n    },\n  };\n}\n\nfunction withTrailingSlash(uri) {\n  if (uri.endsWith('/')) return uri;\n  var lastSegment = uri.substring(uri.lastIndexOf('/') + 1);\n  return lastSegment.indexOf('.') === -1 ? uri + '/' : uri;\n}\n\nfunction handler(event) {\n  var request = event.request;\n  var hostHeader = request.headers.host;\n  var host = hostHeader ? hostHeader.value.toLowerCase() : '';\n  var uri = withTrailingSlash(request.uri);\n\n  if (REDIRECT_HOSTS.indexOf(host) !== -1) {\n    return redirect('https://' + CANONICAL_HOST + uri + buildQueryString(request.querystring));\n  }\n  if (uri !== request.uri) {\n    // Relative Location keeps the requesting host (apex or the cloudfront.net domain).\n    return redirect(uri + buildQueryString(request.querystring));\n  }\n  if (uri.endsWith('/')) {\n    request.uri = uri + 'index.html';\n  }\n  return request;\n}\n",
+        "FunctionCode": "// CloudFront Function (cloudfront-js-2.0), viewer-request.\n// 1. Secondary hosts (www., alternate domains): 301 to https://<canonical host><path>, path already\n//    normalized to a trailing slash (one hop instead of two).\n// 2. Directory URLs without trailing slash (/x, last segment has no dot): 301 to /x/ (Astro trailingSlash 'always').\n// 3. Directory URLs with trailing slash (/x/): rewrite to /x/index.html (served from S3, no redirect).\n// Placeholders for the canonical host and the redirect host list are substituted at synth time (lib/site-stack.ts).\n\nvar CANONICAL_HOST = \"tldcost.io\";\nvar REDIRECT_HOSTS = [\"www.tldcost.io\",\"tldcost.de\",\"www.tldcost.de\"];\n\nfunction buildQueryString(qs) {\n  var parts = [];\n  for (var key in qs) {\n    var entry = qs[key];\n    if (entry.multiValue) {\n      for (var i = 0; i < entry.multiValue.length; i++) {\n        parts.push(key + '=' + entry.multiValue[i].value);\n      }\n    } else {\n      parts.push(entry.value === '' ? key : key + '=' + entry.value);\n    }\n  }\n  return parts.length ? '?' + parts.join('&') : '';\n}\n\nfunction redirect(location) {\n  return {\n    statusCode: 301,\n    statusDescription: 'Moved Permanently',\n    headers: {\n      location: { value: location },\n      'cache-control': { value: 'max-age=3600' },\n    },\n  };\n}\n\nfunction withTrailingSlash(uri) {\n  if (uri.endsWith('/')) return uri;\n  var lastSegment = uri.substring(uri.lastIndexOf('/') + 1);\n  return lastSegment.indexOf('.') === -1 ? uri + '/' : uri;\n}\n\nfunction handler(event) {\n  var request = event.request;\n  var hostHeader = request.headers.host;\n  var host = hostHeader ? hostHeader.value.toLowerCase() : '';\n  var uri = withTrailingSlash(request.uri);\n\n  if (REDIRECT_HOSTS.indexOf(host) !== -1) {\n    return redirect('https://' + CANONICAL_HOST + uri + buildQueryString(request.querystring));\n  }\n  if (uri !== request.uri) {\n    // Relative Location keeps the requesting host (apex or the cloudfront.net domain).\n    return redirect(uri + buildQueryString(request.querystring));\n  }\n  if (uri.endsWith('/')) {\n    request.uri = uri + 'index.html';\n  }\n  return request;\n}\n",
         "FunctionConfig": {
           "Comment": "tldcost: www/alternate -> apex, /x -> /x/ (301), /x/ -> /x/index.html",
           "Runtime": "cloudfront-js-2.0"
@@ -423,7 +423,9 @@
         "DistributionConfig": {
           "Aliases": [
             "tldcost.io",
-            "www.tldcost.io"
+            "www.tldcost.io",
+            "tldcost.de",
+            "www.tldcost.de"
           ],
           "CacheBehaviors": [
             {

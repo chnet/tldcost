@@ -5,7 +5,8 @@ import { synthSite, TEST_CERT_ARN } from './helpers.js';
 // Flags for moving the tldcost stacks into another AWS account.
 // The defaults must leave the site stack exactly as before: the snapshot below is the template of
 // main before the flags existed (CDKMetadata removed, it changes with every CDK version), plus the
-// permissions boundary on the deploy role (default of workloadBoundaryPolicyName).
+// permissions boundary on the deploy role (default of workloadBoundaryPolicyName) and the alternate
+// domains tldcost.de and www.tldcost.de from cdk.json (aliases and the function's redirect list).
 
 type Resources = Record<
   string,
@@ -76,7 +77,7 @@ describe('attachDomainNames=false', () => {
 
   it('drops only the alternate domain names; certificate, TLS policy and everything else stay', () => {
     const { Aliases, ...baseRest } = distConfig(base);
-    expect(Aliases).toEqual(['tldcost.io', 'www.tldcost.io']);
+    expect(Aliases).toEqual(['tldcost.io', 'www.tldcost.io', 'tldcost.de', 'www.tldcost.de']);
     expect(distConfig(moved).Aliases).toBeUndefined();
     expect(distConfig(moved)).toEqual(baseRest);
     expect(distConfig(moved).ViewerCertificate).toEqual({

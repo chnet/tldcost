@@ -73,7 +73,7 @@ Take the certificate ARN from the stack, not from `list-certificates`: there can
 
 ```bash
 ARN=$(aws cloudformation describe-stack-resources --stack-name tldcost-cert --region us-east-1 --profile <profile> \
-  --query "StackResources[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId | [0]" --output text)
+  --query "StackResources[?ResourceType=='AWS::CertificateManager::Certificate' && starts_with(LogicalResourceId, 'Certificate') && !starts_with(LogicalResourceId, 'CertificateWithAlternates')].PhysicalResourceId | [0]" --output text)
 aws acm describe-certificate --certificate-arn "$ARN" --region us-east-1 --profile <profile> \
   --query 'Certificate.DomainValidationOptions[].[DomainName,ResourceRecord.Name,ResourceRecord.Type,ResourceRecord.Value]' --output table
 ```
@@ -195,7 +195,57 @@ For now, the only trigger is `workflow_dispatch`. Check: `curl -sI https://tldco
 
 **Revert an infra change:** Revert the commit in `infra/` and run `cdk deploy` locally (step 3a or 4), after approval by the operator.
 
-## Later: alternate domain (e.g. tldcost.de)
+## Alternate domain tldcost.de (blue/green certificate)
 
-`-c alternateDomainNames=tldcost.de` on **both** stacks. This replaces the certificate: new CNAMEs (step 3b/3c), wait for ISSUED, then deploy the site stack with the new ARN. After that, add the alias records for the new domain in its zone.
-During the cert deploy, the old certificate is still attached to CloudFront, so CloudFormation cannot delete it during cleanup. After the site deploy, check the old certificate in ACM and delete it by hand.
+`alternateDomainNames` in `infra/cdk.json` lists `tldcost.de` and `www.tldcost.de`. They redirect with 301 to `https://tldcost.io/<path>` (one hop over https, two over http). Background: [`infra/README.md`](../infra/README.md#alternate-domains-bluegreen-certificate). Every `cdk diff`/`cdk deploy` below runs locally by the operator, after approval.
+
+1. **Zone and registration:** zone `tldcost.de` with CAA in the domains account (PR in the zone repository), then the registration with the name servers of that zone.
+2. **Merge** of the change with `alternateDomainNames`, once the delegation of `tldcost.de` is visible. From the merge until step 6, `cdk deploy tldcost` runs only as step 6.
+3. **Diff and deploy the certificate stack.** The diff must show only additions (`CertificateWithAlternates…` and its output), nothing on `Certificate…`:
+
+   ```bash
+   cd infra
+   npx cdk diff tldcost-cert -c account=<account> --profile <profile> --no-change-set
+   npx cdk deploy tldcost-cert -c account=<account> --profile <profile>
+   ```
+
+4. **Validation CNAMEs of generation 2** (second terminal, while step 3 waits):
+
+   ```bash
+   ARN2=$(aws cloudformation describe-stack-resources --stack-name tldcost-cert --region us-east-1 --profile <profile> \
+     --query "StackResources[?ResourceType=='AWS::CertificateManager::Certificate' && starts_with(LogicalResourceId, 'CertificateWithAlternates')].PhysicalResourceId | [0]" --output text)
+   aws acm describe-certificate --certificate-arn "$ARN2" --region us-east-1 --profile <profile> \
+     --query 'Certificate.DomainValidationOptions[].[DomainName,ResourceRecord.Name,ResourceRecord.Type,ResourceRecord.Value,ValidationStatus]' --output table
+   ```
+
+   The rows of `tldcost.de` and `www.tldcost.de` go into a PR in the zone repository; the rows of `tldcost.io` and `www.tldcost.io` must equal the existing CNAMEs.
+5. **ISSUED:** `aws acm describe-certificate --certificate-arn "$ARN2" --region us-east-1 --profile <profile> --query Certificate.Status --output text`. Step 3 then completes.
+6. **Diff and deploy the site stack with generation 2.** Expected diff: aliases +2, viewer certificate, function code (`REDIRECT_HOSTS`), output description; nothing else:
+
+   ```bash
+   ARN1=$(aws cloudformation describe-stacks --stack-name tldcost-cert --region us-east-1 --profile <profile> \
+     --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" --output text)   # keep for the rollback
+   npx cdk diff tldcost -c account=<account> -c siteRegion="$SITE_REGION" -c certificateArn="$ARN2" --profile <profile> --no-change-set
+   npx cdk deploy tldcost -c account=<account> -c siteRegion="$SITE_REGION" -c certificateArn="$ARN2" --profile <profile>
+   ```
+
+7. **Alias records** `tldcost.de` and `www.tldcost.de` (A + AAAA, ALIAS to `DistributionDomainName`) via PR in the zone repository.
+8. **Check** (expected: `301` to `https://tldcost.io/…` with the trailing slash for directories and the query kept; over http first `301` to https on the same host; HSTS on the https redirect; `200` at the end):
+
+   ```bash
+   for scheme in http https; do for host in tldcost.de www.tldcost.de; do
+     for path in / /methodik /methodik/ '/api/v1/all.json' '/tld/de/?sort=tco3'; do
+       printf '%s ' "$scheme://$host$path"
+       curl -sS -o /dev/null -w '%{http_code} %{redirect_url}\n' --max-time 15 "$scheme://$host$path"
+     done; done; done
+   curl -sS -o /dev/null -D - https://tldcost.de/methodik | grep -i -E '^(HTTP|location|strict-transport)'
+   dig +short CAA tldcost.de
+   ```
+
+**Rollback** (until generation 1 is removed): deploy the site stack with generation 1 and without alternate domains, then revert the `cdk.json` change by PR and remove the alias records of `tldcost.de`:
+
+```bash
+npx cdk deploy tldcost -c account=<account> -c siteRegion="$SITE_REGION" -c certificateArn="$ARN1" -c 'alternateDomainNames=[]' --profile <profile>
+```
+
+**Remove generation 1** (separate change, at the earliest a week after a successful check): first confirm that the distribution uses generation 2 (`aws cloudfront get-distribution-config --id <DistributionId> --query DistributionConfig.ViewerCertificate.ACMCertificateArn`), then diff (only generation 1 and its output are removed) and deploy `tldcost-cert`.

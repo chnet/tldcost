@@ -6,12 +6,12 @@ const read = (overrides: Record<string, unknown> = {}) =>
   readConfig(contextReader({ ...CDK_JSON_CONTEXT, ...overrides }));
 
 describe('readConfig', () => {
-  it('committed defaults: tldcost.io, site in eu-west-1, no account, no alternates, no certificate yet', () => {
+  it('committed defaults: tldcost.io, site in eu-west-1, no account, tldcost.de + www as alternates, no certificate yet', () => {
     expect(read()).toEqual({
       account: undefined,
       siteRegion: 'eu-west-1',
       domainName: 'tldcost.io',
-      alternateDomainNames: [],
+      alternateDomainNames: ['tldcost.de', 'www.tldcost.de'],
       certificateArn: undefined,
       githubOidcSubject: 'repo:chnet@16511920/tldcost@1459607746:environment:production',
       githubJobWorkflowRef: 'chnet/tldcost/.github/workflows/deploy.yml@refs/heads/main',

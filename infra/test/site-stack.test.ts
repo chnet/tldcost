@@ -108,10 +108,10 @@ describe('stack tldcost (site, defaults from cdk.json + certificateArn)', () => 
   });
 
   describe('CloudFront', () => {
-    it('serves apex + www with the imported us-east-1 certificate, OAC origin via regional bucket domain', () => {
+    it('serves apex, www and the alternate domains with the imported us-east-1 certificate, OAC origin via regional bucket domain', () => {
       template.hasResourceProperties('AWS::CloudFront::Distribution', {
         DistributionConfig: Match.objectLike({
-          Aliases: ['tldcost.io', 'www.tldcost.io'],
+          Aliases: ['tldcost.io', 'www.tldcost.io', 'tldcost.de', 'www.tldcost.de'],
           DefaultRootObject: 'index.html',
           HttpVersion: 'http2and3',
           IPV6Enabled: true,
@@ -247,10 +247,12 @@ describe('stack tldcost (site, defaults from cdk.json + certificateArn)', () => 
       });
     });
 
-    it('viewer-request function redirects www to the apex, all placeholders resolved', () => {
+    it('viewer-request function redirects www and the alternate domains to the apex, all placeholders resolved', () => {
       template.hasResourceProperties('AWS::CloudFront::Function', {
         FunctionConfig: { Runtime: 'cloudfront-js-2.0', Comment: Match.anyValue() },
-        FunctionCode: Match.stringLikeRegexp('var REDIRECT_HOSTS = \\["www\\.tldcost\\.io"\\];'),
+        FunctionCode: Match.stringLikeRegexp(
+          'var REDIRECT_HOSTS = \\["www\\.tldcost\\.io","tldcost\\.de","www\\.tldcost\\.de"\\];',
+        ),
       });
       const fn = firstResource(template.findResources('AWS::CloudFront::Function'));
       const code = fn.Properties.FunctionCode as string;
@@ -447,7 +449,17 @@ describe('permissions boundary (workloadBoundaryPolicyName)', () => {
   });
 });
 
-describe('alternate domains (e.g. a later tldcost.de)', () => {
+describe('alternate domains', () => {
+  it('without alternate domains: apex + www only', () => {
+    const { template } = synthSite({ alternateDomainNames: [] });
+    template.hasResourceProperties('AWS::CloudFront::Distribution', {
+      DistributionConfig: Match.objectLike({ Aliases: ['tldcost.io', 'www.tldcost.io'] }),
+    });
+    template.hasResourceProperties('AWS::CloudFront::Function', {
+      FunctionCode: Match.stringLikeRegexp('var REDIRECT_HOSTS = \\["www\\.tldcost\\.io"\\];'),
+    });
+  });
+
   it('are added to aliases and redirect list when configured', () => {
     const { template } = synthSite({ alternateDomainNames: ['tldcost.de'] });
     template.hasResourceProperties('AWS::CloudFront::Distribution', {

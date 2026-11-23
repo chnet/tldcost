@@ -42,9 +42,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/ch-domain/",
-    "fetched_at": "2026-11-19T10:50:26Z",
+    "fetched_at": "2026-11-23T18:41:46Z",
     "method": "scrape",
-    "evidence_hash": "sha256:525320e363c67b07a58d2ccf93a9e5ccac0db6dc6a685aef3ad390cd6e071ee8",
+    "evidence_hash": "sha256:b521b839408af58d2baaf80fefb7f4a456216bb0dfd84e654af1886ff432de85",
     "confidence": "high"
   },
   "provider_verified": false

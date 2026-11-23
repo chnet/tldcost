@@ -23,9 +23,9 @@
   },
   "evidence": {
     "source_url": "https://www.one.com/de/domains/preise",
-    "fetched_at": "2026-11-19T10:49:59Z",
+    "fetched_at": "2026-11-23T18:41:21Z",
     "method": "scrape",
-    "evidence_hash": "sha256:f070c92006d01fd99e546feced5712b6af33313418043e483206c9800532cb85",
+    "evidence_hash": "sha256:0dae43c2d4878414f0827c7cb580cab81c5ff232cf80f5e657aee100c2401f8b",
     "confidence": "high"
   },
   "provider_verified": false

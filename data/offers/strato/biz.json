@@ -12,7 +12,11 @@
     "renewal": 250,
     "transfer_in": null,
     "transfer_out": null,
-    "icann_fee_included": null
+    "icann_fee_included": null,
+    "setup_source": {
+      "url": "https://www.strato.de/domains/",
+      "quote": ".biz für 12 Monate 1,40 €/Mon., danach 2,50 €/Mon., Einrichtung: 0 €"
+    }
   },
   "promo": {
     "conditions": "Aktionspreis „für 12 Monate“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
@@ -45,9 +49,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/biz-domain/",
-    "fetched_at": "2026-11-19T10:50:33Z",
+    "fetched_at": "2026-11-23T18:41:53Z",
     "method": "scrape",
-    "evidence_hash": "sha256:4dab428ffe03b8e80cdae41bad4fae8b1eb01c60a35d81eb4b540599e63dffae",
+    "evidence_hash": "sha256:e00430b63b0cda2dac6467711238f2383cebf356c8dafad1c9aae1575e74cd65",
     "confidence": "high"
   },
   "provider_verified": false

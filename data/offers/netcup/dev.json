@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-dev",
-    "fetched_at": "2026-11-19T10:49:44Z",
+    "fetched_at": "2026-11-23T18:41:06Z",
     "method": "scrape",
-    "evidence_hash": "sha256:be335b694353a5b7eb9052309eb054b933d3e551c81ea973065addaed676beca",
+    "evidence_hash": "sha256:e729a9e2dc368b7c3ab6f74a405cada47fc1c1128243fd60ee58f84ec2d77545",
     "confidence": "high"
   },
   "provider_verified": false

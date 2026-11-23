@@ -12,7 +12,11 @@
     "renewal": 150,
     "transfer_in": null,
     "transfer_out": null,
-    "icann_fee_included": null
+    "icann_fee_included": null,
+    "setup_source": {
+      "url": "https://www.strato.de/domains/",
+      "quote": ".net für 12 Monate 0,90 €/Mon., danach 1,50 €/Mon., Einrichtung: 0 €"
+    }
   },
   "promo": {
     "conditions": "Aktionspreis „für 12 Monate“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
@@ -45,9 +49,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/net-domain/",
-    "fetched_at": "2026-11-19T10:50:17Z",
+    "fetched_at": "2026-11-23T18:41:37Z",
     "method": "scrape",
-    "evidence_hash": "sha256:79b60802f836d288a4d62e70aa04464de85f007890f48f365964202c28d7bd34",
+    "evidence_hash": "sha256:93082b0a9db57aa8b04ddfbdcd7c4b9f81898bc70537fa91b71c2c18d0a47a11",
     "confidence": "high"
   },
   "provider_verified": false

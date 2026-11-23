@@ -12,7 +12,11 @@
     "renewal": 200,
     "transfer_in": null,
     "transfer_out": null,
-    "icann_fee_included": null
+    "icann_fee_included": null,
+    "setup_source": {
+      "url": "https://www.strato.de/domains/",
+      "quote": ".me 12 Monate nur 0,58 €/Mon., danach 2 €/Mon., Einrichtung: 0 €"
+    }
   },
   "promo": {
     "conditions": "Aktionspreis „12 Monate nur“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
@@ -45,9 +49,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/me-domain/",
-    "fetched_at": "2026-11-19T10:50:27Z",
+    "fetched_at": "2026-11-23T18:41:47Z",
     "method": "scrape",
-    "evidence_hash": "sha256:93590197c345afb8bc019e7041134cbd3587deacce06d3c40f46d2c06ec3a296",
+    "evidence_hash": "sha256:82d9b0f60b7a1cce3bc67102055160afb3e717920f90497ec919b5864e8e6bab",
     "confidence": "high"
   },
   "provider_verified": false

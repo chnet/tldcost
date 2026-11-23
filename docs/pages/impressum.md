@@ -4,7 +4,7 @@ slug: impressum
 ---
 
 <!--
-Angaben des Betreibers (Stand 2026-11-13), identisch mit chnet.solutions/impressum.
+Angaben des Betreibers (Stand 2026-11-23; Adresse wie chnet.solutions/impressum, eigene Telefonnummer).
 -->
 
 # Impressum
@@ -25,7 +25,7 @@ Deutschland
 ## Kontakt
 
 E-Mail: [hello@chnet.solutions](mailto:hello@chnet.solutions)
-Telefon: 030 2201269 80
+Telefon: 036076 169882
 
 Hinweise zu falschen Daten bitte über den Link „Fehler melden“ in der Tabelle oder per E-Mail an [hello@chnet.solutions](mailto:hello@chnet.solutions). Hinweise nehmen wir auch als Issue auf GitHub entgegen (github.com/chnet/tldcost); so ist jede Korrektur nachvollziehbar.
 

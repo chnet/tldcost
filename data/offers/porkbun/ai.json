@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "provider": "porkbun",
+  "tld": "ai",
+  "currency": "USD",
+  "vat_included": null,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 16540,
+    "year1_regular": 16540,
+    "renewal": 16540,
+    "term_years": 2,
+    "renewal_term_years": 2,
+    "transfer_in": null,
+    "transfer_out": null,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "evidence": {
+    "source_url": "https://porkbun.com/tld/ai",
+    "fetched_at": "2026-11-24T07:40:00Z",
+    "method": "manual",
+    "quote": "At Cost $82.70 / year renews at $82.70 … Registration 2 Year $165.40 est. renewal $82.70 … .ai domain names uniquely require registration and renewal periods of at least two years. This means that when you register a .ai domain there's a two year minimum. If you have auto-renew turned on, the domain will renew for two years instead of one as it nears expiration.",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

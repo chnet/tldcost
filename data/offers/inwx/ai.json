@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "provider": "inwx",
+  "tld": "ai",
+  "currency": "EUR",
+  "vat_included": false,
+  "price": {
+    "unit": "year",
+    "setup": 0,
+    "year1": 20000,
+    "year1_regular": 20000,
+    "renewal": 20000,
+    "term_years": 2,
+    "renewal_term_years": 2,
+    "transfer_in": null,
+    "transfer_out": 0,
+    "icann_fee_included": null
+  },
+  "promo": null,
+  "evidence": {
+    "source_url": "https://www.inwx.de/de/domain/check",
+    "fetched_at": "2026-11-24T07:38:00Z",
+    "method": "manual",
+    "quote": "Laufzeit: 24 Monate 238,00 € / 2 Jahre … 19% MwSt.: 38,00 € … 119,00 € / 1 Jahr",
+    "confidence": "medium"
+  },
+  "provider_verified": false
+}

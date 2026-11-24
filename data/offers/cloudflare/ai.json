@@ -19,8 +19,9 @@
   "promo": null,
   "evidence": {
     "source_url": "https://www.cloudflare.com/domains/search?q=tldcostcheck77",
-    "fetched_at": "2026-11-15T09:06:21Z",
+    "fetched_at": "2026-11-24T07:36:00Z",
     "method": "manual",
+    "quote": "2-year minimum $160.00 Renews at $80.00/year",
     "confidence": "medium"
   },
   "provider_verified": false

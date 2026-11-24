@@ -96,9 +96,9 @@ function fromJson(ctx: AdapterContext, res: HttpResponse, result: AdapterResult)
       result.notOffered.push(tld);
       continue;
     }
-    // TODO (chnet/tldcost#28): verify in the browser whether INWX prices with createPeriod > 1
-    // (.ai: 100 for 2 years) are per year or per period, then map them with term_years instead of
-    // skipping.
+    // TLDs with a registration or renewal period over one year stay skipped. .ai (100 per year,
+    // periods 2/2) was checked by hand (chnet/tldcost#28) and is entered as a manual offer
+    // (data/offers/inwx/ai.json); the run leaves that file alone.
     if (t.createPeriod !== 1 || t.renewalPeriod !== 1) {
       result.skipped.push({
         tld,

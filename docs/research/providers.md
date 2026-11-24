@@ -521,6 +521,12 @@ Whois privacy price (Archiv-Issue 124, `feature_costs.whois_privacy`):
 - Value „4.19“ for .app, .berlin, .biz, .ch, .cloud, .co, .com, .dev, .info, .io, .me, .net, .online, .org, .shop and .xyz; „0.00“ for .de, .eu and .at (not offered, see the row above).
 - Net: the CSV column „Verlängerung“ equals `price.renewal` of all 16 offers (e.g. .com 15.50 = 1550 cents), so the CSV has the same VAT mode as the offers (`vat_included: false`). `price_cents` 419, `unit` year.
 
+.ai (chnet/tldcost#28): the adapter skips .ai because the API gives a period of 2 years. The offer is entered by hand (`method: manual`, `confidence: medium`, no `evidence_hash`).
+- Price, read by hand on 2026-11-24 at 07:37–07:38 UTC: the owner searched an invented .ai name in the [domain check](https://www.inwx.de/de/domain/check) in a normal browser, not logged in, and opened the cart without a checkout. Cart: „Laufzeit: 24 Monate 238,00 € / 2 Jahre“, „19% MwSt.: 38,00 €“. Result row: „119,00 € / 1 Jahr“ as the price and again as the renewal („Verlängerung“). So the 2-year registration costs 238,00 € gross = 200,00 € net, and „119,00 € / 1 Jahr“ is the per-year display. It does not state the renewal term.
+- Term, from the API: one static request to https://www.inwx.de/api/v1/domain/all-prices on 2026-11-24T07:44:38Z as `tldcost-bot`, response 200 `application/json`, sha256 `785a651a79830a9a0998dcdf84142c3dfad805d0d57c2b60b890f12206b93d9b`. The .ai row: `"createPrice": 100, "transferPrice": 100, "renewalPrice": 100, … "createPeriod": 2, "transferPeriod": 2, "renewalPeriod": 2, "restorePeriod": 2, "vat": 0`. The price is net per year; registration and renewal are each for 2 years.
+- Data (net, `vat_included: false` like all INWX offers): `year1` 200,00 € with `term_years: 2`, `renewal` 200,00 € with `renewal_term_years: 2` (the term from `renewalPeriod`). Transfer was not checked: `transfer_in: null`. `transfer_out: 0` as for all INWX offers (domain contract Nr. 3).
+- No `features`: the whois privacy quote above covers 16 other TLDs, not .ai.
+
 ## IONOS (`ionos`)
 
 - Operator: IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, Germany; Amtsgericht Montabaur HRB 24498 ([Impressum](https://www.ionos.de/impressum), retrieved 2026-11-12)
@@ -868,6 +874,7 @@ Price data (Archiv-Issue 77): manuell im Browser geprüft, 2026-11-15, kein gesp
 - `setup: 0`: provider statement on the [product page](https://www.cloudflare.com/domains/): „no hidden fees or required add-ons“ (retrieved 2026-11-12).
 - Struck-through prices: .org, .io, .app, .dev and .online show a lower price next to the struck-through regular price, without a stated period or condition. Methodik: „Eine Aktion übernehmen wir nur, wenn der Anbieter ihre Laufzeit (Beginn oder Ende) oder ihre Bedingungen nennt. Sonst gilt der reguläre Preis.“ So `year1` is the regular price. The lower prices (8,50 $, 32,00 $, 8,20 $, 8,20 $, 4,99 $) are not taken over.
 - .ai: the search shows 160,00 $ for the 2-year minimum term, „Renews at 80,00 $/year“. So `year1` 160,00 $ with `term_years: 2` and `renewal` 80,00 $ per year.
+- .ai, checked again by hand on 2026-11-24 at 07:36 UTC (owner, normal browser, not logged in, an invented .ai name in the domain search, chnet/tldcost#28): „2-year minimum $160.00 Renews at $80.00/year“. The values are unchanged; the offer carries this text as `evidence.quote`.
 
 Open items:
 - Whether 19 % VAT is added at checkout for German consumers is open. The DRA only says „may be charged“. The checkout was not checked (research method: no checkout).
@@ -943,6 +950,7 @@ Price data (Archiv-Issue 77): manuell im Browser geprüft, 2026-11-15, kein gesp
 - `setup: 0`: provider statement on the [price list](https://www.dynadot.com/domain/prices): „Our domain pricing has no hidden fees and no upselling at checkout.“ (retrieved 2026-11-12).
 - .co: year 1 15,50 $ without an „On Sale“ label (no struck-through price), renewal 31,20 $.
 - .ai: prices per year, the page says registration and renewal for at least 2 years. So `year1` and `renewal` are 171,20 $ each with `term_years: 2` / `renewal_term_years: 2`; transfer 171,20 $.
+- .ai, cart read by hand on 2026-11-24 at 07:35 UTC (owner, normal browser, not logged in, no checkout, chnet/tldcost#28): „2 years ($171.20)“, term options up to „7 years ($599.20)“, „Renews Nov2028 for $85.60“. This confirms `year1` 171,20 $ for 2 years and the per-year rate of 85,60 $. The cart does not state the renewal term, so `renewal_term_years: 2` still rests on the reading of the price list on 2026-11-15. The offer is unchanged.
 - Transfer includes a term (`transfer_includes_term`), as the owner checked it: yes for .com .net .org .info .biz .io .co .me .online .shop .xyz .cloud .berlin (source: the price list); no for .at and .ch („Renewal Upon Transfer: None“). Yes for .de: the [.de page](https://www.dynadot.com/domain/de) shows „Renewal upon transfer: 1 Year“ (retrieved 2026-11-19 as `tldcost-bot`, one static request). Not stated for .eu, .ai, .app, .dev; the TLD pages probably show „Renewal Upon Transfer“, to be checked at the next Archiv-Issue 77 check.
 - .berlin: „Restriction: Connection to Berlin.“
 
@@ -996,6 +1004,11 @@ Price examples, read from the `data-price-*` attributes of the [price list](http
 | .de | 2.90 (promotion; regular price struck through $5.49) | 4.07 | 5.10 |
 | .com | 11.81 | 11.81 | 11.81 |
 | .eu | 5.88 | 5.88 | 5.88 |
+
+.ai (chnet/tldcost#28): the adapter skips .ai because the API gives one price without a term. The offer is entered by hand (`method: manual`, `confidence: medium`, no `evidence_hash`).
+- Read by hand on 2026-11-24 at 07:39–07:40 UTC: the owner searched an invented .ai name on the [.ai page](https://porkbun.com/tld/ai) in a normal browser, not logged in, and opened the cart without a checkout. .ai page: „At Cost $82.70 / year renews at $82.70“. Cart: „Registration 2 Year $165.40 est. renewal $82.70“ and „.ai domain names uniquely require registration and renewal periods of at least two years. … If you have auto-renew turned on, the domain will renew for two years instead of one as it nears expiration.“
+- The term comes from the cart, which has no stable public URL; `source_url` is the .ai page.
+- Data: `year1` 165,40 $ with `term_years: 2`, `renewal` 165,40 $ with `renewal_term_years: 2` (the provider states the 2-year renewal itself). Transfer was not checked: `transfer_in: null`. No `features`.
 
 Open items:
 - VAT for German consumers is unknown. Checked were the price list, the payment options page and KB searches for „vat“, „tax“ and „invoice“: no hit on VAT. A third-party source (dn.org) claims VAT-inclusive prices for EU customers. It was not used because it is not a primary source.

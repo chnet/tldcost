@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "provider": "porkbun",
+  "tld": "ai",
+  "entries": [
+    {
+      "date": "2026-11-24",
+      "currency": "USD",
+      "vat_included": null,
+      "unit": "year",
+      "setup": 0,
+      "year1": 16540,
+      "renewal": 16540,
+      "transfer_in": null,
+      "source": { "url": "https://porkbun.com/tld/ai", "fetched_at": "2026-11-24T07:40:00Z" }
+    }
+  ]
+}

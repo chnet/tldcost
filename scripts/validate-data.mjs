@@ -130,10 +130,7 @@ export const FOREIGN_MARKET_CURRENCIES = ['USD'];
  * docs/research/providers.md. The exception holds only for that fetched_at: a new manual check
  * (another fetched_at) needs the quote. No other offer is exempt.
  */
-export const QUOTE_EXEMPT = new Map([
-  ['cloudflare/ai', '2026-11-15T09:06:21Z'],
-  ['dynadot/ai', '2026-11-15T09:06:21Z'],
-]);
+export const QUOTE_EXEMPT = new Map([['dynadot/ai', '2026-11-15T09:06:21Z']]);
 
 /** Fields that must be equal within one segment of a history (one market). */
 const SEGMENT_FIELDS = ['currency', 'unit', 'vat_included', 'market'];

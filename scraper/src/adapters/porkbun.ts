@@ -11,11 +11,11 @@ export const PORKBUN_ENDPOINT = 'https://api.porkbun.com/api/json/v3/pricing/get
 export const PORKBUN_SOURCE_URL = 'https://porkbun.com/products/domains';
 
 /**
- * TLDs with a multi-year minimum registration where it is not verified whether the API price is
- * per year or per term. Left out until checked by hand (.ai: 2-year minimum at the registry).
+ * TLDs with a multi-year minimum registration that the API does not show: it gives one price
+ * without a term. They stay skipped. .ai (2-year registration and renewal) was checked by hand
+ * (chnet/tldcost#28) and is entered as a manual offer (data/offers/porkbun/ai.json); the run
+ * leaves that file alone.
  */
-// TODO (chnet/tldcost#28): verify in the browser whether Porkbun's .ai registration (82.70) is per
-// year or per 2-year term (transfer 165.09), then map it with term_years and drop it from this set.
 const UNVERIFIED_TERM = new Set(['ai']);
 
 interface PorkbunPrice {

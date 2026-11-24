@@ -347,20 +347,20 @@ test('evidence.quote: hand-entered offers with a multi-year term need it, never 
   );
   // the listed offers: exempt with exactly their fetched_at, not after a new check
   const listed = (fetchedAt) => {
-    const provider = { ...read(PROVIDER), id: 'cloudflare' };
+    const provider = { ...read(PROVIDER), id: 'dynadot' };
     const offer = {
       ...read(OFFER),
-      provider: 'cloudflare',
+      provider: 'dynadot',
       tld: 'ai',
       price: { ...read(OFFER).price, term_years: 2 },
       evidence: { ...read(OFFER).evidence, method: 'manual', fetched_at: fetchedAt },
     };
     return validateDir(
-      dataDir({ 'providers/cloudflare.json': provider, 'offers/cloudflare/ai.json': offer }),
+      dataDir({ 'providers/dynadot.json': provider, 'offers/dynadot/ai.json': offer }),
       V,
     );
   };
-  assert.equal(QUOTE_EXEMPT.get('cloudflare/ai'), exemptAt);
+  assert.equal(QUOTE_EXEMPT.get('dynadot/ai'), exemptAt);
   assert.deepEqual(listed(exemptAt), []);
   f = listed('2026-12-01T10:00:00Z');
   assert.ok(
@@ -401,7 +401,7 @@ test('evidence.quote exceptions in data/: exactly the listed offers, each with i
     }
   }
   assert.deepEqual([...found].sort(), [...QUOTE_EXEMPT].sort());
-  assert.deepEqual([...QUOTE_EXEMPT.keys()].sort(), ['cloudflare/ai', 'dynadot/ai']);
+  assert.deepEqual([...QUOTE_EXEMPT.keys()], ['dynadot/ai']);
 });
 
 test('foreign_market (owner decision 2026-11-19): currency matches, USD only, net prices', () => {

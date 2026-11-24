@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "inwx",
+  "tld": "ai",
+  "entries": [
+    {
+      "date": "2026-11-24",
+      "currency": "EUR",
+      "vat_included": false,
+      "unit": "year",
+      "setup": 0,
+      "year1": 20000,
+      "renewal": 20000,
+      "transfer_in": null,
+      "source": {
+        "url": "https://www.inwx.de/de/domain/check",
+        "fetched_at": "2026-11-24T07:38:00Z"
+      }
+    }
+  ]
+}

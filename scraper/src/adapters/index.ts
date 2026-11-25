@@ -1,6 +1,7 @@
 import type { Adapter } from '../types.js';
 import { allinkl } from './all-inkl.js';
 import { checkdomain } from './checkdomain.js';
+import { chnetDomains } from './chnet-domains.js';
 import { domainfactory } from './domainfactory.js';
 import { hetzner } from './hetzner.js';
 import { inwx } from './inwx.js';
@@ -14,6 +15,7 @@ import { unitedDomains } from './united-domains.js';
 export const ADAPTERS: readonly Adapter[] = [
   allinkl,
   checkdomain,
+  chnetDomains,
   domainfactory,
   hetzner,
   inwx,

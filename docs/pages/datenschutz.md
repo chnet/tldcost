@@ -50,6 +50,8 @@ Vertragspartner ist die Amazon Web Services EMEA SARL, 38 Avenue John F. Kennedy
 
 **Drittland:** Soweit CloudFront Daten außerhalb der EU verarbeitet, gelten die Standardvertragsklauseln im Auftragsverarbeitungsvertrag mit AWS. AWS ist außerdem unter dem EU-US Data Privacy Framework zertifiziert (Art. 45 DSGVO).
 
+**tldcost.de:** Dieser Abschnitt gilt auch für Aufrufe von tldcost.de und www.tldcost.de, die CloudFront ohne eigene Inhalte auf tldcost.io weiterleitet.
+
 ## 3. Keine Cookies, kein Speichern auf Ihrem Gerät
 
 Wir setzen keine Cookies und nutzen weder Local Storage noch Session Storage. Wir speichern nichts auf Ihrem Gerät und lesen nichts von dort aus. Ihre Einstellungen in der Tabelle (TLD, Sortierung, Spalten, brutto/netto) stehen nur in der Adresse (URL) der Seite. Deshalb gibt es keinen Cookie-Hinweis.
@@ -85,8 +87,8 @@ Der Link „Unterstützen“ führt zu GitHub Sponsors. Erst wenn Sie ihm folgen
 
 - Eine Unterstützung schließen Sie über Ihr Konto bei GitHub (GitHub, Inc., USA) ab. Die Zahlung läuft über GitHub und dessen Zahlungsdienstleister Stripe; Ihre E-Mail-Adresse erhalten wir dabei nicht.
 - GitHub stellt uns Angaben zu Ihrer Unterstützung und den erhaltenen Zahlungen bereit, z. B. Ihren GitHub-Namen und den Betrag, sofern GitHub sie uns anzeigt. Wer Ihre Unterstützung öffentlich sieht, legen Sie bei GitHub fest.
-- Wir verarbeiten diese Angaben, um die Unterstützung zu verbuchen. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO, für die Buchführung Art. 6 Abs. 1 lit. c DSGVO.
-- Buchungsbelege bewahren wir so lange auf, wie es das Steuer- und Handelsrecht verlangt.
+- Wir verarbeiten diese Angaben, um die Unterstützung zuzuordnen und zu verbuchen. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist, Unterstützungszahlungen zuzuordnen und zu verbuchen. Für die Buchführung gilt Art. 6 Abs. 1 lit. c DSGVO.
+- Buchungsbelege bewahren wir acht Jahre auf, gerechnet ab dem Ende des Kalenderjahres, in dem sie entstanden sind (§ 147 Abs. 3 und 4 AO, § 257 Abs. 4 und 5 HGB); länger nur, solange sie für eine Steuer von Bedeutung sind, deren Festsetzungsfrist noch nicht abgelaufen ist.
 - Eine Unterstützung hat keinen Einfluss auf Aufnahme, Platzierung oder Darstellung in tldcost.
 
 ## 9. Kontakt per E-Mail

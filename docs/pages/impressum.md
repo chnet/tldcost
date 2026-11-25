@@ -42,7 +42,7 @@ So gehen wir damit um:
 - chnet.domains steht als **gewöhnliche Zeile** in der Tabelle, mit dem sichtbaren Badge „Angebot des Portalbetreibers“.
 - Für chnet.domains gelten dieselbe Erhebung, dieselben Quellenregeln und dieselbe Sortierung wie für alle anderen Anbieter. Es gibt keine Hervorhebung.
 - tldcost verlinkt chnet.domains nur in dieser Zeile und auf dieser Seite.
-- Kein Anbieter zahlt für Aufnahme, Platzierung oder Darstellung. Es gibt keine Affiliate-Links.
+- Kein Anbieter zahlt für Aufnahme, Platzierung oder Darstellung. Es gibt keine Affiliate-Links. Freiwillige Unterstützung über GitHub Sponsors, auch von Anbietern, hat darauf keinen Einfluss.
 - Alle Daten stehen offen als JSON unter [/api/](/api/) (Lizenz CC BY 4.0). Daten und Code werden zusätzlich im GitHub-Repository chnet/tldcost veröffentlicht, damit jeder prüfen kann, wie die Tabelle entsteht.
 
 Details zur Sortierung und Erhebung: [Methodik](/methodik).

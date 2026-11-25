@@ -2,7 +2,7 @@
 title: Legal notice
 slug: impressum
 lang: en
-source_sha256: '6ebed2063f35e2988cf2914693a334d343558105ccf89e62ea1cc264f00f1869'
+source_sha256: '4b395508418a10d318c1306ae286da269f1a3124994faf57493ca89969eaa7fc'
 ---
 
 <!--
@@ -47,7 +47,7 @@ This is how we deal with it:
 - chnet.domains appears as an **ordinary row** in the table, with the visible badge “Operator’s own offer”.
 - chnet.domains is collected, sourced and sorted by the same rules as every other provider. It is not highlighted.
 - tldcost links chnet.domains only in that row and on this page.
-- No provider pays for being included, placed or shown. There are no affiliate links.
+- No provider pays for being included, placed or shown. There are no affiliate links. Voluntary support via GitHub Sponsors, including from providers, has no influence on this.
 - All data is openly available as JSON under [/api/](/api/) (licence CC BY 4.0). Data and code are also published in the GitHub repository chnet/tldcost, so that anyone can check how the table is built.
 
 Details on sorting and collection: [Methodology](/en/methodik/).

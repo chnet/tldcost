@@ -19,6 +19,7 @@ site/tests/e2e/privacy.spec.ts (keine Cookies, kein Storage, keine Anfragen an f
 - Kein Login, kein Kontaktformular, kein Newsletter, kein Chatbot.
 - Wir speichern keine Zugriffsprotokolle. Nur unser Hosting-Dienstleister verarbeitet die technisch nötigen Verbindungsdaten, um die Seite auszuliefern.
 - Fehlermeldungen und Korrekturen erreichen uns über GitHub oder per E-Mail. Das Repository ist seit dem 19.11.2026 öffentlich.
+- Der Link „Unterstützen“ führt zu GitHub Sponsors. Die Zahlung läuft über GitHub und Stripe; Ihre E-Mail-Adresse erhalten wir nicht (Abschnitt 8).
 
 ## 1. Verantwortlicher
 
@@ -70,7 +71,7 @@ Die Preisdaten stehen auch als statische Dateien unter `/api/v1/` bereit. Die Sc
 
 ## 7. Fehler melden
 
-Das Repository chnet/tldcost ist seit dem 19.11.2026 öffentlich. Der Link „Fehler melden“ führt zu einem Formular bei GitHub; ohne GitHub-Konto erreichen Sie uns per E-Mail, dafür gilt Abschnitt 8. Bei GitHub nehmen wir Korrekturen und Hinweise als Issues und Pull Requests entgegen. Für GitHub gilt:
+Das Repository chnet/tldcost ist seit dem 19.11.2026 öffentlich. Der Link „Fehler melden“ führt zu einem Formular bei GitHub; ohne GitHub-Konto erreichen Sie uns per E-Mail, dafür gilt Abschnitt 9. Bei GitHub nehmen wir Korrekturen und Hinweise als Issues und Pull Requests entgegen. Für GitHub gilt:
 
 - Der Link überträgt nur Angaben zur Tabellenzeile (Anbieter, TLD) an das Formular bei GitHub, keine Daten über Sie.
 - Für einen Beitrag brauchen Sie ein Konto bei GitHub (GitHub, Inc., USA). Bei GitHub gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement).
@@ -78,13 +79,23 @@ Das Repository chnet/tldcost ist seit dem 19.11.2026 öffentlich. Der Link „Fe
 - Wir verarbeiten Ihre Angaben, um den Hinweis zu prüfen und die Daten zu korrigieren. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse sind korrekte und nachvollziehbare Daten.
 - Beiträge bleiben Teil der öffentlichen Historie des Projekts.
 
-## 8. Kontakt per E-Mail
+## 8. Unterstützung über GitHub Sponsors
+
+Der Link „Unterstützen“ führt zu GitHub Sponsors. Erst wenn Sie ihm folgen, ruft Ihr Browser GitHub auf; dort gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement).
+
+- Eine Unterstützung schließen Sie über Ihr Konto bei GitHub (GitHub, Inc., USA) ab. Die Zahlung läuft über GitHub und dessen Zahlungsdienstleister Stripe; Ihre E-Mail-Adresse erhalten wir dabei nicht.
+- GitHub stellt uns Angaben zu Ihrer Unterstützung und den erhaltenen Zahlungen bereit, z. B. Ihren GitHub-Namen und den Betrag, sofern GitHub sie uns anzeigt. Wer Ihre Unterstützung öffentlich sieht, legen Sie bei GitHub fest.
+- Wir verarbeiten diese Angaben, um die Unterstützung zu verbuchen. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO, für die Buchführung Art. 6 Abs. 1 lit. c DSGVO.
+- Buchungsbelege bewahren wir so lange auf, wie es das Steuer- und Handelsrecht verlangt.
+- Eine Unterstützung hat keinen Einfluss auf Aufnahme, Platzierung oder Darstellung in tldcost.
+
+## 9. Kontakt per E-Mail
 
 Schreiben Sie uns eine E-Mail, verarbeiten wir Ihre Adresse und Ihre Nachricht, um die Anfrage zu beantworten. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO, bei Anfragen zu einem Vertrag Art. 6 Abs. 1 lit. b DSGVO. Wir löschen die Daten, wenn die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten bestehen.
 
 E-Mails an unsere Adressen (hello@, privacy@) werden über Microsoft Exchange Online (Microsoft Ireland Operations Ltd.) verarbeitet. Es gilt der Auftragsverarbeitungsvertrag mit Microsoft.
 
-## 9. Ihre Rechte
+## 10. Ihre Rechte
 
 Sie haben das Recht auf
 
@@ -97,12 +108,12 @@ Sie haben das Recht auf
 
 Anfragen richten Sie bitte an [privacy@chnet.solutions](mailto:privacy@chnet.solutions).
 
-## 10. Beschwerderecht
+## 11. Beschwerderecht
 
 Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art. 77 DSGVO). Zuständig für uns ist der Thüringer Landesbeauftragte für den Datenschutz und die Informationsfreiheit (TLfDI), da die Verantwortliche ihren Sitz in Breitenworbis (Thüringen) hat.
 
-## 11. Änderungen
+## 12. Änderungen
 
 Wir passen diese Datenschutzerklärung an, wenn sich die Technik von tldcost oder die Rechtslage ändert.
 
-Stand: 19. November 2026
+Stand: 25. November 2026

@@ -12,7 +12,11 @@
     "renewal": 180,
     "transfer_in": null,
     "transfer_out": null,
-    "icann_fee_included": null
+    "icann_fee_included": null,
+    "setup_source": {
+      "url": "https://www.strato.de/domains/com-domain/",
+      "quote": "Einrichtungsgebühr | 0 €"
+    }
   },
   "promo": {
     "conditions": "Aktionspreis „für 12 Monate“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
@@ -45,9 +49,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/com-domain/",
-    "fetched_at": "2026-11-19T10:50:16Z",
+    "fetched_at": "2026-11-23T18:41:36Z",
     "method": "scrape",
-    "evidence_hash": "sha256:df212941c8a034ecb57a81e570fc2a9edf0bdad12bf7d21af5182cb8359df8f5",
+    "evidence_hash": "sha256:cecde981d05ea29f6c505fcf18effce7e0b97c42870939b8d00c18b3e6206c5f",
     "confidence": "high"
   },
   "provider_verified": false

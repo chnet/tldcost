@@ -15,9 +15,9 @@
   "promo": null,
   "evidence": {
     "source_url": "https://www.df.eu/de/domains/",
-    "fetched_at": "2026-11-19T10:49:33Z",
+    "fetched_at": "2026-11-23T18:40:55Z",
     "method": "scrape",
-    "evidence_hash": "sha256:ef31e869a9a7897e8b4e32128ea5422b95ca3b0234fb59719232ec57eca914b9",
+    "evidence_hash": "sha256:c146026e47c9e0551e871c92f9f19aa383650db8ac4256c3d66119aa6155694b",
     "confidence": "high"
   },
   "provider_verified": false

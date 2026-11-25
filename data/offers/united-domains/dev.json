@@ -43,9 +43,9 @@
   },
   "evidence": {
     "source_url": "https://www.united-domains.de/domain-registrieren/preisliste/",
-    "fetched_at": "2026-11-19T10:50:41Z",
+    "fetched_at": "2026-11-23T18:42:00Z",
     "method": "scrape",
-    "evidence_hash": "sha256:c77ef092f1da4df4458e18c4c29430f7fd72f1058be8c669e536c240a1016f12",
+    "evidence_hash": "sha256:9ad20a917dc0a506b4b95b0d5b6dff6abe26b11b81e084f3259f1bda1b350d7f",
     "confidence": "high"
   },
   "provider_verified": false

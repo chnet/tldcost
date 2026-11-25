@@ -12,7 +12,11 @@
     "renewal": 200,
     "transfer_in": null,
     "transfer_out": null,
-    "icann_fee_included": null
+    "icann_fee_included": null,
+    "setup_source": {
+      "url": "https://www.strato.de/domains/",
+      "quote": ".at für 12 Monate 0,90 €/Mon., danach 2 €/Mon., Einrichtung: 0 €"
+    }
   },
   "promo": {
     "conditions": "Aktionspreis „für 12 Monate“ laut Preiskarte. Der Aktionspreis ist ein reduzierter Angebotspreis, der Ihnen als Neukunde meistens für die ersten 12 Monate gewährt wird.",
@@ -45,9 +49,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/at-domain/",
-    "fetched_at": "2026-11-19T10:50:25Z",
+    "fetched_at": "2026-11-23T18:41:45Z",
     "method": "scrape",
-    "evidence_hash": "sha256:c81240e5f725e6b3cdcd6a575cddc0e492b468f3819ceab1f9ec35af6204067a",
+    "evidence_hash": "sha256:9a59696da13a35bfad1fb0de0889710c29357f0cd5b8b0ea168e30d1d4495d4e",
     "confidence": "high"
   },
   "provider_verified": false

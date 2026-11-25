@@ -45,9 +45,9 @@
   },
   "evidence": {
     "source_url": "https://www.strato.de/domains/berlin-domain/",
-    "fetched_at": "2026-11-19T10:50:30Z",
+    "fetched_at": "2026-11-23T18:41:50Z",
     "method": "scrape",
-    "evidence_hash": "sha256:29e0ddbfa8bc9f060e8d5fe0065a49479dbeacfc59d76a11354ec3639df694e6",
+    "evidence_hash": "sha256:318d4a0d1771061c9538693d99b65fd173dc4c6231d66746232ba87c8c477cdd",
     "confidence": "high"
   },
   "provider_verified": false

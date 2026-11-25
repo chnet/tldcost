@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-eu",
-    "fetched_at": "2026-11-19T10:49:42Z",
+    "fetched_at": "2026-11-23T18:41:04Z",
     "method": "scrape",
-    "evidence_hash": "sha256:e1c5470fed3f85c12c647c64a912c3c895406bf35d69cf7e09c6747955437261",
+    "evidence_hash": "sha256:e8f9499f9e1d161f4bd2c65150dee1509ca61527906b3221b6a17bbcbf7b6e04",
     "confidence": "high"
   },
   "provider_verified": false

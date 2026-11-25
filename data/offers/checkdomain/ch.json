@@ -25,9 +25,9 @@
   "evidence": {
     "source_url": "https://www.checkdomain.de/ch-domain/",
     "source_endpoint": "https://www.checkdomain.de/domains/",
-    "fetched_at": "2026-11-19T10:49:27Z",
+    "fetched_at": "2026-11-23T18:40:51Z",
     "method": "scrape",
-    "evidence_hash": "sha256:e3357d617a696ad025b78a08c1cf584e55ffa0f797eaa25500bd5d92096e18c7",
+    "evidence_hash": "sha256:c9c0b671207b51e79866bc20d530045642d272a5a749d10154ce3f04df2691ff",
     "confidence": "high"
   },
   "provider_verified": false

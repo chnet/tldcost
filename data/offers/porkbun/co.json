@@ -42,9 +42,9 @@
   "evidence": {
     "source_url": "https://porkbun.com/products/domains",
     "source_endpoint": "https://api.porkbun.com/api/json/v3/pricing/get",
-    "fetched_at": "2026-11-19T10:50:12Z",
+    "fetched_at": "2026-11-23T18:41:31Z",
     "method": "api",
-    "evidence_hash": "sha256:161b21468ef686454cc8c9023a2b8887fd827a95ffc3371df0b0e41e10f080aa",
+    "evidence_hash": "sha256:cef45b8bfefd5d7b729c724087114edfd572e05d96db0fdc9f010068d85d2b1c",
     "confidence": "medium"
   },
   "provider_verified": false

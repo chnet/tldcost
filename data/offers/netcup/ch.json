@@ -30,9 +30,9 @@
   },
   "evidence": {
     "source_url": "https://www.netcup.com/de/domain/zusaetzliche-domain-ch",
-    "fetched_at": "2026-11-19T10:49:50Z",
+    "fetched_at": "2026-11-23T18:41:11Z",
     "method": "scrape",
-    "evidence_hash": "sha256:a4819ba8ef9c5783b3fb34efabcb81424b3fde0694ccf232634d6cca7b63b4e1",
+    "evidence_hash": "sha256:fc62436c806fdcb3b22266b7e8a9b06b3b520927e05bba37060196a64ab984a5",
     "confidence": "high"
   },
   "provider_verified": false

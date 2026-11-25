@@ -6,11 +6,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import {
+  BUNDLE_LIMITS,
   DEPENDABOT,
   LOCK_VERSION,
   PACKAGE_NAME,
@@ -18,6 +21,7 @@ import {
   VERSION_SPEC,
   WEB_FLOW,
   apiBase,
+  bundleFindings,
   STANDALONE_LOCK_DIRS,
   diffHunks,
   lockDir,
@@ -27,7 +31,9 @@ import {
   packageKeyMatcher,
   packageLockFinding,
   pinOnlyDiff,
+  registryBase,
   standaloneManifestDir,
+  tarFiles,
 } from './lib/dependabot-exemption.mjs';
 
 const SCRIPT = resolve(import.meta.dirname, 'check-commit-identity.mjs');
@@ -208,14 +214,19 @@ const verifiedApi = (sha) => [200, apiCommit(sha)];
 /** Range check of the repo with the Dependabot context; api answers via the stub. */
 async function check(
   r,
-  { api = verifiedApi, branch = BRANCH, actor = DEPENDABOT.login, env } = {},
+  { api = verifiedApi, branch = BRANCH, actor = DEPENDABOT.login, env, extraEnv = {} } = {},
 ) {
   const s = await stub(api);
   try {
     const res = await run(
       r.dir,
       ['--range', `${r.base}..${r.head()}`, '--branch', branch, '--actor', actor],
-      env ?? { GITHUB_REPOSITORY: 'chnet/tldcost', GITHUB_TOKEN: TOKEN, TLDCOST_GITHUB_API: s.url },
+      env ?? {
+        GITHUB_REPOSITORY: 'chnet/tldcost',
+        GITHUB_TOKEN: TOKEN,
+        TLDCOST_GITHUB_API: s.url,
+        ...extraEnv,
+      },
     );
     return { ...res, seen: s.seen };
   } finally {
@@ -544,8 +555,8 @@ const NO_TARBALL = /without its own registry.npmjs.org tarball and sha512 integr
 
 test('lockfile: bundled entries pass only under an ancestor with its own tarball and sha512', async () => {
   const ws = ROOT.workspaces;
-  const lockFinding = (beforePkgs, afterPkgs) =>
-    packageLockFinding(lockWith(beforePkgs), lockWith(afterPkgs), ws);
+  const lockFinding = (beforePkgs, afterPkgs, bundles = []) =>
+    packageLockFinding(lockWith(beforePkgs), lockWith(afterPkgs), ws, bundles);
   // (1) the real excerpt: 6 bundled entries changed or added, none with resolved or integrity
   const bundledKeys = Object.keys(CDK.after).filter((k) => k !== CDK_KEY);
   assert.equal(bundledKeys.length, 6);
@@ -555,12 +566,39 @@ test('lockfile: bundled entries pass only under an ancestor with its own tarball
     assert.ok(!Object.hasOwn(CDK.after[k], 'integrity'), k);
     assert.notDeepEqual(CDK.after[k], CDK.before[k], k);
   }
-  assert.equal(lockFinding(CDK.before, CDK.after), '');
-  // (5) an unchanged parent: only its bundled entries change
-  assert.equal(lockFinding({ [CDK_KEY]: CDK.after[CDK_KEY] }, CDK.after), '');
+  const checks = [];
+  assert.equal(lockFinding(CDK.before, CDK.after, checks), '');
+  // one tarball check per bundled entry: the anchor's resolved/integrity, the path below it
+  assert.deepEqual(
+    checks,
+    bundledKeys.map((k) => ({
+      key: k,
+      resolved: CDK.after[CDK_KEY].resolved,
+      integrity: CDK.after[CDK_KEY].integrity,
+      path: `package/${k.slice(CDK_KEY.length + 1)}/package.json`,
+      name: k.slice(k.lastIndexOf('node_modules/') + 'node_modules/'.length),
+      version: CDK.after[k].version,
+    })),
+  );
+  // without a collector for the tarball checks a bundled entry is refused (fail closed)
+  assert.match(
+    packageLockFinding(lockWith(CDK.before), lockWith(CDK.after), ws),
+    /bundled package that cannot be checked against its tarball/,
+  );
+  // (5) an unchanged parent: only its bundled entries change, each still checked in the tarball
+  const unchangedParent = [];
+  assert.equal(lockFinding({ [CDK_KEY]: CDK.after[CDK_KEY] }, CDK.after, unchangedParent), '');
+  assert.equal(unchangedParent.length, 6);
   // a bundled entry of a bundled entry: the nearest ancestor that is not bundled is checked
   const deep = `${BUNDLED_IN('minimatch')}/node_modules/x`;
-  assert.equal(lockFinding(CDK.before, { ...CDK.after, [deep]: bundled() }), '');
+  const deepChecks = [];
+  assert.equal(lockFinding(CDK.before, { ...CDK.after, [deep]: bundled() }, deepChecks), '');
+  assert.ok(
+    deepChecks.some(
+      (c) =>
+        c.key === deep && c.path === 'package/node_modules/minimatch/node_modules/x/package.json',
+    ),
+  );
 
   // (2) no checked ancestor
   const parent = CDK.after[CDK_KEY];
@@ -646,17 +684,401 @@ test('lockfile: bundled entries pass only under an ancestor with its own tarball
     );
   }
 
-  // the whole exemption: the real bump passes as two Dependabot commits, a parentless one fails
-  const r = repo();
-  r.commit({ 'package-lock.json': lockWith(CDK.before) });
-  r.commit({ 'package-lock.json': lockWith(CDK.after) });
-  const res = await check(r);
-  assert.equal(res.code, 0, res.out);
-  assert.match(res.out, /Dependabot exception: 2 commit\(s\)/);
+  // a parentless bundled entry fails the whole exemption without any download
   await refused(
     { 'package-lock.json': lockWith({ 'node_modules/ghost/node_modules/x': bundled() }) },
     NO_TARBALL,
   );
+});
+
+/** One ustar header block (checksum computed); `prefix` is the ustar name prefix. */
+function tarHeader(name, size, type, prefix = '') {
+  const h = Buffer.alloc(512);
+  h.write(name, 0, 100, 'utf8');
+  h.write('0000644\0', 100);
+  h.write('0000000\0', 108);
+  h.write('0000000\0', 116);
+  h.write(`${size.toString(8).padStart(11, '0')}\0`, 124);
+  h.write('00000000000\0', 136);
+  h.write(type, 156);
+  h.write('ustar\0', 257);
+  h.write('00', 263);
+  h.write(prefix, 345, 155, 'utf8');
+  h.fill(0x20, 148, 156);
+  let sum = 0;
+  for (const b of h) sum += b;
+  h.write(`${sum.toString(8).padStart(6, '0')}\0 `, 148);
+  return h;
+}
+const pad512 = (b) => Buffer.concat([b, Buffer.alloc((512 - (b.length % 512)) % 512)]);
+/** One PAX record "<len> <key>=<value>\n" (len counts itself). */
+function paxRecord(key, value) {
+  const body = ` ${key}=${value}\n`;
+  const bodyLen = Buffer.byteLength(body);
+  let len = bodyLen + 1;
+  while (String(len).length + bodyLen !== len) len = String(len).length + bodyLen;
+  return Buffer.from(`${len}${body}`);
+}
+/** Plain tar of `files` (path -> content); a path over 100 bytes as PAX, GNU long name or ustar prefix. */
+function tar(files, { longNames = 'pax', extra = [] } = {}) {
+  const parts = [];
+  for (const [path, content] of Object.entries(files)) {
+    const data = Buffer.from(content);
+    let name = path;
+    let prefix = '';
+    if (Buffer.byteLength(path) > 100) {
+      if (longNames === 'pax') {
+        const rec = paxRecord('path', path);
+        parts.push(tarHeader('PaxHeader/entry', rec.length, 'x'), pad512(rec));
+        name = path.slice(0, 100);
+      } else if (longNames === 'gnu') {
+        const n = Buffer.from(`${path}\0`);
+        parts.push(tarHeader('././@LongLink', n.length, 'L'), pad512(n));
+        name = path.slice(0, 100);
+      } else {
+        const cut = path.lastIndexOf('/', 155);
+        prefix = path.slice(0, cut);
+        name = path.slice(cut + 1);
+      }
+    }
+    parts.push(tarHeader(name, data.length, '0', prefix), pad512(data));
+  }
+  return Buffer.concat([...parts, ...extra, Buffer.alloc(1024)]);
+}
+const tgz = (files, opts) => gzipSync(tar(files, opts));
+const sri = (buf) => `sha512-${createHash('sha512').update(buf).digest('base64')}`;
+/** Tarball of a bundling package; `bundledPkgs`: path below node_modules/ -> {name, version}. */
+const bundlerTgz = (name, version, bundledPkgs, opts) =>
+  tgz(
+    {
+      'package/package.json': JSON.stringify({ name, version }),
+      ...Object.fromEntries(
+        Object.entries(bundledPkgs).map(([rel, m]) => [
+          `package/node_modules/${rel}/package.json`,
+          JSON.stringify(m),
+        ]),
+      ),
+    },
+    opts,
+  );
+
+test('bundled entries: checked in the bundling tarball (exact URL, sha512 first, name and version)', async () => {
+  const RES = `${REG}/bundler/-/bundler-1.0.0.tgz`;
+  const LONG = `${'x'.repeat(60)}/node_modules/${'y'.repeat(60)}`;
+  const content = {
+    a: { name: 'a', version: '1.0.0' },
+    '@s/b': { name: '@s/b', version: '2.0.0' },
+    'a/node_modules/c': { name: 'c', version: '3.0.0' },
+  };
+  const good = bundlerTgz('bundler', '1.0.0', content);
+  const entry = (rel, name, version, over = {}) => ({
+    key: `node_modules/bundler/node_modules/${rel}`,
+    resolved: RES,
+    integrity: sri(good),
+    path: `package/node_modules/${rel}/package.json`,
+    name,
+    version,
+    ...over,
+  });
+  /** fetch stub: answers every call with `body`, records the calls */
+  const serve = (body, { status = 200, headers = {} } = {}) => {
+    const fn = async (url, opts) => {
+      fn.calls.push({ url, opts });
+      return new Response(body, { status, headers });
+    };
+    fn.calls = [];
+    return fn;
+  };
+  const findings = (bundles, fetchFn, limits = BUNDLE_LIMITS) =>
+    bundleFindings(SHA_A, bundles, { env: {}, fetchFn, limits });
+  const ONE = [entry('a', 'a', '1.0.0')];
+
+  // positive: three entries (one nested) from one download of the exact URL, no redirects
+  const ok = serve(good);
+  assert.deepEqual(
+    await findings(
+      [
+        entry('a', 'a', '1.0.0'),
+        entry('@s/b', '@s/b', '2.0.0'),
+        entry('a/node_modules/c', 'c', '3.0.0'),
+      ],
+      ok,
+    ),
+    [],
+  );
+  assert.equal(ok.calls.length, 1);
+  assert.equal(ok.calls[0].url, RES);
+  assert.equal(ok.calls[0].opts.redirect, 'error');
+  // one download per anchor per run, shared across calls through the cache
+  const cache = new Map();
+  const shared = serve(good);
+  for (let i = 0; i < 2; i++) {
+    assert.deepEqual(await bundleFindings(SHA_A, ONE, { env: {}, fetchFn: shared, cache }), []);
+  }
+  assert.equal(shared.calls.length, 1);
+
+  const refusedWith = async (bundles, fetchFn, re, limits) => {
+    const out = await findings(bundles, fetchFn, limits);
+    assert.equal(out.length, bundles.length, JSON.stringify(out));
+    for (const f of out) {
+      assert.match(
+        f,
+        /^aaaaaaaaaa: dependabot exemption: bundled node_modules\/bundler\/node_modules\//,
+      );
+      assert.match(f, re);
+    }
+  };
+  // entry missing in the tarball
+  await refusedWith([entry('d', 'd', '1.0.0')], serve(good), /not in the tarball of the package/);
+  // version differs (also a bundled version change under an unchanged anchor)
+  await refusedWith([entry('a', 'a', '1.0.1')], serve(good), /name or version .* differs/);
+  // name differs
+  await refusedWith([entry('a', 'other', '1.0.0')], serve(good), /name or version .* differs/);
+  // its package.json is no JSON object, or larger than the per-file limit
+  const notJson = tgz({ 'package/node_modules/a/package.json': '{not json' });
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { integrity: sri(notJson) })],
+    serve(notJson),
+    /package\.json in the bundling tarball is not readable/,
+  );
+  await refusedWith(ONE, serve(good), /package\.json in the bundling tarball is not readable/, {
+    ...BUNDLE_LIMITS,
+    maxManifestBytes: 8,
+  });
+  // sha512 differs: another tarball under the same integrity is not read at all
+  const evil = bundlerTgz('bundler', '1.0.0', { a: { name: 'a', version: '1.0.0' } });
+  await refusedWith(ONE, serve(evil), /sha512 does not match the lock integrity/);
+  // download errors: an error status, a failing fetch (also: a redirect, refused by redirect:'error')
+  await refusedWith(ONE, serve('', { status: 404 }), /download failed \(status 404\)/);
+  const broken = async () => {
+    throw new TypeError('fetch failed');
+  };
+  await refusedWith(ONE, broken, /download failed$/);
+  // too large: announced by content-length, or only while reading the body
+  const small = { ...BUNDLE_LIMITS, maxBytes: 64 };
+  await refusedWith(
+    ONE,
+    serve(good, { headers: { 'content-length': String(good.length) } }),
+    /larger than the limit/,
+    small,
+  );
+  await refusedWith(ONE, serve(good), /larger than the limit/, small);
+  // an announced size over the limit is refused before the body is read (this body never ends)
+  const endless = new ReadableStream({ pull: () => new Promise(() => {}) });
+  await refusedWith(
+    ONE,
+    serve(endless, { headers: { 'content-length': String(10 ** 12) } }),
+    /larger than the limit/,
+    { ...BUNDLE_LIMITS, timeoutMs: 2000 },
+  );
+  // timeout: a server that never answers
+  const hang = (url, { signal }) =>
+    new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
+  await refusedWith(ONE, hang, /timed out/, { ...BUNDLE_LIMITS, timeoutMs: 50 });
+  // ... also one that ignores the abort signal, and a body that stalls after the headers
+  await refusedWith(ONE, () => new Promise(() => {}), /timed out/, {
+    ...BUNDLE_LIMITS,
+    timeoutMs: 50,
+  });
+  const stalled = new ReadableStream({ pull: () => new Promise(() => {}) });
+  await refusedWith(ONE, serve(stalled), /timed out/, { ...BUNDLE_LIMITS, timeoutMs: 50 });
+  // a gzip bomb (unpacked size over the limit) and data that is no gzip tar
+  await refusedWith(ONE, serve(good), /not a readable gzip tar/, {
+    ...BUNDLE_LIMITS,
+    maxUnpackedBytes: 1024,
+  });
+  const junk = Buffer.from('not a tarball');
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { integrity: sri(junk) })],
+    serve(junk),
+    /not a readable gzip tar/,
+  );
+  // a broken header checksum, and a kept path that occurs twice (extraction lets the last win)
+  const raw = tar({ 'package/node_modules/a/package.json': JSON.stringify(content.a) });
+  raw[0] ^= 1;
+  const badSum = gzipSync(raw);
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { integrity: sri(badSum) })],
+    serve(badSum),
+    /not a readable gzip tar/,
+  );
+  const twiceData = Buffer.from(JSON.stringify({ name: 'a', version: '6.6.6' }));
+  const twice = tgz(
+    { 'package/node_modules/a/package.json': JSON.stringify(content.a) },
+    {
+      extra: [
+        tarHeader('package/node_modules/a/package.json', twiceData.length, '0'),
+        pad512(twiceData),
+      ],
+    },
+  );
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { integrity: sri(twice) })],
+    serve(twice),
+    /not a readable gzip tar/,
+  );
+  // an anchor that is not a registry tarball with sha512 is never downloaded
+  const never = serve(good);
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { resolved: 'https://evil.example/x.tgz' })],
+    never,
+    /anchor without a registry tarball/,
+  );
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { integrity: 'sha1-AAAA' })],
+    never,
+    /anchor without a registry tarball/,
+  );
+  assert.equal(never.calls.length, 0);
+
+  // long paths (over 100 bytes): PAX path header, GNU long name, ustar prefix
+  for (const longNames of ['pax', 'gnu', 'ustar']) {
+    const t = bundlerTgz(
+      'bundler',
+      '1.0.0',
+      { [LONG]: { name: 'y'.repeat(60), version: '1.0.0' } },
+      { longNames },
+    );
+    const e = entry(LONG, 'y'.repeat(60), '1.0.0', { integrity: sri(t) });
+    assert.deepEqual(await findings([e], serve(t)), [], longNames);
+    assert.match((await findings([{ ...e, version: '1.0.1' }], serve(t)))[0], /differs/, longNames);
+  }
+
+  // PAX size and path apply to the next real entry, not to a meta entry in between (here a GNU
+  // long name, whose own size is used); the file header's own size field is wrong on purpose
+  const paxData = Buffer.from(JSON.stringify(content.a));
+  const paxSize = paxRecord('size', String(paxData.length));
+  const gnuName = Buffer.from('package/node_modules/a/package.json\0');
+  const mixed = gzipSync(
+    tar(
+      {},
+      {
+        extra: [
+          tarHeader('PaxHeader/a', paxSize.length, 'x'),
+          pad512(paxSize),
+          tarHeader('././@LongLink', gnuName.length, 'L'),
+          pad512(gnuName),
+          tarHeader('ignored', 0, '0'),
+          pad512(paxData),
+        ],
+      },
+    ),
+  );
+  assert.deepEqual(
+    await findings([entry('a', 'a', '1.0.0', { integrity: sri(mixed) })], serve(mixed)),
+    [],
+  );
+
+  // the tar reader alone: kept files, a size limit per file, a PAX global path is refused
+  const files = tarFiles(gunzipSync(good), (p) => p.endsWith('/package.json'), 1 << 20);
+  assert.deepEqual([...files.keys()].sort(), [
+    'package/node_modules/@s/b/package.json',
+    'package/node_modules/a/node_modules/c/package.json',
+    'package/node_modules/a/package.json',
+    'package/package.json',
+  ]);
+  assert.equal(tarFiles(gunzipSync(good), () => true, 1).get('package/package.json'), null);
+  const globalPath = paxRecord('path', 'package/node_modules/a/package.json');
+  assert.throws(
+    () =>
+      tarFiles(
+        tar(
+          {},
+          { extra: [tarHeader('pax_global_header', globalPath.length, 'g'), pad512(globalPath)] },
+        ),
+        () => true,
+      ),
+    /PAX global header/,
+  );
+  // the download base: the registry, only the tests' loopback stub as an override
+  assert.equal(registryBase({}), 'https://registry.npmjs.org/');
+  assert.equal(
+    registryBase({ TLDCOST_NPM_REGISTRY: 'http://127.0.0.1:1234' }),
+    'http://127.0.0.1:1234/',
+  );
+  for (const bad of ['https://evil.example', 'http://localhost:1234', 'http://127.0.0.1:1234/x']) {
+    assert.equal(registryBase({ TLDCOST_NPM_REGISTRY: bad }), 'https://registry.npmjs.org/', bad);
+  }
+});
+
+/** Loopback stub of the npm registry: serves `files` (URL path -> tarball), records the requests. */
+async function registryStub(files) {
+  const seen = [];
+  const server = createServer((req, res) => {
+    seen.push(req.url);
+    const body = files[req.url];
+    if (!body) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    res.writeHead(200, {
+      'content-type': 'application/octet-stream',
+      'content-length': body.length,
+    });
+    res.end(body);
+  });
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const url = `http://127.0.0.1:${server.address().port}`;
+  return { url, seen, close: () => new Promise((r) => server.close(r)) };
+}
+
+test('the real aws-cdk-lib bump passes the whole exemption against local tarballs; a missing bundle fails', async () => {
+  // local tarballs with the bundled package.json files the real lock entries name; the lock's
+  // parent integrity is the local tarball's (the real one is 39 MB and not fetched in tests)
+  const bundledOf = (pkgs) =>
+    Object.fromEntries(
+      Object.entries(pkgs)
+        .filter(([k]) => k !== CDK_KEY)
+        .map(([k, e]) => [
+          k.slice(`${CDK_KEY}/node_modules/`.length),
+          {
+            name: k.slice(k.lastIndexOf('node_modules/') + 'node_modules/'.length),
+            version: e.version,
+          },
+        ]),
+    );
+  const version = (pkgs) => pkgs[CDK_KEY].version;
+  const local = (pkgs, tgzBuf) => ({
+    ...pkgs,
+    [CDK_KEY]: { ...pkgs[CDK_KEY], integrity: sri(tgzBuf) },
+  });
+  const before = bundlerTgz('aws-cdk-lib', version(CDK.before), bundledOf(CDK.before));
+  const after = bundlerTgz('aws-cdk-lib', version(CDK.after), bundledOf(CDK.after));
+  const path = (pkgs) => `/aws-cdk-lib/-/aws-cdk-lib-${version(pkgs)}.tgz`;
+  const reg = await registryStub({ [path(CDK.before)]: before, [path(CDK.after)]: after });
+  try {
+    const r = repo();
+    r.commit({ 'package-lock.json': lockWith(local(CDK.before, before)) });
+    r.commit({ 'package-lock.json': lockWith(local(CDK.after, after)) });
+    const res = await check(r, { extraEnv: { TLDCOST_NPM_REGISTRY: reg.url } });
+    assert.equal(res.code, 0, res.out);
+    assert.match(res.out, /Dependabot exception: 2 commit\(s\)/);
+    // each anchor tarball exactly once (commits are checked newest first)
+    assert.deepEqual([...reg.seen].sort(), [path(CDK.before), path(CDK.after)].sort());
+
+    // the new aws-cdk-lib tarball without minimatch: the lock's bundled minimatch is refused
+    const rest = Object.fromEntries(
+      Object.entries(bundledOf(CDK.after)).filter(([rel]) => rel !== 'minimatch'),
+    );
+    const without = bundlerTgz('aws-cdk-lib', version(CDK.after), rest);
+    const reg2 = await registryStub({ [path(CDK.after)]: without });
+    try {
+      const r2 = repo();
+      r2.commit({ 'package-lock.json': lockWith(local(CDK.after, without)) });
+      const res2 = await check(r2, { extraEnv: { TLDCOST_NPM_REGISTRY: reg2.url } });
+      assert.equal(res2.code, 1, res2.out);
+      assert.match(
+        res2.out,
+        /bundled node_modules\/aws-cdk-lib\/node_modules\/minimatch: not in the tarball of the package that bundles it/,
+      );
+      assert.ok(!res2.out.includes(TOKEN));
+    } finally {
+      await reg2.close();
+    }
+  } finally {
+    await reg.close();
+  }
 });
 
 test('positive: lock-only resolution updates (direct and transitive) of the root lock and tools/lhci pass', async () => {

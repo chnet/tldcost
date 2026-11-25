@@ -19,9 +19,14 @@
 //        (https://registry.npmjs.org/<name>/-/<base>-<version>.tgz), a sha512 `integrity` and no
 //        alias; an added or changed bundled entry (`"inBundle": true`, shipped inside the tarball
 //        of a package that bundles it) instead has no `resolved`, `integrity`, `link` or `name`, a
-//        strict version, and its nearest ancestor package that is not itself bundled passes the
-//        same tarball and sha512 check; other entries without `resolved` (links) only
-//        unchanged; the root and workspace
+//        strict version, and its nearest ancestor package that is not itself bundled (the anchor)
+//        passes the same tarball and sha512 check; the anchor's tarball is then downloaded from
+//        exactly that `resolved` URL, its sha512 must equal the lock's `integrity` before anything
+//        in it is read, and it must hold package/<path below the anchor>/package.json with the
+//        entry's name and version (a bundled entry that is not in the tarball would be fetched by
+//        npm from the registry without the lock's integrity); download, size, time and hash
+//        errors fail closed (BUNDLE_LIMITS), each tarball once per run; other entries without
+//        `resolved` (links) only unchanged; the root and workspace
 //        entries change only like package.json; other top-level fields unchanged. Without a
 //        package.json change in the same commit (lock-only resolution updates within the declared
 //        ranges, direct and transitive; owner decision 2026-11-19) the root entry, every workspace
@@ -34,6 +39,9 @@
 //        line that differs only in the 40-hex sha and its `# version` comment.
 //
 // No token, file content or e-mail is printed; findings name the commit and the failed condition.
+
+import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 
 export const DEPENDABOT = {
   login: 'dependabot[bot]',
@@ -232,11 +240,12 @@ function registryEntryOk(key, entry) {
  * An added or changed bundled entry (`"inBundle": true`): npm writes no resolved/integrity for it,
  * its files come from the tarball of the package that bundles it. Allowed only with no resolved,
  * integrity, link or name and a strict version, and only if its nearest ancestor package that is not
- * itself bundled passes registryEntryOk (that tarball's sha512 covers the bundled files). Ancestors
- * in between must be bundled entries of the same lock. A bundled entry at the top level of the lock
- * or of a workspace has no such ancestor and is refused.
+ * itself bundled (the anchor) passes registryEntryOk. Ancestors in between must be bundled entries of
+ * the same lock. A bundled entry at the top level of the lock or of a workspace has no such ancestor
+ * and is refused. Returns the anchor's key, or null. That the anchor's tarball really holds the entry
+ * is checked afterwards by bundleFindings.
  */
-function bundledEntryOk(key, entry, pkgs, isPackageKey) {
+function bundleAnchor(key, entry, pkgs, isPackageKey) {
   if (
     entry.inBundle !== true ||
     ['resolved', 'integrity', 'link', 'name'].some((f) => Object.hasOwn(entry, f)) ||
@@ -244,20 +253,20 @@ function bundledEntryOk(key, entry, pkgs, isPackageKey) {
     !LOCK_VERSION.test(entry.version) ||
     !PACKAGE_NAME.test(lockName(key))
   ) {
-    return false;
+    return null;
   }
   const NM = '/node_modules/';
   let k = key;
   for (;;) {
     const at = k.lastIndexOf(NM);
-    if (at < 0) return false;
+    if (at < 0) return null;
     k = k.slice(0, at);
-    if (!isPackageKey(k)) return false;
+    if (!isPackageKey(k)) return null;
     const parent = own(pkgs, k);
-    if (!isPlainObject(parent)) return false;
+    if (!isPlainObject(parent)) return null;
     // a bundled ancestor: its own entry is judged by the same rule when it changes
     if (parent.inBundle === true) continue;
-    return !Object.hasOwn(parent, 'inBundle') && registryEntryOk(k, parent);
+    return !Object.hasOwn(parent, 'inBundle') && registryEntryOk(k, parent) ? k : null;
   }
 }
 
@@ -265,10 +274,12 @@ function bundledEntryOk(key, entry, pkgs, isPackageKey) {
  * package-lock.json: every added or changed package has a package key (packageKeyMatcher) and its
  * resolved URL is exactly the registry tarball of the entry's own name and version (a foreign
  * tarball under a known name would be installed in its place), or it is a bundled entry under such a
- * package (bundledEntryOk); workspace links unchanged.
+ * package (bundleAnchor); workspace links unchanged.
  * `workspaces`: the workspace patterns of the PARENT's root package.json (none for a standalone lock).
+ * `bundles`: an array that receives one tarball check per added or changed bundled entry (for
+ * bundleFindings); without it a bundled entry cannot be checked and is refused (fail closed).
  */
-export function packageLockFinding(beforeText, afterText, workspaces = []) {
+export function packageLockFinding(beforeText, afterText, workspaces = [], bundles = null) {
   let before, after;
   try {
     before = JSON.parse(beforeText);
@@ -307,13 +318,26 @@ export function packageLockFinding(beforeText, afterText, workspaces = []) {
     }
     // an added or changed package: its own registry tarball, sha512 integrity, no alias; a bundled
     // one only without them, under an ancestor package that has them
-    const ok =
-      entry.inBundle === true
-        ? bundledEntryOk(key, entry, after.packages, isPackageKey)
-        : registryEntryOk(key, entry);
-    if (!ok) {
+    if (entry.inBundle !== true) {
+      if (registryEntryOk(key, entry)) continue;
       return 'package-lock.json: an added or changed package without its own registry.npmjs.org tarball and sha512 integrity';
     }
+    const anchor = bundleAnchor(key, entry, after.packages, isPackageKey);
+    if (anchor === null) {
+      return 'package-lock.json: an added or changed package without its own registry.npmjs.org tarball and sha512 integrity';
+    }
+    if (!Array.isArray(bundles)) {
+      return 'package-lock.json: a bundled package that cannot be checked against its tarball here';
+    }
+    const { resolved, integrity } = own(after.packages, anchor);
+    bundles.push({
+      key,
+      resolved,
+      integrity,
+      path: `package/${key.slice(anchor.length + 1)}/package.json`,
+      name: lockName(key),
+      version: entry.version,
+    });
   }
   return '';
 }
@@ -384,9 +408,10 @@ export function pinOnlyDiff(diff) {
 
 /**
  * Condition 4: reasons why a commit's changes are outside the exemption (empty = allowed), judged
- * against its parent. `run` is the git runner of the caller (argv array -> stdout).
+ * against its parent. `run` is the git runner of the caller (argv array -> stdout). `bundles` receives
+ * the tarball checks of bundled lock entries (packageLockFinding), to run with bundleFindings.
  */
-export function changeFindings(sha, run) {
+export function changeFindings(sha, run, bundles = null) {
   const id = sha.slice(0, 10);
   const parents = run(['rev-list', '--parents', '-n', '1', sha]).trim().split(/\s+/).length - 1;
   if (parents !== 1) return [`${id}: dependabot exemption: not a single-parent commit`];
@@ -434,7 +459,7 @@ export function changeFindings(sha, run) {
         const r = lockOnlyFinding(before, after, ws);
         if (r) reason(prefix + r);
       }
-      const r = packageLockFinding(before, after, ws);
+      const r = packageLockFinding(before, after, ws, bundles);
       if (r) reason(prefix + r);
     } else if (WORKFLOW.test(path)) {
       const diff = run([
@@ -523,17 +548,263 @@ export async function apiFindings(sha, { repo, token, env = process.env, fetchFn
 }
 
 /**
+ * Limits of the anchor tarball check (bundleFindings): download size, unpacked size (a gzip bomb),
+ * time for download and read, size of one bundled package.json. Beyond them the check fails closed.
+ */
+export const BUNDLE_LIMITS = {
+  maxBytes: 200 * 1024 * 1024,
+  maxUnpackedBytes: 1024 * 1024 * 1024,
+  timeoutMs: 120_000,
+  maxManifestBytes: 1024 * 1024,
+};
+
+/**
+ * Base of anchor tarball downloads: always the registry of the lock's `resolved`. Only the tests
+ * point it at their loopback stub, with TLDCOST_NPM_REGISTRY=http://127.0.0.1:<port> (nothing else).
+ */
+export function registryBase(env = process.env) {
+  const override = env.TLDCOST_NPM_REGISTRY;
+  if (typeof override === 'string' && /^http:\/\/127\.0\.0\.1:\d{1,5}$/.test(override)) {
+    return `${override}/`;
+  }
+  return REGISTRY;
+}
+
+/** NUL-terminated string field of a tar header. */
+const tarString = (buf, at, len) => {
+  const field = buf.subarray(at, at + len);
+  const end = field.indexOf(0);
+  return field.subarray(0, end < 0 ? len : end).toString('utf8');
+};
+
+/** Numeric field of a tar header: octal, or base-256 when the high bit of the first byte is set. */
+function tarNumber(buf, at, len) {
+  if (buf[at] & 0x80) {
+    let n = buf[at] & 0x7f;
+    for (let i = at + 1; i < at + len; i++) n = n * 256 + buf[i];
+    return n;
+  }
+  const s = tarString(buf, at, len).trim();
+  return /^[0-7]+$/.test(s) ? parseInt(s, 8) : NaN;
+}
+
+/** Records of a PAX extended header ("<len> <key>=<value>\n"); throws on a malformed one. */
+function paxRecords(data) {
+  const out = {};
+  let at = 0;
+  while (at < data.length) {
+    const space = data.indexOf(0x20, at);
+    const len = Number(data.subarray(at, space).toString('ascii'));
+    if (space < 0 || !Number.isSafeInteger(len) || len <= 0 || at + len > data.length) {
+      throw new Error('malformed PAX header');
+    }
+    const record = data.subarray(space + 1, at + len - 1).toString('utf8');
+    const eq = record.indexOf('=');
+    if (eq < 0 || data[at + len - 1] !== 0x0a) throw new Error('malformed PAX header');
+    out[record.slice(0, eq)] = record.slice(eq + 1);
+    at += len;
+  }
+  return out;
+}
+
+/**
+ * Regular files of a tar archive whose path `keep` selects: path -> content (null when larger than
+ * maxFileBytes). Reads ustar names with prefix, PAX `x` headers (path, size) and GNU `L` long names.
+ * Fails closed (throws) on a bad header checksum, an entry beyond the archive, a PAX global header
+ * that sets path or size, and a kept path that occurs twice (tar extraction would let the last win).
+ */
+export function tarFiles(tar, keep, maxFileBytes = BUNDLE_LIMITS.maxManifestBytes) {
+  const out = new Map();
+  const seen = new Set();
+  let off = 0;
+  let longName = null;
+  let pax = null;
+  while (off + 512 <= tar.length) {
+    const h = tar.subarray(off, off + 512);
+    if (h.every((b) => b === 0)) return out; // end of archive
+    let unsigned = 0;
+    let signed = 0;
+    for (let i = 0; i < 512; i++) {
+      const b = i >= 148 && i < 156 ? 0x20 : h[i];
+      unsigned += b;
+      signed += b > 127 ? b - 256 : b;
+    }
+    const sum = tarNumber(h, 148, 8);
+    if (sum !== unsigned && sum !== signed) throw new Error('tar header checksum');
+    const type = String.fromCharCode(h[156]);
+    // PAX and GNU long-name values apply to the next real entry, never to another meta entry
+    const meta = type === 'x' || type === 'g' || type === 'L' || type === 'K';
+    let name = tarString(h, 0, 100);
+    if (tarString(h, 257, 6) === 'ustar' && tarString(h, 263, 2) === '00') {
+      const prefix = tarString(h, 345, 155);
+      if (prefix) name = `${prefix}/${name}`;
+    }
+    let size = tarNumber(h, 124, 12);
+    if (!meta) {
+      if (pax && Object.hasOwn(pax, 'size')) size = /^\d+$/.test(pax.size) ? Number(pax.size) : NaN;
+      if (pax && Object.hasOwn(pax, 'path')) name = pax.path;
+      if (longName !== null) name = longName;
+    }
+    const start = off + 512;
+    if (!Number.isSafeInteger(size) || size < 0 || start + size > tar.length) {
+      throw new Error('tar entry beyond the archive');
+    }
+    const data = tar.subarray(start, start + size);
+    off = start + Math.ceil(size / 512) * 512;
+    if (type === 'x') {
+      pax = paxRecords(data);
+      continue;
+    }
+    if (type === 'g') {
+      const g = paxRecords(data);
+      if (Object.hasOwn(g, 'path') || Object.hasOwn(g, 'size')) {
+        throw new Error('PAX global header with path or size');
+      }
+      continue;
+    }
+    if (type === 'L') {
+      longName = tarString(data, 0, data.length);
+      continue;
+    }
+    if (type === 'K') continue; // GNU long link name: links are not read
+    longName = null;
+    pax = null;
+    if (!keep(name)) continue;
+    if (seen.has(name)) throw new Error('tar path occurs twice');
+    seen.add(name);
+    if (type === '0' || type === '\0' || type === '7') {
+      out.set(name, size > maxFileBytes ? null : Buffer.from(data));
+    }
+  }
+  if (off !== tar.length) throw new Error('tar archive ends inside a block');
+  return out;
+}
+
+/**
+ * Downloads one anchor tarball (no redirects) within the limits, checks its sha512 against the lock
+ * BEFORE reading it, then returns its bundled package.json files (tarFiles), or {error}.
+ */
+async function anchorManifests(resolved, integrity, { env, fetchFn, limits }) {
+  if (!resolved.startsWith(REGISTRY) || !SHA512.test(integrity)) {
+    return { error: 'anchor without a registry tarball and sha512 integrity' };
+  }
+  const url = registryBase(env) + resolved.slice(REGISTRY.length);
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), limits.timeoutMs);
+  // the time limit also ends a body that stalls, whatever the fetch implementation does on abort
+  const aborted = new Promise((_, reject) =>
+    ctl.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true }),
+  );
+  aborted.catch(() => {});
+  let buf;
+  try {
+    const res = await Promise.race([
+      fetchFn(url, { redirect: 'error', signal: ctl.signal }),
+      aborted,
+    ]);
+    if (!res.ok) return { error: `anchor tarball download failed (status ${res.status})` };
+    if (Number(res.headers.get('content-length')) > limits.maxBytes) {
+      ctl.abort();
+      return { error: 'anchor tarball larger than the limit' };
+    }
+    const chunks = [];
+    let n = 0;
+    const reader = res.body.getReader();
+    for (;;) {
+      const { done, value: chunk } = await Promise.race([reader.read(), aborted]);
+      if (done) break;
+      n += chunk.length;
+      if (n > limits.maxBytes) {
+        ctl.abort();
+        return { error: 'anchor tarball larger than the limit' };
+      }
+      chunks.push(chunk);
+    }
+    buf = Buffer.concat(chunks);
+  } catch {
+    return {
+      error: ctl.signal.aborted
+        ? 'anchor tarball download timed out'
+        : 'anchor tarball download failed',
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+  if (`sha512-${createHash('sha512').update(buf).digest('base64')}` !== integrity) {
+    return { error: 'anchor tarball sha512 does not match the lock integrity' };
+  }
+  try {
+    const tar = gunzipSync(buf, { maxOutputLength: limits.maxUnpackedBytes });
+    const keep = (p) => p.startsWith('package/node_modules/') && p.endsWith('/package.json');
+    return { manifests: tarFiles(tar, keep, limits.maxManifestBytes) };
+  } catch {
+    return { error: 'anchor tarball is not a readable gzip tar within the limits' };
+  }
+}
+
+/**
+ * The tarball half of the bundled-entry rule: for each check collected by changeFindings, the
+ * anchor's tarball (downloaded once per run via `cache`) holds package/<path>/package.json with the
+ * entry's name and version. Any download, size, time, hash or archive error fails closed.
+ */
+export async function bundleFindings(
+  sha,
+  bundles,
+  { env = process.env, fetchFn = fetch, cache = new Map(), limits = BUNDLE_LIMITS } = {},
+) {
+  const id = sha.slice(0, 10);
+  const out = [];
+  for (const b of bundles) {
+    const anchorKey = `${b.resolved} ${b.integrity}`;
+    if (!cache.has(anchorKey)) {
+      cache.set(anchorKey, anchorManifests(b.resolved, b.integrity, { env, fetchFn, limits }));
+    }
+    const { error, manifests } = await cache.get(anchorKey);
+    const reason = (r) => out.push(`${id}: dependabot exemption: bundled ${b.key}: ${r}`);
+    if (error) {
+      reason(error);
+      continue;
+    }
+    const content = manifests.get(b.path);
+    if (content === undefined) {
+      reason('not in the tarball of the package that bundles it');
+      continue;
+    }
+    let pkg;
+    try {
+      pkg = content === null ? null : JSON.parse(content.toString('utf8'));
+    } catch {
+      pkg = null;
+    }
+    if (!isPlainObject(pkg)) {
+      reason('its package.json in the bundling tarball is not readable');
+    } else if (pkg.name !== b.name || pkg.version !== b.version) {
+      reason('name or version in the bundling tarball differs from the lock');
+    }
+  }
+  return out;
+}
+
+/**
  * The whole exemption for one range. Returns null when it does not apply at all (context or a
  * non-Dependabot commit in the range), else the findings over all commits (empty = exempt).
+ * Bundled lock entries are checked against their anchor's tarball only for a commit that passed
+ * everything else (no download for a refused commit).
  */
 export async function rangeExemption(commits, ctx, { run, repo, token, env, fetchFn }) {
   if (!contextAllows(ctx) || commits.length === 0 || !commits.every(isDependabotCommit)) {
     return null;
   }
   const out = [];
+  const tarballs = new Map(); // anchor tarballs, once per run
   for (const c of commits) {
-    out.push(...changeFindings(c.sha, run));
-    out.push(...(await apiFindings(c.sha, { repo, token, env, fetchFn })));
+    const bundles = [];
+    const change = changeFindings(c.sha, run, bundles);
+    const api = await apiFindings(c.sha, { repo, token, env, fetchFn });
+    out.push(...change, ...api);
+    if (change.length === 0 && api.length === 0 && bundles.length > 0) {
+      out.push(...(await bundleFindings(c.sha, bundles, { env, fetchFn, cache: tarballs })));
+    }
   }
   return out;
 }

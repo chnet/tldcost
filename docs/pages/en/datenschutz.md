@@ -2,7 +2,7 @@
 title: Privacy policy
 slug: datenschutz
 lang: en
-source_sha256: '5b6af211850a1dac24599e05db49fee94fe3486b27906b10da60529744671967'
+source_sha256: 'f2a3058e19d177ae02eaf60663f63e608b302f943b3d611c205017edd2fb9fee'
 ---
 
 <!--
@@ -22,6 +22,7 @@ this text was translated from.
 - No login, no contact form, no newsletter, no chatbot.
 - We do not keep access logs. Only our hosting provider processes the connection data that is technically needed to deliver the site.
 - Error reports and corrections reach us through GitHub or by email. The repository has been public since 19 Nov 2026.
+- The “Support” link leads to GitHub Sponsors. The payment runs through GitHub and Stripe; we do not receive your email address (section 8).
 
 ## 1. Controller
 
@@ -73,7 +74,7 @@ The price data is also available as static files under `/api/v1/`. The interface
 
 ## 7. Reporting errors
 
-The repository chnet/tldcost has been public since 19 Nov 2026. The “Report an error” link leads to a form on GitHub; without a GitHub account you can reach us by email, and section 8 applies to that. On GitHub we take corrections and notes as issues and pull requests. For GitHub:
+The repository chnet/tldcost has been public since 19 Nov 2026. The “Report an error” link leads to a form on GitHub; without a GitHub account you can reach us by email, and section 9 applies to that. On GitHub we take corrections and notes as issues and pull requests. For GitHub:
 
 - The link passes only details of the table row (provider, TLD) to the form on GitHub, no data about you.
 - To contribute you need an account with GitHub (GitHub, Inc., USA). The [GitHub General Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) applies on GitHub.
@@ -81,13 +82,23 @@ The repository chnet/tldcost has been public since 19 Nov 2026. The “Report an
 - We process your details to check the report and to correct the data. Legal basis: Art. 6(1)(f) GDPR. Our legitimate interest is correct and traceable data.
 - Contributions remain part of the project’s public history.
 
-## 8. Contact by email
+## 8. Support via GitHub Sponsors
+
+The “Support” link leads to GitHub Sponsors. Only when you follow it does your browser open GitHub; the [GitHub General Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) applies there.
+
+- You support us through your account with GitHub (GitHub, Inc., USA). The payment runs through GitHub and its payment processor Stripe; we do not receive your email address.
+- GitHub provides us with details of your support and the payments received, for example your GitHub name and the amount, insofar as GitHub shows them to us. You decide on GitHub who can see your support publicly.
+- We process this to record the support. Legal basis: Art. 6(1)(b) GDPR, for bookkeeping Art. 6(1)(c) GDPR.
+- We keep accounting records for as long as tax and commercial law require.
+- Support has no influence on inclusion, placement or presentation in tldcost.
+
+## 9. Contact by email
 
 If you send us an email, we process your address and your message to answer the request. Legal basis: Art. 6(1)(f) GDPR; for requests about a contract, Art. 6(1)(b) GDPR. We delete the data once the request has been dealt with and no statutory retention obligations apply.
 
 Emails to our addresses (hello@, privacy@) are processed via Microsoft Exchange Online (Microsoft Ireland Operations Ltd.). The data processing agreement with Microsoft applies.
 
-## 9. Your rights
+## 10. Your rights
 
 You have the right to
 
@@ -100,12 +111,12 @@ You have the right to
 
 Please send requests to [privacy@chnet.solutions](mailto:privacy@chnet.solutions).
 
-## 10. Right to lodge a complaint
+## 11. Right to lodge a complaint
 
 You can lodge a complaint with a data protection supervisory authority (Art. 77 GDPR). The authority responsible for us is the Thuringian State Commissioner for Data Protection and Freedom of Information (Thüringer Landesbeauftragter für den Datenschutz und die Informationsfreiheit, TLfDI), as the controller has its registered office in Breitenworbis (Thuringia).
 
-## 11. Changes
+## 12. Changes
 
 We update this privacy policy when the technology of tldcost or the legal situation changes.
 
-Last updated: 19 Nov 2026
+Last updated: 25 Nov 2026

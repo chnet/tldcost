@@ -1,0 +1,197 @@
+{
+  "description": "Real package-lock.json excerpt: aws-cdk-lib 2.275.0 -> 2.278.0 (Dependabot, chnet/tldcost PR #48, head 070e034e). before: the parent and the bundled entries that change, from main 915d9ba0; after: the same keys from 070e034e. The bundled entries carry inBundle true and no resolved/integrity, as npm writes them.",
+  "before": {
+    "node_modules/aws-cdk-lib": {
+      "version": "2.275.0",
+      "resolved": "https://registry.npmjs.org/aws-cdk-lib/-/aws-cdk-lib-2.275.0.tgz",
+      "integrity": "sha512-Gjj1tM3dQedhsI7MdwMvULF1PzgEO/zX0KFHU9xwZskkSL9057IZB4fJWm9nL+aaNU3TU+lNt8uB6d8QcZtUpQ==",
+      "bundleDependencies": [
+        "@aws/cloudformation-validate",
+        "@balena/dockerignore",
+        "@aws-cdk/cloud-assembly-api",
+        "case",
+        "fs-extra",
+        "ignore",
+        "jsonschema",
+        "minimatch",
+        "punycode",
+        "semver",
+        "yaml",
+        "mime-types"
+      ],
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aws-cdk/asset-awscli-v1": "2.2.292",
+        "@aws-cdk/asset-node-proxy-agent-v6": "^2.1.3",
+        "@aws-cdk/cloud-assembly-api": "^2.5.0",
+        "@aws-cdk/cloud-assembly-schema": "^55.0.0",
+        "@aws/cloudformation-validate": "1.12.1",
+        "@balena/dockerignore": "^1.0.2",
+        "case": "1.6.3",
+        "fs-extra": "^11.4.1",
+        "ignore": "^5.3.2",
+        "jsonschema": "^1.5.0",
+        "mime-types": "^2.1.35",
+        "minimatch": "^10.2.6",
+        "punycode": "^2.3.1",
+        "semver": "^7.8.5",
+        "yaml": "1.10.3"
+      },
+      "engines": {
+        "node": ">= 20.0.0"
+      },
+      "peerDependencies": {
+        "constructs": "^10.5.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/@aws/cloudformation-validate": {
+      "version": "1.12.1",
+      "inBundle": true,
+      "license": "Apache-2.0",
+      "engines": {
+        "node": ">=20.0.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/brace-expansion": {
+      "version": "5.0.12",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "balanced-match": "^4.0.2"
+      },
+      "engines": {
+        "node": "20 || >=22"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/graceful-fs": {
+      "version": "4.2.11",
+      "inBundle": true,
+      "license": "ISC"
+    },
+    "node_modules/aws-cdk-lib/node_modules/minimatch": {
+      "version": "10.2.6",
+      "inBundle": true,
+      "license": "BlueOak-1.0.0",
+      "dependencies": {
+        "brace-expansion": "^5.0.8"
+      },
+      "engines": {
+        "node": "18 || 20 || >=22"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/semver": {
+      "version": "7.8.5",
+      "inBundle": true,
+      "license": "ISC",
+      "bin": {
+        "semver": "bin/semver.js"
+      },
+      "engines": {
+        "node": ">=10"
+      }
+    }
+  },
+  "after": {
+    "node_modules/aws-cdk-lib": {
+      "version": "2.278.0",
+      "resolved": "https://registry.npmjs.org/aws-cdk-lib/-/aws-cdk-lib-2.278.0.tgz",
+      "integrity": "sha512-E5OfaAeWGpZk9TWUodhsNLLCPzM8ObydK5BewEgfOGwYt6UA+8po/+SyLLuFr4DoSjw17vMZg9eCNP6nlymNJg==",
+      "bundleDependencies": [
+        "@aws/cloudformation-validate",
+        "@balena/dockerignore",
+        "@aws-cdk/cloud-assembly-api",
+        "case",
+        "fs-extra",
+        "ignore",
+        "jsonschema",
+        "minimatch",
+        "punycode",
+        "semver",
+        "yaml",
+        "mime-types"
+      ],
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@aws-cdk/asset-awscli-v1": "2.2.297",
+        "@aws-cdk/asset-node-proxy-agent-v6": "^2.1.3",
+        "@aws-cdk/cloud-assembly-api": "^2.5.0",
+        "@aws-cdk/cloud-assembly-schema": "^55.6.0",
+        "@aws/cloudformation-validate": "~1.17.0",
+        "@balena/dockerignore": "^1.0.2",
+        "case": "1.6.3",
+        "fs-extra": "^11.4.1",
+        "ignore": "^5.3.2",
+        "jsonschema": "^1.5.0",
+        "mime-types": "^2.1.35",
+        "minimatch": "^11.0.9",
+        "punycode": "^2.3.1",
+        "semver": "^7.8.6",
+        "yaml": "1.10.3"
+      },
+      "engines": {
+        "node": ">= 20.0.0"
+      },
+      "peerDependencies": {
+        "constructs": "^10.5.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/@aws/cloudformation-validate": {
+      "version": "1.17.1",
+      "inBundle": true,
+      "license": "Apache-2.0",
+      "engines": {
+        "node": ">=20.0.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/@isaacs/nonrecursive-glob-match": {
+      "version": "1.1.0",
+      "inBundle": true,
+      "license": "BlueOak-1.0.0"
+    },
+    "node_modules/aws-cdk-lib/node_modules/brace-expansion": {
+      "version": "5.0.13",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "balanced-match": "^4.0.2"
+      },
+      "engines": {
+        "node": "20 || >=22"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/graceful-fs": {
+      "version": "4.2.12",
+      "inBundle": true,
+      "license": "BlueOak-1.0.0"
+    },
+    "node_modules/aws-cdk-lib/node_modules/minimatch": {
+      "version": "11.0.9",
+      "inBundle": true,
+      "license": "BlueOak-1.0.0",
+      "dependencies": {
+        "@isaacs/nonrecursive-glob-match": "^1.1.0",
+        "brace-expansion": "^5.0.12"
+      },
+      "engines": {
+        "node": "20 || >=22"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/isaacs"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/semver": {
+      "version": "7.8.6",
+      "inBundle": true,
+      "license": "ISC",
+      "bin": {
+        "semver": "bin/semver.js"
+      },
+      "engines": {
+        "node": ">=10"
+      }
+    }
+  }
+}

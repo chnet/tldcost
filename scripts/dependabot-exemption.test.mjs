@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
@@ -529,6 +529,133 @@ test('refused: lockfile – sha1 on a new entry, a changed entry without resolve
   await refused(
     { ...bump, 'package-lock.json': json({ ...LOCK, lockfileVersion: 2 }) },
     /a top-level field other than packages changed/,
+  );
+});
+
+// a real aws-cdk-lib bump (Dependabot): the parent with its own tarball and sha512, and the bundled
+// entries that change with it ("inBundle": true, no resolved/integrity, as npm writes them)
+const CDK = JSON.parse(
+  readFileSync(resolve(import.meta.dirname, 'fixtures/lock-bundled/aws-cdk-lib.json'), 'utf8'),
+);
+const CDK_KEY = 'node_modules/aws-cdk-lib';
+const BUNDLED_IN = (name) => `${CDK_KEY}/node_modules/${name}`;
+const bundled = (version = '1.0.0', extra = {}) => ({ version, inBundle: true, ...extra });
+const NO_TARBALL = /without its own registry.npmjs.org tarball and sha512 integrity/;
+
+test('lockfile: bundled entries pass only under an ancestor with its own tarball and sha512', async () => {
+  const ws = ROOT.workspaces;
+  const lockFinding = (beforePkgs, afterPkgs) =>
+    packageLockFinding(lockWith(beforePkgs), lockWith(afterPkgs), ws);
+  // (1) the real excerpt: 6 bundled entries changed or added, none with resolved or integrity
+  const bundledKeys = Object.keys(CDK.after).filter((k) => k !== CDK_KEY);
+  assert.equal(bundledKeys.length, 6);
+  for (const k of bundledKeys) {
+    assert.equal(CDK.after[k].inBundle, true, k);
+    assert.ok(!Object.hasOwn(CDK.after[k], 'resolved'), k);
+    assert.ok(!Object.hasOwn(CDK.after[k], 'integrity'), k);
+    assert.notDeepEqual(CDK.after[k], CDK.before[k], k);
+  }
+  assert.equal(lockFinding(CDK.before, CDK.after), '');
+  // (5) an unchanged parent: only its bundled entries change
+  assert.equal(lockFinding({ [CDK_KEY]: CDK.after[CDK_KEY] }, CDK.after), '');
+  // a bundled entry of a bundled entry: the nearest ancestor that is not bundled is checked
+  const deep = `${BUNDLED_IN('minimatch')}/node_modules/x`;
+  assert.equal(lockFinding(CDK.before, { ...CDK.after, [deep]: bundled() }), '');
+
+  // (2) no checked ancestor
+  const parent = CDK.after[CDK_KEY];
+  for (const [what, beforePkgs, afterPkgs] of [
+    ['ancestor missing', {}, { 'node_modules/ghost/node_modules/x': bundled() }],
+    [
+      'unchanged ancestor without resolved',
+      { 'node_modules/plain': { version: '1.0.0' } },
+      {
+        'node_modules/plain': { version: '1.0.0' },
+        'node_modules/plain/node_modules/x': bundled(),
+      },
+    ],
+    [
+      'unchanged ancestor with sha1 integrity',
+      {},
+      { 'node_modules/old/node_modules/x': bundled() },
+    ],
+    ['ancestor is a workspace link', {}, { 'node_modules/site/node_modules/x': bundled() }],
+    [
+      'ancestor with a foreign tarball',
+      {},
+      {
+        [CDK_KEY]: { ...parent, resolved: `${REG}/evil/-/evil-2.278.0.tgz` },
+        [BUNDLED_IN('x')]: bundled(),
+      },
+    ],
+    [
+      'ancestor marked inBundle false',
+      {},
+      { [CDK_KEY]: { ...parent, inBundle: false }, [BUNDLED_IN('x')]: bundled() },
+    ],
+    [
+      'bundled ancestor in between missing',
+      {},
+      { [CDK_KEY]: parent, [`${BUNDLED_IN('gone')}/node_modules/x`]: bundled() },
+    ],
+  ]) {
+    assert.match(lockFinding(beforePkgs, afterPkgs), NO_TARBALL, what);
+  }
+
+  // (3) a bundled entry that carries resolved, integrity, an alias or a bad version
+  const mm = BUNDLED_IN('minimatch');
+  for (const extra of [
+    { resolved: `${REG}/minimatch/-/minimatch-11.0.9.tgz`, integrity: 'sha512-AAAA' },
+    { resolved: `${REG}/minimatch/-/minimatch-11.0.9.tgz` },
+    { resolved: 'https://evil.example/minimatch-11.0.9.tgz' },
+    { integrity: 'sha512-AAAA' },
+    { name: 'minimatch' },
+    { version: '11.0.9/../x' },
+    { inBundle: 'true' },
+  ]) {
+    const after = { ...CDK.after, [mm]: { ...CDK.after[mm], ...extra } };
+    assert.match(lockFinding(CDK.before, after), NO_TARBALL, JSON.stringify(extra));
+  }
+
+  // (4) a forged inBundle at the top level of the lock or of a workspace, or on root/workspace entries
+  for (const key of [
+    'node_modules/x',
+    'node_modules/left-pad',
+    'site/node_modules/x',
+    'packages/core/node_modules/x',
+  ]) {
+    assert.match(lockFinding({}, { [key]: bundled('1.3.0') }), NO_TARBALL, key);
+  }
+  // a workspace entry never counts as the ancestor, not even one shaped like a registry entry
+  const wsEntry = {
+    'packages/core': {
+      version: '1.0.0',
+      resolved: `${REG}/e/-/e-1.0.0.tgz`,
+      integrity: 'sha512-AAAA',
+    },
+  };
+  assert.match(
+    lockFinding(wsEntry, { ...wsEntry, 'packages/core/node_modules/x': bundled() }),
+    NO_TARBALL,
+  );
+  for (const key of ['', 'site']) {
+    assert.match(
+      lockFinding({}, { [key]: { ...LOCK.packages[key], inBundle: true } }),
+      /root\/workspace entry: a top-level field was added or removed/,
+      key,
+    );
+  }
+
+  // the whole exemption: the real bump passes as two Dependabot commits, a parentless one fails
+  const r = repo();
+  r.commit({ 'package-lock.json': lockWith(CDK.before) });
+  r.commit({ 'package-lock.json': lockWith(CDK.after) });
+  const res = await check(r);
+  assert.equal(res.code, 0, res.out);
+  assert.match(res.out, /Dependabot exception: 2 commit\(s\)/);
+  await refused(
+    { 'package-lock.json': lockWith({ 'node_modules/ghost/node_modules/x': bundled() }) },
+    NO_TARBALL,
   );
 });
 

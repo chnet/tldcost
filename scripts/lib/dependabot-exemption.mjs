@@ -17,7 +17,11 @@
 //        node_modules/<name>(/node_modules/<name>)* at the root or in a workspace directory,
 //        `resolved` exactly the registry tarball of the name in its key and its version
 //        (https://registry.npmjs.org/<name>/-/<base>-<version>.tgz), a sha512 `integrity` and no
-//        alias; entries without `resolved` (links, bundled) only unchanged; the root and workspace
+//        alias; an added or changed bundled entry (`"inBundle": true`, shipped inside the tarball
+//        of a package that bundles it) instead has no `resolved`, `integrity`, `link` or `name`, a
+//        strict version, and its nearest ancestor package that is not itself bundled passes the
+//        same tarball and sha512 check; other entries without `resolved` (links) only
+//        unchanged; the root and workspace
 //        entries change only like package.json; other top-level fields unchanged. Without a
 //        package.json change in the same commit (lock-only resolution updates within the declared
 //        ranges, direct and transitive; owner decision 2026-11-19) the root entry, every workspace
@@ -208,10 +212,60 @@ const normalUrl = (u) => {
   }
 };
 
+/** An added or changed package entry: its own registry tarball, sha512 integrity, no alias. */
+function registryEntryOk(key, entry) {
+  const name = lockName(key);
+  return (
+    typeof entry.resolved === 'string' &&
+    entry.name === undefined &&
+    typeof entry.version === 'string' &&
+    LOCK_VERSION.test(entry.version) &&
+    PACKAGE_NAME.test(name) &&
+    typeof entry.integrity === 'string' &&
+    SHA512.test(entry.integrity) &&
+    entry.resolved === registryTarball(name, entry.version) &&
+    normalUrl(entry.resolved)
+  );
+}
+
+/**
+ * An added or changed bundled entry (`"inBundle": true`): npm writes no resolved/integrity for it,
+ * its files come from the tarball of the package that bundles it. Allowed only with no resolved,
+ * integrity, link or name and a strict version, and only if its nearest ancestor package that is not
+ * itself bundled passes registryEntryOk (that tarball's sha512 covers the bundled files). Ancestors
+ * in between must be bundled entries of the same lock. A bundled entry at the top level of the lock
+ * or of a workspace has no such ancestor and is refused.
+ */
+function bundledEntryOk(key, entry, pkgs, isPackageKey) {
+  if (
+    entry.inBundle !== true ||
+    ['resolved', 'integrity', 'link', 'name'].some((f) => Object.hasOwn(entry, f)) ||
+    typeof entry.version !== 'string' ||
+    !LOCK_VERSION.test(entry.version) ||
+    !PACKAGE_NAME.test(lockName(key))
+  ) {
+    return false;
+  }
+  const NM = '/node_modules/';
+  let k = key;
+  for (;;) {
+    const at = k.lastIndexOf(NM);
+    if (at < 0) return false;
+    k = k.slice(0, at);
+    if (!isPackageKey(k)) return false;
+    const parent = own(pkgs, k);
+    if (!isPlainObject(parent)) return false;
+    // a bundled ancestor: its own entry is judged by the same rule when it changes
+    if (parent.inBundle === true) continue;
+    return !Object.hasOwn(parent, 'inBundle') && registryEntryOk(k, parent);
+  }
+}
+
 /**
  * package-lock.json: every added or changed package has a package key (packageKeyMatcher) and its
  * resolved URL is exactly the registry tarball of the entry's own name and version (a foreign
- * tarball under a known name would be installed in its place); workspace links unchanged.
+ * tarball under a known name would be installed in its place), or it is a bundled entry under such a
+ * package (bundledEntryOk); workspace links unchanged.
  * `workspaces`: the workspace patterns of the PARENT's root package.json (none for a standalone lock).
  */
 export function packageLockFinding(beforeText, afterText, workspaces = []) {
@@ -251,18 +305,12 @@ export function packageLockFinding(beforeText, afterText, workspaces = []) {
     if (!isPackageKey(key)) {
       return 'package-lock.json: an added or changed key that is not node_modules/<name> at the root or in a workspace';
     }
-    // an added or changed package: its own registry tarball, sha512 integrity, no alias
-    const name = lockName(key);
+    // an added or changed package: its own registry tarball, sha512 integrity, no alias; a bundled
+    // one only without them, under an ancestor package that has them
     const ok =
-      typeof entry.resolved === 'string' &&
-      entry.name === undefined &&
-      typeof entry.version === 'string' &&
-      LOCK_VERSION.test(entry.version) &&
-      PACKAGE_NAME.test(name) &&
-      typeof entry.integrity === 'string' &&
-      SHA512.test(entry.integrity) &&
-      entry.resolved === registryTarball(name, entry.version) &&
-      normalUrl(entry.resolved);
+      entry.inBundle === true
+        ? bundledEntryOk(key, entry, after.packages, isPackageKey)
+        : registryEntryOk(key, entry);
     if (!ok) {
       return 'package-lock.json: an added or changed package without its own registry.npmjs.org tarball and sha512 integrity';
     }

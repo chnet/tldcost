@@ -2,7 +2,7 @@
 title: Privacy policy
 slug: datenschutz
 lang: en
-source_sha256: 'f2a3058e19d177ae02eaf60663f63e608b302f943b3d611c205017edd2fb9fee'
+source_sha256: 'f44f1bd179d9e4c4acd2ce391726ed51d381e2b0c07c3eb76c94deeea9e57e98'
 ---
 
 <!--
@@ -53,6 +53,8 @@ The contracting party is Amazon Web Services EMEA SARL, 38 Avenue John F. Kenned
 
 **Third countries:** where CloudFront processes data outside the EU, the standard contractual clauses in the data processing agreement with AWS apply. AWS is also certified under the EU-US Data Privacy Framework (Art. 45 GDPR).
 
+**tldcost.de:** this section also applies to requests to tldcost.de and www.tldcost.de, which CloudFront redirects to tldcost.io without serving any content of its own.
+
 ## 3. No cookies, nothing stored on your device
 
 We do not set cookies and use neither local storage nor session storage. We store nothing on your device and read nothing from it. Your settings in the table (TLD, sorting, columns, gross/net) exist only in the address (URL) of the page. That is why there is no cookie notice.
@@ -88,8 +90,8 @@ The “Support” link leads to GitHub Sponsors. Only when you follow it does yo
 
 - You support us through your account with GitHub (GitHub, Inc., USA). The payment runs through GitHub and its payment processor Stripe; we do not receive your email address.
 - GitHub provides us with details of your support and the payments received, for example your GitHub name and the amount, insofar as GitHub shows them to us. You decide on GitHub who can see your support publicly.
-- We process this to record the support. Legal basis: Art. 6(1)(b) GDPR, for bookkeeping Art. 6(1)(c) GDPR.
-- We keep accounting records for as long as tax and commercial law require.
+- We process this to assign and record the support. Legal basis: Art. 6(1)(f) GDPR. Our legitimate interest is to assign and record support payments. For bookkeeping, Art. 6(1)(c) GDPR applies.
+- We keep accounting vouchers (Buchungsbelege) for eight years from the end of the calendar year in which they were created (§ 147(3) and (4) AO, Abgabenordnung, German Fiscal Code; § 257(4) and (5) HGB, Handelsgesetzbuch, German Commercial Code); longer only while they matter for a tax whose assessment period has not yet expired.
 - Support has no influence on inclusion, placement or presentation in tldcost.
 
 ## 9. Contact by email

@@ -560,11 +560,13 @@ export const BUNDLE_LIMITS = {
 
 /**
  * Base of anchor tarball downloads: always the registry of the lock's `resolved`. Only the tests
- * point it at their loopback stub, with TLDCOST_NPM_REGISTRY=http://127.0.0.1:<port> (nothing else).
+ * point it at their loopback stub, with TLDCOST_NPM_REGISTRY=http://127.0.0.1:<port> (nothing else),
+ * and never in CI: with GITHUB_ACTIONS=true or any non-empty CI the override is ignored.
  */
 export function registryBase(env = process.env) {
+  const ci = env.GITHUB_ACTIONS === 'true' || (typeof env.CI === 'string' && env.CI !== '');
   const override = env.TLDCOST_NPM_REGISTRY;
-  if (typeof override === 'string' && /^http:\/\/127\.0\.0\.1:\d{1,5}$/.test(override)) {
+  if (!ci && typeof override === 'string' && /^http:\/\/127\.0\.0\.1:\d{1,5}$/.test(override)) {
     return `${override}/`;
   }
   return REGISTRY;

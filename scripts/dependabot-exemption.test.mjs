@@ -999,6 +999,27 @@ test('bundled entries: checked in the bundling tarball (exact URL, sha512 first,
   for (const bad of ['https://evil.example', 'http://localhost:1234', 'http://127.0.0.1:1234/x']) {
     assert.equal(registryBase({ TLDCOST_NPM_REGISTRY: bad }), 'https://registry.npmjs.org/', bad);
   }
+  // never in CI: GITHUB_ACTIONS=true or any non-empty CI ignores even a loopback override
+  const loop = { TLDCOST_NPM_REGISTRY: 'http://127.0.0.1:1234' };
+  for (const ci of [
+    { GITHUB_ACTIONS: 'true' },
+    { CI: 'true' },
+    { CI: '1' },
+    { GITHUB_ACTIONS: 'true', CI: 'true' },
+  ]) {
+    assert.equal(
+      registryBase({ ...loop, ...ci }),
+      'https://registry.npmjs.org/',
+      JSON.stringify(ci),
+    );
+  }
+  for (const notCi of [{}, { CI: '' }, { GITHUB_ACTIONS: 'false' }]) {
+    assert.equal(
+      registryBase({ ...loop, ...notCi }),
+      'http://127.0.0.1:1234/',
+      JSON.stringify(notCi),
+    );
+  }
 });
 
 /** Loopback stub of the npm registry: serves `files` (URL path -> tarball), records the requests. */
@@ -1051,6 +1072,8 @@ test('the real aws-cdk-lib bump passes the whole exemption against local tarball
     const r = repo();
     r.commit({ 'package-lock.json': lockWith(local(CDK.before, before)) });
     r.commit({ 'package-lock.json': lockWith(local(CDK.after, after)) });
+    // the script runs with an explicit env (PATH plus these, see run()): no GITHUB_ACTIONS or CI
+    // reaches it, so the loopback registry applies even when these tests run on GitHub Actions
     const res = await check(r, { extraEnv: { TLDCOST_NPM_REGISTRY: reg.url } });
     assert.equal(res.code, 0, res.out);
     assert.match(res.out, /Dependabot exception: 2 commit\(s\)/);

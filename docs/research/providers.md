@@ -63,7 +63,7 @@ Short summary of the contract values. Details, quotes and sources are in each pr
 | Host Europe | price page, home page and Impressum only via JavaScript; prices from FAQ table (as of 10/2024) | The scraper needs a different access path; values as `confidence: medium` |
 | INWX, netcup | standard prices are loaded via JavaScript | Scraper: look for product pages per TLD or a JSON endpoint |
 | Contabo | tax and currency of domain prices not shown | Clarify manually |
-| chnet.domains | on 2026-11-12 the website shows „Vorschau – noch nicht öffentlich“, ordering not possible | Owner decision: list the row only once it can be ordered publicly? |
+| chnet.domains | on 2026-11-12 the website showed „Vorschau – noch nicht öffentlich“, ordering not possible. On 2026-11-25 the [price list](https://chnet.domains/preise/) no longer shows this note; its maintenance notice („Wartungsarbeiten.“) is in the static HTML only as a hidden element. Ordering itself was not tested. | Listed as an ordinary row (decision Q2, `docs/decisions.md`); prices from the adapter `chnet-domains` |
 | all | `reviewed_at` + 90-day review (concept § 4 Finding 8) | Use the date 2026-11-12 as the first `reviewed_at` |
 
 ---
@@ -1103,6 +1103,9 @@ chnet.domains is collected under the same rules as all other providers (concept 
 - Price list: https://chnet.domains/preise/ (124 TLDs, with notice period per TLD)
 - AGB: [AGB Domain-Leistungen](https://app.chnet.domains/agb.html) (as of: 3 November 2026, version 2026-11-03; feature rows re-checked against version 2026-11-13 on 2026-11-15). Annex A contains the notice periods per TLD. Annex B is the withdrawal notice at https://app.chnet.domains/widerruf.html (not fetched).
 - Price display: gross (final prices incl. 19 % VAT) for consumers, net plus VAT for businesses (AGB § 4 Abs. 1).
+- **Source:** the price list https://chnet.domains/preise/, scraped by the weekly data update (adapter `chnet-domains`). One static HTML table with the columns „Endung“, „Kategorie“, „Preis pro Jahr“ and „Kündigungsfrist“, gross („Preis pro Domain und Jahr, inklusive 19 % USt.“). [robots.txt](https://chnet.domains/robots.txt) allows everything („User-agent: * / Allow: /“, checked 2026-11-25). Before the adapter existed, the 14 offers came from a single fetch on 2026-11-13 (seed data), and the weekly update did not refresh them, because it runs registered adapters only.
+- **Mapping:** the single yearly price is used as year1 and renewal (AGB § 4 Abs. 1: the current list price applies to subsequent terms, see the note below the table), `confidence: high` as before. Setup 0: the list shows no setup fee. Rows marked „§ Besondere Vergabebedingungen“ are written like any other row: the footnote says the registry sets extra requirements, „zum Beispiel einen Sitz in der EU oder einen Bezug zur Region“, not a different price (marked on 2026-11-25: .app, .berlin, .dev, .eu). Only the 14 TLDs with an offer file are written; .at, .ch and .berlin are on the list and skipped until a maintainer decides. TLDs with a 24-month minimum term (.gr, .nu, .tk) are skipped, because the list states a price per year only.
+- **Check 2026-11-25:** one request to the list; all 14 prices equal the stored offers.
 - Notes:
   - **Reseller.** According to AGB § 2 Abs. 4, registration is done „über den Reseller-Dienstleister Neue Medien Münnich (ALL-INKL.COM)“. The notice periods are the registrar periods of ALL-INKL.COM plus 2 days processing time (Annex A).
   - Domains are billed collectively each month: collective invoice on the 1st of the following month, 12 months in advance per domain.

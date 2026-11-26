@@ -65,7 +65,10 @@ export interface RowDetail {
   sourceUrl: string;
   sourceEndpoint: string | null;
   fetchedAt: string;
-  /** fetched_at is older than STALE_DATA_DAYS at build time (shown as "veraltet"). */
+  /**
+   * fetched_at is older than STALE_DATA_DAYS at build time, for a manual offer older than
+   * MANUAL_STALE_DATA_DAYS (shown as "veraltet").
+   */
   dataStale: boolean;
   method: EvidenceMethod;
   confidence: Confidence;

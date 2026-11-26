@@ -1,12 +1,18 @@
 import { fileURLToPath } from 'node:url';
-import { computeTco, effectiveContract } from '@tldcost/core';
+import { computeTco, effectiveContract, type EvidenceMethod } from '@tldcost/core';
 import { loadData } from '@tldcost/core/load';
 import { describe, expect, it } from 'vitest';
 import { COLUMN_IDS } from '../../src/lib/columns';
 import { LOCALES } from '../../src/i18n';
-import { buildPayload, NOTE_VAT_NOT_STATED } from '../../src/lib/rows';
+import {
+  buildPayload,
+  MANUAL_STALE_DATA_DAYS,
+  NOTE_VAT_NOT_STATED,
+  STALE_DATA_DAYS,
+} from '../../src/lib/rows';
 import { footnotes, orderedRows, sortableRows } from '../../src/lib/view';
 import { defaultState } from '../../src/lib/url-state';
+import { MANUAL_MAX_AGE_DAYS } from '../../../scripts/update-data-report.mjs';
 
 const FIXTURES = fileURLToPath(new URL('../fixtures/data', import.meta.url));
 const data = loadData(FIXTURES);
@@ -152,6 +158,30 @@ describe('buildPayload', () => {
         expect(Object.keys(r.values).every((k) => k !== 'operator')).toBe(true);
       }
     }
+  });
+
+  it('marks data as stale after 14 days, manual offers only after 30 (as the data update)', () => {
+    expect(STALE_DATA_DAYS).toBe(14);
+    expect(MANUAL_STALE_DATA_DAYS).toBe(30);
+    // the weekly data update warns about manual offers from the same age on
+    expect(MANUAL_STALE_DATA_DAYS).toBe(MANUAL_MAX_AGE_DAYS);
+    const provider = data.providers.find((p) => p.id === 'alpha')!;
+    const base = data.offers.find((o) => o.provider === 'alpha' && o.tld === 'de')!;
+    const today = '2026-12-01';
+    const stale = (method: EvidenceMethod, daysOld: number) => {
+      const at = new Date(`${today}T09:00:00Z`);
+      at.setUTCDate(at.getUTCDate() - daysOld);
+      const fetched_at = at.toISOString().replace('.000Z', 'Z');
+      const offer = { ...base, evidence: { ...base.evidence, method, fetched_at } };
+      const p = buildPayload({ providers: [provider], offers: [offer], fx: data.fx }, { today });
+      return p.rows[0]?.detail.dataStale;
+    };
+    expect(stale('manual', 15)).toBe(false);
+    expect(stale('manual', 30)).toBe(false);
+    expect(stale('manual', 31)).toBe(true);
+    expect(stale('scrape', 14)).toBe(false);
+    expect(stale('scrape', 15)).toBe(true);
+    expect(stale('api', 15)).toBe(true);
   });
 
   it('empty data gives an empty payload', () => {

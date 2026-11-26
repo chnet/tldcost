@@ -63,7 +63,7 @@ Short summary of the contract values. Details, quotes and sources are in each pr
 | Host Europe | price page, home page and Impressum only via JavaScript; prices from FAQ table (as of 10/2024) | The scraper needs a different access path; values as `confidence: medium` |
 | INWX, netcup | standard prices are loaded via JavaScript | Scraper: look for product pages per TLD or a JSON endpoint |
 | Contabo | tax and currency of domain prices not shown | Clarify manually |
-| chnet.domains | on 2026-11-12 the website shows „Vorschau – noch nicht öffentlich“, ordering not possible | Owner decision: list the row only once it can be ordered publicly? |
+| chnet.domains | on 2026-11-12 the website showed „Vorschau – noch nicht öffentlich“, ordering not possible. On 2026-11-25 the [price list](https://chnet.domains/preise/) no longer shows this note; its maintenance notice („Wartungsarbeiten.“) is in the static HTML only as a hidden element. Ordering itself was not tested. | Listed as an ordinary row (decision Q2, `docs/decisions.md`); prices from the adapter `chnet-domains` |
 | all | `reviewed_at` + 90-day review (concept § 4 Finding 8) | Use the date 2026-11-12 as the first `reviewed_at` |
 
 ---

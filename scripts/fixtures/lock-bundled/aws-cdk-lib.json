@@ -1,5 +1,5 @@
 {
-  "description": "Real package-lock.json excerpt: aws-cdk-lib 2.275.0 -> 2.278.0 (Dependabot, chnet/tldcost PR #48, head 070e034e). before: the parent and the bundled entries that change, from main 915d9ba0; after: the same keys from 070e034e. The bundled entries carry inBundle true and no resolved/integrity, as npm writes them.",
+  "description": "Real package-lock.json excerpt: aws-cdk-lib 2.275.0 -> 2.278.0 (Dependabot, chnet/tldcost PR #48, head 070e034e). before: the parent and all its bundled entries from main 915d9ba0; after: the same from 070e034e (6 bundled entries changed or added, 14 unchanged). The bundled entries carry inBundle true and no resolved/integrity, as npm writes them.",
   "before": {
     "node_modules/aws-cdk-lib": {
       "version": "2.275.0",
@@ -44,12 +44,41 @@
         "constructs": "^10.5.0"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/@aws-cdk/cloud-assembly-api": {
+      "version": "2.5.0",
+      "inBundle": true,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "json-source-map": "^0.6.1",
+        "jsonschema": "^1.5.0",
+        "semver": "^7.8.5"
+      },
+      "engines": {
+        "node": ">= 18.0.0"
+      },
+      "peerDependencies": {
+        "@aws-cdk/cloud-assembly-schema": ">=55.0.0"
+      }
+    },
     "node_modules/aws-cdk-lib/node_modules/@aws/cloudformation-validate": {
       "version": "1.12.1",
       "inBundle": true,
       "license": "Apache-2.0",
       "engines": {
         "node": ">=20.0.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/@balena/dockerignore": {
+      "version": "1.0.2",
+      "inBundle": true,
+      "license": "Apache-2.0"
+    },
+    "node_modules/aws-cdk-lib/node_modules/balanced-match": {
+      "version": "4.0.4",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": "18 || 20 || >=22"
       }
     },
     "node_modules/aws-cdk-lib/node_modules/brace-expansion": {
@@ -63,10 +92,82 @@
         "node": "20 || >=22"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/case": {
+      "version": "1.6.3",
+      "inBundle": true,
+      "license": "(MIT OR GPL-3.0-or-later)",
+      "engines": {
+        "node": ">= 0.8.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/fs-extra": {
+      "version": "11.4.1",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "graceful-fs": "^4.2.0",
+        "jsonfile": "^6.0.1",
+        "universalify": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=14.14"
+      }
+    },
     "node_modules/aws-cdk-lib/node_modules/graceful-fs": {
       "version": "4.2.11",
       "inBundle": true,
       "license": "ISC"
+    },
+    "node_modules/aws-cdk-lib/node_modules/ignore": {
+      "version": "5.3.2",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">= 4"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/json-source-map": {
+      "version": "0.6.1",
+      "inBundle": true,
+      "license": "MIT"
+    },
+    "node_modules/aws-cdk-lib/node_modules/jsonfile": {
+      "version": "6.2.1",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "universalify": "^2.0.0"
+      },
+      "optionalDependencies": {
+        "graceful-fs": "^4.1.6"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/jsonschema": {
+      "version": "1.5.0",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": "*"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/mime-db": {
+      "version": "1.52.0",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/mime-types": {
+      "version": "2.1.35",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "mime-db": "1.52.0"
+      },
+      "engines": {
+        "node": ">= 0.6"
+      }
     },
     "node_modules/aws-cdk-lib/node_modules/minimatch": {
       "version": "10.2.6",
@@ -82,6 +183,14 @@
         "url": "https://github.com/sponsors/isaacs"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/punycode": {
+      "version": "2.3.1",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">=6"
+      }
+    },
     "node_modules/aws-cdk-lib/node_modules/semver": {
       "version": "7.8.5",
       "inBundle": true,
@@ -91,6 +200,22 @@
       },
       "engines": {
         "node": ">=10"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/universalify": {
+      "version": "2.0.1",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">= 10.0.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/yaml": {
+      "version": "1.10.3",
+      "inBundle": true,
+      "license": "ISC",
+      "engines": {
+        "node": ">= 6"
       }
     }
   },
@@ -138,6 +263,22 @@
         "constructs": "^10.5.0"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/@aws-cdk/cloud-assembly-api": {
+      "version": "2.5.0",
+      "inBundle": true,
+      "license": "Apache-2.0",
+      "dependencies": {
+        "json-source-map": "^0.6.1",
+        "jsonschema": "^1.5.0",
+        "semver": "^7.8.5"
+      },
+      "engines": {
+        "node": ">= 18.0.0"
+      },
+      "peerDependencies": {
+        "@aws-cdk/cloud-assembly-schema": ">=55.0.0"
+      }
+    },
     "node_modules/aws-cdk-lib/node_modules/@aws/cloudformation-validate": {
       "version": "1.17.1",
       "inBundle": true,
@@ -146,10 +287,23 @@
         "node": ">=20.0.0"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/@balena/dockerignore": {
+      "version": "1.0.2",
+      "inBundle": true,
+      "license": "Apache-2.0"
+    },
     "node_modules/aws-cdk-lib/node_modules/@isaacs/nonrecursive-glob-match": {
       "version": "1.1.0",
       "inBundle": true,
       "license": "BlueOak-1.0.0"
+    },
+    "node_modules/aws-cdk-lib/node_modules/balanced-match": {
+      "version": "4.0.4",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": "18 || 20 || >=22"
+      }
     },
     "node_modules/aws-cdk-lib/node_modules/brace-expansion": {
       "version": "5.0.13",
@@ -162,10 +316,82 @@
         "node": "20 || >=22"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/case": {
+      "version": "1.6.3",
+      "inBundle": true,
+      "license": "(MIT OR GPL-3.0-or-later)",
+      "engines": {
+        "node": ">= 0.8.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/fs-extra": {
+      "version": "11.4.1",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "graceful-fs": "^4.2.0",
+        "jsonfile": "^6.0.1",
+        "universalify": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=14.14"
+      }
+    },
     "node_modules/aws-cdk-lib/node_modules/graceful-fs": {
       "version": "4.2.12",
       "inBundle": true,
       "license": "BlueOak-1.0.0"
+    },
+    "node_modules/aws-cdk-lib/node_modules/ignore": {
+      "version": "5.3.2",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">= 4"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/json-source-map": {
+      "version": "0.6.1",
+      "inBundle": true,
+      "license": "MIT"
+    },
+    "node_modules/aws-cdk-lib/node_modules/jsonfile": {
+      "version": "6.2.1",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "universalify": "^2.0.0"
+      },
+      "optionalDependencies": {
+        "graceful-fs": "^4.1.6"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/jsonschema": {
+      "version": "1.5.0",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": "*"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/mime-db": {
+      "version": "1.52.0",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">= 0.6"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/mime-types": {
+      "version": "2.1.35",
+      "inBundle": true,
+      "license": "MIT",
+      "dependencies": {
+        "mime-db": "1.52.0"
+      },
+      "engines": {
+        "node": ">= 0.6"
+      }
     },
     "node_modules/aws-cdk-lib/node_modules/minimatch": {
       "version": "11.0.9",
@@ -182,6 +408,14 @@
         "url": "https://github.com/sponsors/isaacs"
       }
     },
+    "node_modules/aws-cdk-lib/node_modules/punycode": {
+      "version": "2.3.1",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">=6"
+      }
+    },
     "node_modules/aws-cdk-lib/node_modules/semver": {
       "version": "7.8.6",
       "inBundle": true,
@@ -191,6 +425,22 @@
       },
       "engines": {
         "node": ">=10"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/universalify": {
+      "version": "2.0.1",
+      "inBundle": true,
+      "license": "MIT",
+      "engines": {
+        "node": ">= 10.0.0"
+      }
+    },
+    "node_modules/aws-cdk-lib/node_modules/yaml": {
+      "version": "1.10.3",
+      "inBundle": true,
+      "license": "ISC",
+      "engines": {
+        "node": ">= 6"
       }
     }
   }

@@ -24,8 +24,10 @@
 //        exactly that `resolved` URL, its sha512 must equal the lock's `integrity` before anything
 //        in it is read, and it must hold package/<path below the anchor>/package.json with the
 //        entry's name and version (a bundled entry that is not in the tarball would be fetched by
-//        npm from the registry without the lock's integrity); download, size, time and hash
-//        errors fail closed (BUNDLE_LIMITS), each tarball once per run; other entries without
+//        npm from the registry without the lock's integrity); when the anchor itself is added or
+//        changed, every bundled entry under it, changed or not, is checked that way against the
+//        new tarball; download, size, time and hash errors fail closed (BUNDLE_LIMITS), each
+//        tarball once per run; other entries without
 //        `resolved` (links) only unchanged; the root and workspace
 //        entries change only like package.json; other top-level fields unchanged. Without a
 //        package.json change in the same commit (lock-only resolution updates within the declared
@@ -276,8 +278,9 @@ function bundleAnchor(key, entry, pkgs, isPackageKey) {
  * tarball under a known name would be installed in its place), or it is a bundled entry under such a
  * package (bundleAnchor); workspace links unchanged.
  * `workspaces`: the workspace patterns of the PARENT's root package.json (none for a standalone lock).
- * `bundles`: an array that receives one tarball check per added or changed bundled entry (for
- * bundleFindings); without it a bundled entry cannot be checked and is refused (fail closed).
+ * `bundles`: an array that receives one tarball check per added or changed bundled entry and per
+ * bundled entry under an added or changed anchor (for bundleFindings); without it a bundled entry
+ * cannot be checked and is refused (fail closed).
  */
 export function packageLockFinding(beforeText, afterText, workspaces = [], bundles = null) {
   let before, after;
@@ -298,6 +301,20 @@ export function packageLockFinding(beforeText, afterText, workspaces = [], bundl
   if (!isPlainObject(after.packages)) return 'package-lock.json has no packages map';
   const beforePkgs = isPlainObject(before.packages) ? before.packages : {};
   const isPackageKey = packageKeyMatcher(workspaces);
+  const changedPackages = new Set(); // added or changed packages with their own registry tarball
+  const checked = new Set(); // bundled entries with a tarball check
+  const bundleCheck = (key, entry, anchor) => {
+    const { resolved, integrity } = own(after.packages, anchor);
+    checked.add(key);
+    bundles.push({
+      key,
+      resolved,
+      integrity,
+      path: `package/${key.slice(anchor.length + 1)}/package.json`,
+      name: lockName(key),
+      version: entry.version,
+    });
+  };
   for (const [key, entry] of Object.entries(after.packages)) {
     if (!isPlainObject(entry)) return 'package-lock.json: an entry is not an object';
     const prev = own(beforePkgs, key);
@@ -319,7 +336,10 @@ export function packageLockFinding(beforeText, afterText, workspaces = [], bundl
     // an added or changed package: its own registry tarball, sha512 integrity, no alias; a bundled
     // one only without them, under an ancestor package that has them
     if (entry.inBundle !== true) {
-      if (registryEntryOk(key, entry)) continue;
+      if (registryEntryOk(key, entry)) {
+        changedPackages.add(key);
+        continue;
+      }
       return 'package-lock.json: an added or changed package without its own registry.npmjs.org tarball and sha512 integrity';
     }
     const anchor = bundleAnchor(key, entry, after.packages, isPackageKey);
@@ -329,15 +349,24 @@ export function packageLockFinding(beforeText, afterText, workspaces = [], bundl
     if (!Array.isArray(bundles)) {
       return 'package-lock.json: a bundled package that cannot be checked against its tarball here';
     }
-    const { resolved, integrity } = own(after.packages, anchor);
-    bundles.push({
-      key,
-      resolved,
-      integrity,
-      path: `package/${key.slice(anchor.length + 1)}/package.json`,
-      name: lockName(key),
-      version: entry.version,
-    });
+    bundleCheck(key, entry, anchor);
+  }
+  // an added or changed anchor: every bundled entry under it, changed or not, is checked against
+  // the new tarball (the same download)
+  for (const [key, entry] of Object.entries(after.packages)) {
+    if (checked.has(key) || !isPlainObject(entry) || entry.inBundle !== true) continue;
+    const prefixes = [...changedPackages].filter((p) => key.startsWith(`${p}/node_modules/`));
+    if (prefixes.length === 0) continue;
+    const anchor = bundleAnchor(key, entry, after.packages, isPackageKey);
+    if (anchor === null) {
+      return 'package-lock.json: a bundled package under an added or changed package that cannot be checked against its tarball';
+    }
+    // bundled by a nearer package that did not change: not part of the new tarball's check
+    if (!changedPackages.has(anchor)) continue;
+    if (!Array.isArray(bundles)) {
+      return 'package-lock.json: a bundled package that cannot be checked against its tarball here';
+    }
+    bundleCheck(key, entry, anchor);
   }
   return '';
 }
@@ -613,7 +642,8 @@ function paxRecords(data) {
  * Regular files of a tar archive whose path `keep` selects: path -> content (null when larger than
  * maxFileBytes). Reads ustar names with prefix, PAX `x` headers (path, size) and GNU `L` long names.
  * Fails closed (throws) on a bad header checksum, an entry beyond the archive, a PAX global header
- * that sets path or size, and a kept path that occurs twice (tar extraction would let the last win).
+ * that sets path or size, a kept path that occurs twice (tar extraction would let the last win) and
+ * a zero block that is not the end of the archive (node-tar ends only on two zero blocks or EOF).
  */
 export function tarFiles(tar, keep, maxFileBytes = BUNDLE_LIMITS.maxManifestBytes) {
   const out = new Map();
@@ -623,7 +653,13 @@ export function tarFiles(tar, keep, maxFileBytes = BUNDLE_LIMITS.maxManifestByte
   let pax = null;
   while (off + 512 <= tar.length) {
     const h = tar.subarray(off, off + 512);
-    if (h.every((b) => b === 0)) return out; // end of archive
+    if (h.every((b) => b === 0)) {
+      // end of archive as node-tar reads it: two zero blocks, or one zero block at the very end;
+      // a zero block followed by more data would hide entries from this reader, not from npm
+      const next = tar.subarray(off + 512, off + 1024);
+      if (next.length === 0 || (next.length === 512 && next.every((b) => b === 0))) return out;
+      throw new Error('tar zero block inside the archive');
+    }
     let unsigned = 0;
     let signed = 0;
     for (let i = 0; i < 512; i++) {

@@ -552,43 +552,78 @@ const CDK_KEY = 'node_modules/aws-cdk-lib';
 const BUNDLED_IN = (name) => `${CDK_KEY}/node_modules/${name}`;
 const bundled = (version = '1.0.0', extra = {}) => ({ version, inBundle: true, ...extra });
 const NO_TARBALL = /without its own registry.npmjs.org tarball and sha512 integrity/;
+const sameEntry = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 test('lockfile: bundled entries pass only under an ancestor with its own tarball and sha512', async () => {
   const ws = ROOT.workspaces;
   const lockFinding = (beforePkgs, afterPkgs, bundles = []) =>
     packageLockFinding(lockWith(beforePkgs), lockWith(afterPkgs), ws, bundles);
-  // (1) the real excerpt: 6 bundled entries changed or added, none with resolved or integrity
+  // (1) the real excerpt: 20 bundled entries, 6 changed or added and 14 unchanged, none with
+  // resolved or integrity
   const bundledKeys = Object.keys(CDK.after).filter((k) => k !== CDK_KEY);
-  assert.equal(bundledKeys.length, 6);
+  const changedKeys = bundledKeys.filter((k) => !sameEntry(CDK.after[k], CDK.before[k]));
+  assert.equal(bundledKeys.length, 20);
+  assert.equal(changedKeys.length, 6);
   for (const k of bundledKeys) {
     assert.equal(CDK.after[k].inBundle, true, k);
     assert.ok(!Object.hasOwn(CDK.after[k], 'resolved'), k);
     assert.ok(!Object.hasOwn(CDK.after[k], 'integrity'), k);
-    assert.notDeepEqual(CDK.after[k], CDK.before[k], k);
   }
   const checks = [];
   assert.equal(lockFinding(CDK.before, CDK.after, checks), '');
-  // one tarball check per bundled entry: the anchor's resolved/integrity, the path below it
+  // the anchor changed: one tarball check per bundled entry under it, changed or not, with the
+  // anchor's resolved/integrity and the path below it
+  const byKey = (a, b) => a.key.localeCompare(b.key);
   assert.deepEqual(
-    checks,
-    bundledKeys.map((k) => ({
-      key: k,
-      resolved: CDK.after[CDK_KEY].resolved,
-      integrity: CDK.after[CDK_KEY].integrity,
-      path: `package/${k.slice(CDK_KEY.length + 1)}/package.json`,
-      name: k.slice(k.lastIndexOf('node_modules/') + 'node_modules/'.length),
-      version: CDK.after[k].version,
-    })),
+    [...checks].sort(byKey),
+    bundledKeys
+      .map((k) => ({
+        key: k,
+        resolved: CDK.after[CDK_KEY].resolved,
+        integrity: CDK.after[CDK_KEY].integrity,
+        path: `package/${k.slice(CDK_KEY.length + 1)}/package.json`,
+        name: k.slice(k.lastIndexOf('node_modules/') + 'node_modules/'.length),
+        version: CDK.after[k].version,
+      }))
+      .sort(byKey),
   );
   // without a collector for the tarball checks a bundled entry is refused (fail closed)
   assert.match(
     packageLockFinding(lockWith(CDK.before), lockWith(CDK.after), ws),
     /bundled package that cannot be checked against its tarball/,
   );
-  // (5) an unchanged parent: only its bundled entries change, each still checked in the tarball
+  // (5) an unchanged parent: only the changed bundled entries are checked in its tarball
+  const sameParent = { ...CDK.before, [CDK_KEY]: CDK.after[CDK_KEY] };
   const unchangedParent = [];
-  assert.equal(lockFinding({ [CDK_KEY]: CDK.after[CDK_KEY] }, CDK.after, unchangedParent), '');
-  assert.equal(unchangedParent.length, 6);
+  assert.equal(lockFinding(sameParent, CDK.after, unchangedParent), '');
+  assert.deepEqual(unchangedParent.map((c) => c.key).sort(), [...changedKeys].sort());
+  // only the anchor changes (its bundled entries stay): all 20 are still checked, and without a
+  // collector they are refused
+  const onlyAnchor = { ...CDK.after, [CDK_KEY]: CDK.before[CDK_KEY] };
+  const onlyAnchorChecks = [];
+  assert.equal(lockFinding(onlyAnchor, CDK.after, onlyAnchorChecks), '');
+  assert.equal(onlyAnchorChecks.length, 20);
+  assert.match(
+    packageLockFinding(lockWith(onlyAnchor), lockWith(CDK.after), ws),
+    /bundled package that cannot be checked against its tarball here/,
+  );
+  // an unchanged bundled entry under a changed anchor that cannot be checked is refused
+  const yaml = BUNDLED_IN('yaml');
+  const oddYaml = { ...CDK.before[yaml], resolved: `${REG}/yaml/-/yaml-1.10.3.tgz` };
+  assert.match(
+    lockFinding({ ...CDK.before, [yaml]: oddYaml }, { ...CDK.after, [yaml]: oddYaml }),
+    /bundled package under an added or changed package that cannot be checked/,
+  );
+  // ... but one bundled by a nearer package that did not change is not part of this check
+  const q = BUNDLED_IN('q');
+  const nearer = { [q]: reg('q', '1.0.0'), [`${q}/node_modules/k`]: bundled() };
+  const nearerChecks = [];
+  assert.equal(
+    lockFinding({ ...CDK.before, ...nearer }, { ...CDK.after, ...nearer }, nearerChecks),
+    '',
+  );
+  assert.ok(!nearerChecks.some((c) => c.key.startsWith(`${q}/`)));
+  assert.equal(nearerChecks.length, 20);
   // a bundled entry of a bundled entry: the nearest ancestor that is not bundled is checked
   const deep = `${BUNDLED_IN('minimatch')}/node_modules/x`;
   const deepChecks = [];
@@ -917,6 +952,27 @@ test('bundled entries: checked in the bundling tarball (exact URL, sha512 first,
     serve(twice),
     /not a readable gzip tar/,
   );
+  // the same path after a single zero block: node-tar reads on and lets 6.6.6 win, so a zero
+  // block that is not the end of the archive (two zero blocks or EOF) fails closed
+  const v1 = tar({ 'package/node_modules/a/package.json': JSON.stringify(content.a) });
+  const hidden = Buffer.concat([
+    v1.subarray(0, v1.length - 1024),
+    Buffer.alloc(512),
+    tarHeader('package/node_modules/a/package.json', twiceData.length, '0'),
+    pad512(twiceData),
+    Buffer.alloc(1024),
+  ]);
+  assert.throws(() => tarFiles(hidden, () => true), /zero block inside the archive/);
+  const hiddenTgz = gzipSync(hidden);
+  await refusedWith(
+    [entry('a', 'a', '1.0.0', { integrity: sri(hiddenTgz) })],
+    serve(hiddenTgz),
+    /not a readable gzip tar/,
+  );
+  // the end of the archive: two zero blocks, or one zero block at the very end
+  const oneZero = v1.subarray(0, v1.length - 512);
+  assert.equal(tarFiles(oneZero, () => true).size, 1);
+  assert.equal(tarFiles(v1, () => true).size, 1);
   // an anchor that is not a registry tarball with sha512 is never downloaded
   const never = serve(good);
   await refusedWith(
@@ -1098,6 +1154,30 @@ test('the real aws-cdk-lib bump passes the whole exemption against local tarball
       assert.ok(!res2.out.includes(TOKEN));
     } finally {
       await reg2.close();
+    }
+
+    // the anchor changes, and its new tarball lacks yaml, a bundled entry the bump did NOT
+    // change: still refused, because every bundled entry under a changed anchor is checked
+    assert.ok(sameEntry(CDK.before[BUNDLED_IN('yaml')], CDK.after[BUNDLED_IN('yaml')]));
+    const noYaml = bundlerTgz(
+      'aws-cdk-lib',
+      version(CDK.after),
+      Object.fromEntries(Object.entries(bundledOf(CDK.after)).filter(([rel]) => rel !== 'yaml')),
+    );
+    const reg3 = await registryStub({ [path(CDK.before)]: before, [path(CDK.after)]: noYaml });
+    try {
+      const r3 = repo();
+      r3.commit({ 'package-lock.json': lockWith(local(CDK.before, before)) });
+      r3.commit({ 'package-lock.json': lockWith(local(CDK.after, noYaml)) });
+      const res3 = await check(r3, { extraEnv: { TLDCOST_NPM_REGISTRY: reg3.url } });
+      assert.equal(res3.code, 1, res3.out);
+      assert.match(
+        res3.out,
+        /bundled node_modules\/aws-cdk-lib\/node_modules\/yaml: not in the tarball of the package that bundles it/,
+      );
+      assert.equal(res3.out.match(/: not in the tarball/g).length, 1);
+    } finally {
+      await reg3.close();
     }
   } finally {
     await reg.close();

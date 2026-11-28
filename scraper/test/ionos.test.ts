@@ -156,7 +156,9 @@ describe('IONOS price table', () => {
     expect(() => parse(noHeader)).toThrow(/unexpected table header undefined/);
     const otherHeader = edit(' TLDs </th>', ' Domains </th>');
     expect(() => parse(otherHeader)).toThrow(/unexpected table header "Domains\|/);
-    const extraAttr = edit(DE_OPEN, DE_OPEN.replace('>', ' data-x="1">'));
+    // a new attribute in the opening tag of one row (the .de row): ROW no longer matches that <tr>,
+    // and the <tr> count check must catch it instead of dropping the row silently
+    const extraAttr = edit(DE_OPEN, DE_OPEN.replace(/^(<tr\b[^>]*)>/, '$1 data-x="1">'));
     expect(() => parse(extraAttr)).toThrow(/found 21 <tr> but parsed 20 rows/);
     const noRows = edit(/(<tbody>)[\s\S]*?(<\/tbody>)/, '$1$2');
     expect(() => parseTable(noRows, ['tk'])).toThrow(/no TLD rows found/);

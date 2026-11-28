@@ -435,19 +435,39 @@ export function historyChange(
   return changed ? { file, value: history } : undefined;
 }
 
+/** Result of syncHistory: written files, unchanged histories, and offers it could not continue. */
+export interface HistorySyncResult {
+  written: string[];
+  unchanged: number;
+  /**
+   * One message per offer whose history is not continued (core appendHistory refuses: currency,
+   * price unit or VAT mode changed, or fetched_at older than the last entry). Its file stays as it
+   * is; every other offer is still synced.
+   */
+  errors: string[];
+}
+
 /**
  * Brings data/history in line with every stored offer: seeds a missing history and appends an
  * entry where the price state changed (hand-edited offers). Writes only changed files; nothing is
- * fetched. Returns the written files and the number of unchanged histories.
+ * fetched. An offer whose history cannot be continued is reported in `errors` and skipped, like in
+ * run(), so one such offer does not stop the others (#52).
  */
 export async function syncHistory(
   dataDir: string,
   opts: { dryRun?: boolean } = {},
-): Promise<{ written: string[]; unchanged: number }> {
+): Promise<HistorySyncResult> {
   const written: string[] = [];
+  const errors: string[] = [];
   let unchanged = 0;
   for (const offer of loadData(dataDir).offers) {
-    const change = historyChange(dataDir, offer);
+    let change: ReturnType<typeof historyChange>;
+    try {
+      change = historyChange(dataDir, offer);
+    } catch (err) {
+      errors.push((err as Error).message);
+      continue;
+    }
     if (!change) {
       unchanged++;
       continue;
@@ -458,7 +478,7 @@ export async function syncHistory(
     }
     written.push(change.file);
   }
-  return { written, unchanged };
+  return { written, unchanged, errors };
 }
 
 /** JSON as the repo's prettier config formats it (format:check runs over data/). */

@@ -676,14 +676,16 @@ describe('run', () => {
     expect(await syncHistory(dir, { dryRun: true })).toEqual({
       written: [historyFile(dir, 'reg', 'de')],
       unchanged: 0,
+      errors: [],
     });
     expect(existsSync(historyFile(dir, 'reg', 'de'))).toBe(false);
     expect(await syncHistory(dir)).toEqual({
       written: [historyFile(dir, 'reg', 'de')],
       unchanged: 0,
+      errors: [],
     });
     expect(validateDir(dir)).toEqual([]);
-    expect(await syncHistory(dir)).toEqual({ written: [], unchanged: 1 });
+    expect(await syncHistory(dir)).toEqual({ written: [], unchanged: 1, errors: [] });
     // a hand edit of the price with a newer fetch date: one more entry
     writeOffer({
       ...offer,
@@ -693,6 +695,37 @@ describe('run', () => {
     expect(validateDir(dir).join('\n')).toMatch(/last entry differs from the offer \(renewal\)/);
     expect((await syncHistory(dir)).written).toHaveLength(1);
     expect(validateDir(dir)).toEqual([]);
+  });
+
+  it('syncHistory reports an offer it cannot continue and still syncs the others (#52)', async () => {
+    provider('reg');
+    const a = mergeOffer('reg', undefined, scraped('com'));
+    const b = mergeOffer('reg', undefined, scraped('de'));
+    writeOffer(a);
+    writeOffer(b);
+    await syncHistory(dir);
+    const historyA = readFileSync(historyFile(dir, 'reg', 'com'), 'utf8');
+    const later = { method: 'manual' as const, fetched_at: '2026-11-30T10:00:00Z' };
+    // A (first in load order): VAT mode changed; B (after A): renewal changed
+    writeOffer({ ...a, vat_included: true, evidence: { ...a.evidence, ...later } });
+    writeOffer({
+      ...b,
+      price: { ...b.price, renewal: 1290 },
+      evidence: { ...b.evidence, ...later },
+    });
+    const r = await syncHistory(dir);
+    expect(r.written).toEqual([historyFile(dir, 'reg', 'de')]);
+    expect(r.unchanged).toBe(0);
+    expect(r.errors).toEqual([
+      expect.stringMatching(/^reg\/com: currency, price unit or VAT mode changed/),
+    ]);
+    // A's history is kept as it was (the refusal in appendHistory is unchanged)
+    expect(readFileSync(historyFile(dir, 'reg', 'com'), 'utf8')).toBe(historyA);
+    const historyB = JSON.parse(readFileSync(historyFile(dir, 'reg', 'de'), 'utf8'));
+    expect(historyB.entries.at(-1)).toMatchObject({ date: '2026-11-30', renewal: 1290 });
+    // validate-data still points at A only
+    expect(validateDir(dir).join('\n')).toMatch(/com\.json: last entry differs from the offer/);
+    expect(validateDir(dir).join('\n')).not.toMatch(/de\.json/);
   });
 
   it('the price state fields agree in core, validate-data and the history schema', () => {

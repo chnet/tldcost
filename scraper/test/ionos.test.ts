@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   FIRST_YEAR_NOTE,
@@ -55,30 +56,37 @@ describe('IONOS price text', () => {
 });
 
 describe('IONOS price table', () => {
-  it('parses one row per TLD in page order', () => {
-    const rows = parseTable(PAGE);
-    expect(rows.map((r) => r.tld)).toEqual([
-      'co',
-      'de',
-      'online',
-      'org',
-      'shop',
-      'ai',
-      'app',
-      'at',
-      'berlin',
-      'biz',
-      'ch',
-      'cloud',
-      'com',
-      'dev',
-      'eu',
-      'info',
-      'io',
-      'me',
-      'net',
-      'xyz',
-    ]);
+  const ALL = [
+    'co',
+    'de',
+    'online',
+    'org',
+    'shop',
+    'ai',
+    'app',
+    'at',
+    'berlin',
+    'biz',
+    'ch',
+    'cloud',
+    'com',
+    'dev',
+    'eu',
+    'info',
+    'io',
+    'me',
+    'net',
+    'xyz',
+  ];
+  const parse = (html: string) => parseTable(html, MVP_TLDS);
+  const cells = (first: string) =>
+    `<td>${first}</td><td>-</td><td>-</td><td>-</td><td>2 €</td><td>2 €</td><td>90 €</td><td>enthalten</td>`;
+  /** The fixture with extra rows at the top of the table body. */
+  const withRows = (...rows: string[]) => edit('<tbody>', `<tbody>${rows.join('')}`);
+
+  it('parses the rows of the requested TLDs in page order', () => {
+    const rows = parse(PAGE);
+    expect(rows.map((r) => r.tld)).toEqual(ALL);
     expect(rows.find((r) => r.tld === 'de')).toEqual({
       tld: 'de',
       limited: '0.50 €',
@@ -91,47 +99,91 @@ describe('IONOS price table', () => {
       welcome: '-',
       renewal: '4.50 €',
     });
+    expect(parseTable(PAGE, ['de', 'tk']).map((r) => r.tld)).toEqual(['de']);
+    expect(parseTable(PAGE, ['tk'])).toEqual([]);
+  });
+
+  it('reads &nbsp;, U+00A0 and &euro; in a cell', () => {
+    let page = PAGE;
+    for (const [tld, from, to] of [
+      ['de', '1.30 €', '1.30&nbsp;€'],
+      ['com', '2 €', '2\u00a0€'],
+      ['net', '2 €', '2 &euro;'],
+    ] as const) {
+      const row = new RegExp(`<tr data-dpt-row="${tld}" class="[^"]*">[\\s\\S]*?</tr>`);
+      expect(page.match(row)?.[0]).toContain(from);
+      page = page.replace(row, (r) => r.replace(from, to));
+    }
+    const rows = parse(page);
+    expect(rows.find((r) => r.tld === 'de')?.renewal).toBe('1.30 €');
+    expect(rows.find((r) => r.tld === 'com')?.renewal).toBe('2 €');
+    expect(rows.find((r) => r.tld === 'net')?.renewal).toBe('2 €');
+  });
+
+  it('does not read unusual rows of TLDs the run does not request', () => {
+    const odd = withRows(
+      `<tr data-dpt-row="co.uk" class="tw-border-t-1">${cells('.co.uk')}</tr>`,
+      `<tr data-dpt-row="com.de" class="tw-border-t-1">${cells('.com.de')}</tr>`,
+      `<tr data-dpt-row="xn--p1ai" class="tw-border-t-1">${cells('.рф')}</tr>`,
+      `<tr data-dpt-row="gmbh" class="tw-border-t-1">${cells('.gmbh <sup>1</sup>')}</tr>`,
+      `<tr data-dpt-row="tk" class="tw-border-t-1"><td>.tk</td><td>2 €</td></tr>`,
+      `<tr data-dpt-row="tk" class="tw-border-t-1">${cells('.tk')}</tr>`,
+      `<tr data-dpt-row="" class="x"></tr>`,
+      '<tr></tr>',
+      '<tr><td>Hinweis</td></tr>',
+    );
+    expect(parse(odd)).toEqual(parse(PAGE));
+    // the adapter reads plain TLDs only: a requested second-level label fails closed
+    expect(() => parseTable(odd, ['co.uk'])).toThrow(/unexpected row "\.co\.uk - - - 2 €/);
+    expect(() => parseTable(odd, ['tk'])).toThrow(/unexpected row "\.tk 2 €"/);
+    expect(() => parseTable(odd, ['gmbh'])).toThrow(/unexpected row "\.gmbh 1 -/);
   });
 
   it('fails closed when the page is not the price table (challenge, bot sensor, login)', () => {
-    expect(() => parseTable('<p>nothing</p>')).toThrow(/expected one IONOS price table/);
+    expect(() => parse('<p>nothing</p>')).toThrow(/expected one IONOS price table/);
     const two = edit('</body>', '<ionos-domain-price-table></ionos-domain-price-table></body>');
-    expect(() => parseTable(two)).toThrow(/expected one IONOS price table/);
-    expect(() => parseTable(edit(FIRST_YEAR_NOTE, 'Angebot.'))).toThrow(
+    expect(() => parse(two)).toThrow(/expected one IONOS price table/);
+    expect(() => parse(edit(FIRST_YEAR_NOTE, 'Angebot.'))).toThrow(
       /first-year condition not found/,
     );
-    expect(() => parseTable(edit(VAT_FOOTER, 'Preise inkl. MwSt.'))).toThrow(
-      /VAT footer not found/,
-    );
+    expect(() => parse(edit(VAT_FOOTER, 'Preise inkl. MwSt.'))).toThrow(/VAT footer not found/);
   });
 
   it('fails closed when the table layout changes', () => {
     const noTable = edit(/<table\b[\s\S]*<\/table>/, '');
-    expect(() => parseTable(noTable)).toThrow(/unexpected table header undefined/);
+    expect(() => parse(noTable)).toThrow(/unexpected table header undefined/);
     const noHeader = edit(/<thead>[\s\S]*?<\/thead>/, '');
-    expect(() => parseTable(noHeader)).toThrow(/unexpected table header undefined/);
+    expect(() => parse(noHeader)).toThrow(/unexpected table header undefined/);
     const otherHeader = edit(' TLDs </th>', ' Domains </th>');
-    expect(() => parseTable(otherHeader)).toThrow(/unexpected table header "Domains\|/);
+    expect(() => parse(otherHeader)).toThrow(/unexpected table header "Domains\|/);
     const extraAttr = edit(DE_OPEN, DE_OPEN.replace('>', ' data-x="1">'));
-    expect(() => parseTable(extraAttr)).toThrow(/found 21 <tr> but parsed 20 rows/);
-    const badTld = edit(DE_OPEN, DE_OPEN.replace('"de"', '"DE"'));
-    expect(() => parseTable(badTld)).toThrow(/unexpected row "\.de 0\.50 €/);
+    expect(() => parse(extraAttr)).toThrow(/found 21 <tr> but parsed 20 rows/);
+    const noRows = edit(/(<tbody>)[\s\S]*?(<\/tbody>)/, '$1$2');
+    expect(() => parseTable(noRows, ['tk'])).toThrow(/no TLD rows found/);
+    const onlyOdd = edit(
+      /(<tbody>)[\s\S]*?(<\/tbody>)/,
+      `$1<tr data-dpt-row="co.uk" class="tw-border-t-1">${cells('.co.uk')}</tr>$2`,
+    );
+    expect(() => parseTable(onlyOdd, ['tk'])).toThrow(/no TLD rows found/);
+  });
+
+  it('fails closed on an unusual row of a requested TLD', () => {
+    const upper = edit(DE_OPEN, DE_OPEN.replace('"de"', '"DE"'));
+    expect(() => parse(upper)).toThrow(/unexpected row "\.de 0\.50 €/);
     const otherTld = edit(DE_OPEN, DE_OPEN.replace('"de"', '"com"'));
-    expect(() => parseTable(otherTld)).toThrow(/unexpected row "\.de/);
+    expect(() => parse(otherTld)).toThrow(/unexpected row "\.de 0\.50 €/);
+    const note = editRow('de', '>.de</td>', '>.de <sup>*</sup></td>');
+    expect(() => parse(note)).toThrow(/unexpected row "\.de \* 0\.50 €/);
     const sevenCells = editRow(
       'de',
       '<td class="tw-px-5 tw-py-16 tw-align-top md:tw-p-16">90 €</td>',
       '',
     );
-    expect(() => parseTable(sevenCells)).toThrow(/unexpected row "\.de/);
-    const emptyRow = edit('<tbody>', '<tbody><tr></tr>');
-    expect(() => parseTable(emptyRow)).toThrow(/unexpected row ""/);
-    const plainRow = edit('<tbody>', '<tbody><tr><td>.de</td></tr>');
-    expect(() => parseTable(plainRow)).toThrow(/unexpected row "\.de"/);
-    const noCells = edit('<tbody>', '<tbody><tr data-dpt-row="de" class="x"></tr>');
-    expect(() => parseTable(noCells)).toThrow(/unexpected row ""/);
+    expect(() => parse(sevenCells)).toThrow(/unexpected row "\.de/);
+    const noCells = withRows('<tr data-dpt-row="de" class="x"></tr>');
+    expect(() => parse(noCells)).toThrow(/unexpected row ""/);
     const duplicate = PAGE.replace(DE_ROW, (row) => row + row);
-    expect(() => parseTable(duplicate)).toThrow(/duplicate row \.de/);
+    expect(() => parse(duplicate)).toThrow(/duplicate row \.de/);
   });
 });
 
@@ -162,7 +214,8 @@ describe('IONOS adapter', () => {
         source_url: IONOS_SOURCE_URL,
         fetched_at: '2026-11-27T06:00:00Z',
         method: 'scrape',
-        evidence_hash: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+        // sha256 of the fixture bytes
+        evidence_hash: 'sha256:87a7285ff598846502a9450c473a5d9128ce0bc8d3d60882fec918972e812cc3',
         confidence: 'medium',
       },
     });
@@ -240,6 +293,19 @@ describe('IONOS adapter', () => {
       expect(o.promo?.valid_until ?? null, o.tld).toBeNull();
       expect(o.evidence.evidence_hash, o.tld).toBe(result.offers[0]?.evidence.evidence_hash);
     }
+  });
+
+  it('hashes the fetched bytes, not the decoded text', async () => {
+    // TextDecoder drops a leading byte order mark: the text loses it, the bytes keep it
+    const page = '\uFEFF' + PAGE;
+    const result = await run(page, ['de']).result;
+    const bytes = new TextEncoder().encode(page);
+    expect(result.offers[0]?.evidence.evidence_hash).toBe(
+      `sha256:${createHash('sha256').update(bytes).digest('hex')}`,
+    );
+    expect(result.offers[0]?.evidence.evidence_hash).not.toBe(
+      `sha256:${createHash('sha256').update(PAGE).digest('hex')}`,
+    );
   });
 
   it('reports TLDs without a row as not offered', async () => {

@@ -6,7 +6,8 @@
 //
 // The adapter never works around a challenge, bot sensor or login page: a redirect away from the
 // table, or a page without the table, its header, the first-year condition or the VAT footer,
-// throws (fail closed) and nothing of IONOS is written.
+// throws (fail closed) and nothing of IONOS is written. Rows of TLDs the run does not request are
+// not read, so one unusual row among the 441 cannot stop the run (see parseTable).
 //
 // Mapping, as for the hand-entered offers before this adapter (docs/research/providers.md, IONOS):
 // - unit month: the table states no unit, the .de page shows the same amounts per month;
@@ -45,7 +46,6 @@ const text = (html: string): string =>
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;|\u00a0/g, ' ')
     .replace(/&euro;/g, '€')
-    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -65,10 +65,17 @@ export interface IonosRow {
 }
 
 /**
- * Rows of the price table. Throws when the page is not the price table as expected (another page,
- * e.g. a challenge or login page, or a changed layout).
+ * Rows of the requested TLDs in the price table. Throws when the page is not the price table as
+ * expected (another page, e.g. a challenge or login page, or a changed layout).
+ *
+ * Strict checks apply to the structure (one component, first-year note, VAT footer, header, every
+ * <tr> parsed, at least one plain TLD row) and to the rows of the requested TLDs: such a row must
+ * read `.tld` in its first cell, carry the same TLD in data-dpt-row and have 8 cells, and must not
+ * appear twice. A row is "requested" when data-dpt-row or the first word of its first cell names a
+ * requested TLD. All other rows are not read, whatever their form (e.g. a second-level label like
+ * „co.uk“, an IDN or a note in the cell), so one unusual row among the 441 does not stop the run.
  */
-export function parseTable(html: string): IonosRow[] {
+export function parseTable(html: string, tlds: readonly string[]): IonosRow[] {
   const at = html.indexOf(COMPONENT);
   if (at < 0 || html.indexOf(COMPONENT, at + 1) >= 0) {
     throw new Error('expected one IONOS price table (challenge, bot sensor or login page?)');
@@ -85,6 +92,7 @@ export function parseTable(html: string): IonosRow[] {
   }
   const rows: IonosRow[] = [];
   let header: string | undefined;
+  let plainRows = 0;
   for (const [, dataTld, body] of matched) {
     const cells = [...(body as string).matchAll(CELL)].map((c) => ({
       kind: c[1],
@@ -95,7 +103,11 @@ export function parseTable(html: string): IonosRow[] {
       continue;
     }
     const tld = dataTld ?? '';
-    if (!/^[a-z0-9-]+$/.test(tld) || cells[0]?.text !== `.${tld}` || cells.length !== 8) {
+    const plain = /^[a-z0-9-]+$/.test(tld) && cells[0]?.text === `.${tld}` && cells.length === 8;
+    if (plain) plainRows++;
+    const named = (cells[0]?.text ?? '').split(' ')[0] as string;
+    if (!tlds.includes(tld) && !tlds.some((t) => named === `.${t}`)) continue;
+    if (!plain) {
       throw new Error(`unexpected row ${JSON.stringify(text(body as string).slice(0, 80))}`);
     }
     if (rows.some((r) => r.tld === tld)) throw new Error(`duplicate row .${tld}`);
@@ -103,6 +115,7 @@ export function parseTable(html: string): IonosRow[] {
     rows.push({ tld, limited: t[1] as string, welcome: t[3] as string, renewal: t[4] as string });
   }
   if (header !== HEADER) throw new Error(`unexpected table header ${JSON.stringify(header)}`);
+  if (plainRows === 0) throw new Error('no TLD rows found');
   return rows;
 }
 
@@ -118,7 +131,7 @@ export const ionos: Adapter = {
       throw new Error(`redirected to ${res.url} (challenge, bot sensor or login page?)`);
     }
     const fetchedAt = isoSeconds(ctx.now());
-    const rows = parseTable(res.text);
+    const rows = parseTable(res.text, ctx.tlds);
     const hash = evidenceHash(res.bytes);
     const result = newResult();
     for (const tld of ctx.tlds) {

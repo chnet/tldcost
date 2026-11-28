@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Offer } from '@tldcost/core';
@@ -105,6 +105,7 @@ describe('history:sync CLI (#52)', () => {
     const { out, io: sink } = io();
     expect(await main(['--dry-run', dir], sink)).toBe(0);
     expect(out.log).toEqual([`${dir}: would write 1 history file(s), 0 unchanged`]);
+    expect(existsSync(historyFile(dir, 'reg', 'de'))).toBe(false);
     expect(out.error).toEqual([]);
     expect(await main([dir], sink)).toBe(0);
     expect(await main([dir], sink)).toBe(0);

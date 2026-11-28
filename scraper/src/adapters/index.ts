@@ -5,6 +5,7 @@ import { chnetDomains } from './chnet-domains.js';
 import { domainfactory } from './domainfactory.js';
 import { hetzner } from './hetzner.js';
 import { inwx } from './inwx.js';
+import { ionos } from './ionos.js';
 import { netcup } from './netcup.js';
 import { oneCom } from './one-com.js';
 import { porkbun } from './porkbun.js';
@@ -19,6 +20,7 @@ export const ADAPTERS: readonly Adapter[] = [
   domainfactory,
   hetzner,
   inwx,
+  ionos,
   netcup,
   oneCom,
   porkbun,

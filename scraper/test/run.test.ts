@@ -125,6 +125,7 @@ describe('ADAPTERS', () => {
         'domainfactory',
         'hetzner',
         'inwx',
+        'ionos',
         'netcup',
         'one-com',
         'porkbun',

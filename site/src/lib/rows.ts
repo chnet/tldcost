@@ -240,9 +240,16 @@ function monthValues(
 
 /**
  * Data older than this many days at build time is marked "veraltet" (tc-stale). The collection
- * runs weekly, so two missed runs.
+ * runs weekly, so two missed runs. Manual offers: MANUAL_STALE_DATA_DAYS.
  */
 export const STALE_DATA_DAYS = 14;
+
+/**
+ * Hand-entered offers (evidence.method manual) are marked "veraltet" only after this many days: no
+ * adapter refreshes them, a person re-checks them. Same limit as the warning of the weekly data
+ * update (MANUAL_MAX_AGE_DAYS in scripts/update-data-report.mjs); a unit test keeps both equal.
+ */
+export const MANUAL_STALE_DATA_DAYS = 30;
 
 /** YYYY-MM-DD `days` before `isoDate` (UTC). */
 function daysBefore(isoDate: string, days: number): string {
@@ -301,6 +308,7 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
   const L = options.locale ?? LOCALES.de;
   const pct = (bp: number) => L.f.decimal(bp / 100);
   const staleBefore = daysBefore(today, STALE_DATA_DAYS);
+  const manualStaleBefore = daysBefore(today, MANUAL_STALE_DATA_DAYS);
   const providerById = new Map(data.providers.map((p) => [p.id, p]));
   const notes: Record<string, NoteText> = {};
   const rows: PayloadRow[] = [];
@@ -482,7 +490,8 @@ export function buildPayload(data: TldcostData, options: BuildOptions = {}): Sit
         sourceUrl: ev.source_url,
         sourceEndpoint: ev.source_endpoint ?? null,
         fetchedAt: ev.fetched_at,
-        dataStale: ev.fetched_at.slice(0, 10) < staleBefore,
+        dataStale:
+          ev.fetched_at.slice(0, 10) < (ev.method === 'manual' ? manualStaleBefore : staleBefore),
         method: ev.method,
         confidence: ev.confidence,
         evidenceHash: ev.evidence_hash ?? null,
